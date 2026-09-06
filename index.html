@@ -426,7 +426,36 @@
     </div>
 
     <div class="card">
-      <h2><span class="idx">C</span> AFFICHAGE</h2>
+      <h2><span class="idx">C</span> SAUVEGARDE &amp; STOCKAGE</h2>
+      <div class="smallhint" style="margin-bottom:12px;">
+        Tes dossiers de vol n'existent que dans le stockage de cette icône, qui
+        n'est partagé avec rien d'autre. Une sauvegarde déposée dans Fichiers ou
+        iCloud est le seul moyen de les récupérer en cas de perte.
+      </div>
+      <div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button type="button" class="btnMini primary" id="backupBtn" style="flex:1 1 100%;padding:13px;">Tout sauvegarder</button>
+        <label class="btnMini" for="restoreInput" style="cursor:pointer;flex:1 1 45%;text-align:center;">Restaurer</label>
+        <input type="file" id="restoreInput" accept="application/json,.json" style="display:none;">
+        <button type="button" class="btnMini" id="storageRefreshBtn" style="flex:1 1 45%;">Actualiser l'espace</button>
+      </div>
+      <label class="chk" style="margin-top:8px;">
+        <input type="checkbox" id="backupWithDocs" checked>
+        <span>Inclure les pièces jointes (cartes météo, PIB, annexes)</span>
+      </label>
+      <div class="rwyMsg" id="backupMsg"></div>
+
+      <div class="subhead">Espace occupé</div>
+      <div class="wizBar"><div class="wizBarFill" id="storageBarFill"></div></div>
+      <div class="smallhint" id="storageInfo">Mesure en cours…</div>
+      <div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+        <button type="button" class="btnMini danger" id="purgeDocsBtn" style="flex:1 1 100%;">Alléger les dossiers de plus de 30 jours</button>
+      </div>
+      <div class="smallhint">Retire les pièces jointes des dossiers anciens. Les saisies, les calculs et le bulletin restent intacts.</div>
+      <div class="rwyMsg" id="purgeMsg"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="idx">D</span> AFFICHAGE</h2>
       <div class="field">
         <label>Thème</label>
         <select id="themeSelect">
@@ -1069,7 +1098,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = '2026.09.06-c';
+const APP_VERSION = '2026.09.06-d';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -4812,12 +4841,18 @@ function dossierLabel(){
   return dep + ' → ' + arr + (d ? ' · ' + d : '');
 }
 
+// Dossier actuellement ouvert. Tant qu'il est renseigné, « Enregistrer »
+// met à jour cette fiche au lieu d'en empiler une nouvelle à chaque appui.
+// Pour repartir d'une copie sans toucher à l'original, utiliser « Dupliquer ».
+let CURRENT_DOSSIER_ID = null;
+
 async function saveDossier(){
   const msg = document.getElementById('dossierMsg');
+  const existing = CURRENT_DOSSIER_ID ? await getDossier(CURRENT_DOSSIER_ID) : null;
   const dossier = {
-    id: 'd_' + Date.now(),
+    id: existing ? existing.id : ('d_' + Date.now()),
     savedAt: new Date().toISOString(),
-    fav: false,
+    fav: existing ? !!existing.fav : false,
     label: dossierLabel(),
     reg: str('registration') || '',
     pic: str('picName') || '',
@@ -4835,7 +4870,13 @@ async function saveDossier(){
       tx.oncomplete = resolve;
       tx.onerror = ()=>reject(tx.error);
     });
-    if(msg){ msg.className='rwyMsg ok'; msg.textContent = 'Dossier « '+dossier.label+' » enregistré.'; }
+    if(msg){
+      msg.className='rwyMsg ok';
+      msg.textContent = existing
+        ? 'Dossier « '+dossier.label+' » mis à jour.'
+        : 'Dossier « '+dossier.label+' » enregistré.';
+    }
+    CURRENT_DOSSIER_ID = dossier.id;
     renderDossierList();
     return true;
   }catch(e){
@@ -4896,6 +4937,7 @@ async function duplicateDossier(id){
   const d = await getDossier(id);
   if(!d) return;
 
+  CURRENT_DOSSIER_ID = null;   // la copie doit créer une fiche distincte
   restoreFlight(d.fields || {});
 
   const clear = ids => ids.forEach(k=>{
@@ -4956,6 +4998,7 @@ async function openDossier(id){
   });
   if(!d) return;
 
+  CURRENT_DOSSIER_ID = d.id;   // « Enregistrer » mettra à jour cette fiche
   restoreFlight(d.fields || {});
 
   WXDOC = d.wxdoc || null;
@@ -5041,6 +5084,7 @@ async function newFlight(){
 
   // Le pilote a explicitement demandé une page vierge : le brouillon
   // précédent n'a plus lieu d'être proposé.
+  CURRENT_DOSSIER_ID = null;
   if(typeof clearDraft === 'function') clearDraft();
   const db = document.getElementById('draftBanner');
   if(db) db.style.display = 'none';
@@ -5065,7 +5109,7 @@ function renderDossierList(){
       const nPib    = d.ntmdoc && d.ntmdoc.images ? d.ntmdoc.images.length : 0;
       return `
         <div class="rwyCard" style="margin-bottom:10px;${d.fav?'border-color:var(--amber);':''}">
-          <div style="font-weight:600;">${d.fav?'★ ':''}${esc(d.label)}</div>
+          <div style="font-weight:600;">${d.fav?'★ ':''}${esc(d.label)}${d.id===CURRENT_DOSSIER_ID?' <span style="font-family:var(--mono);font-size:10px;color:var(--amber);">· ouvert</span>':''}</div>
           <div class="smallhint">${esc(d.reg)}${d.pic?' · '+esc(d.pic):''} · enregistré le ${stamp}${nCartes?' · '+nCartes+' p. météo':''}${nPib?' · '+nPib+' p. NOTAM':''}</div>
           <div class="btnrow" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
             <button type="button" class="btnMini" data-open="${d.id}">Ouvrir</button>
@@ -5091,6 +5135,7 @@ function renderDossierList(){
     box.querySelectorAll('[data-del]').forEach(b=>{
       b.addEventListener('click', async ()=>{
         if(!confirm('Supprimer définitivement ce dossier ?')) return;
+        if(CURRENT_DOSSIER_ID === b.dataset.del) CURRENT_DOSSIER_ID = null;
         await deleteDossier(b.dataset.del);
         renderDossierList();
       });
@@ -5114,9 +5159,10 @@ function renderDossierList(){
   const sd = document.getElementById('saveDossierBtn');
   if(sd) sd.addEventListener('click', async ()=>{
     const before = sd.textContent;
+    const updating = !!CURRENT_DOSSIER_ID;
     sd.disabled = true; sd.textContent = 'Enregistrement…';
     const ok = await saveDossier();
-    sd.textContent = ok ? 'Enregistré ✓' : 'Échec';
+    sd.textContent = ok ? (updating ? 'Mis à jour ✓' : 'Enregistré ✓') : 'Échec';
     setTimeout(()=>{ sd.textContent = before; sd.disabled = false; }, 1800);
   });
 
@@ -5224,6 +5270,231 @@ function readDraft(){
     clearDraft();
     banner.style.display = 'none';
   });
+})();
+
+// ============ SAUVEGARDE COMPLÈTE & STOCKAGE ============
+// Les dossiers de vol vivent en IndexedDB, dans le stockage propre à l'icône
+// installée : rien ne les partage avec Safari, et rien ne les réplique.
+// Cette section est le seul filet de sécurité de l'application.
+
+const BACKUP_FORMAT = 'prevol-backup-1';
+
+function setBackupMsg(text, ok){
+  const m = document.getElementById('backupMsg');
+  if(!m) return;
+  m.className = 'rwyMsg ' + (ok === null ? '' : (ok ? 'ok' : 'bad'));
+  m.textContent = text;
+}
+
+async function buildBackup(withDocs){
+  const dossiers = (await listDossiers()).map(d=>{
+    if(withDocs) return d;
+    // Sans les pièces jointes : on conserve leur nom pour savoir ce qui manquait
+    const light = Object.assign({}, d);
+    ['wxdoc','ntmdoc','freedoc'].forEach(k=>{
+      light[k] = d[k] ? {name: d[k].name, importedAt: d[k].importedAt, images: []} : null;
+    });
+    return light;
+  });
+  return {
+    format: BACKUP_FORMAT,
+    appVersion: APP_VERSION,
+    exportedAt: new Date().toISOString(),
+    withDocs: !!withDocs,
+    aircraft: AIRCRAFT_USER,
+    airports: AIRPORT_USER,
+    dossiers
+  };
+}
+
+function humanSize(bytes){
+  if(bytes < 1024) return bytes + ' o';
+  if(bytes < 1024*1024) return (bytes/1024).toFixed(0) + ' Ko';
+  return (bytes/1024/1024).toFixed(1) + ' Mo';
+}
+
+async function doBackup(){
+  const btn = document.getElementById('backupBtn');
+  const withDocs = !!(document.getElementById('backupWithDocs')||{}).checked;
+  if(btn){ btn.disabled = true; }
+  setBackupMsg('Préparation de la sauvegarde…', null);
+  try{
+    const data = await buildBackup(withDocs);
+    const json = JSON.stringify(data);
+    const stamp = new Date().toISOString().slice(0,10);
+    const name = `prevol-sauvegarde-${stamp}.json`;
+    const file = new File([json], name, {type:'application/json'});
+
+    const n = data.dossiers.length;
+    const detail = `${n} dossier(s), ${Object.keys(data.aircraft).length} avion(s), `
+      + `${Object.keys(data.airports).length} terrain(s) — ${humanSize(json.length)}`;
+
+    // Sur iPhone, la feuille de partage permet « Enregistrer dans Fichiers »
+    // ou l'envoi direct vers iCloud Drive ; le téléchargement classique est
+    // conservé en secours pour les navigateurs qui ne partagent pas de fichier.
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:'Sauvegarde PréVol'});
+      setBackupMsg('Sauvegarde partagée — ' + detail, true);
+    } else {
+      const url = URL.createObjectURL(file);
+      const a = document.createElement('a');
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url), 4000);
+      setBackupMsg('Fichier ' + name + ' généré — ' + detail, true);
+    }
+  }catch(e){
+    // Un partage annulé au doigt n'est pas une erreur
+    if(e && e.name === 'AbortError'){ setBackupMsg('Sauvegarde annulée.', null); }
+    else setBackupMsg('Sauvegarde impossible : ' + ((e && e.message) || e), false);
+  }finally{
+    if(btn) btn.disabled = false;
+    refreshStorageInfo();
+  }
+}
+
+async function doRestore(file){
+  if(!file) return;
+  setBackupMsg('Lecture du fichier…', null);
+  try{
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if(!data || data.format !== BACKUP_FORMAT){
+      setBackupMsg("Ce fichier n'est pas une sauvegarde PréVol.", false);
+      return;
+    }
+    const nD = (data.dossiers||[]).length;
+    if(!confirm(`Restaurer ${nD} dossier(s), ${Object.keys(data.aircraft||{}).length} avion(s) `
+      + `et ${Object.keys(data.airports||{}).length} terrain(s) ?\n\n`
+      + `Les fiches existantes de même identifiant seront remplacées ; `
+      + `les autres seront conservées.`)) { setBackupMsg('Restauration annulée.', null); return; }
+
+    // Fusion additive : on ne vide jamais la base, on écrase seulement les
+    // entrées de même clé. Une restauration ne doit pas pouvoir tout perdre.
+    Object.assign(AIRCRAFT_USER, data.aircraft || {});
+    saveUserAircraft();
+    Object.assign(AIRPORT_USER, data.airports || {});
+    saveUserAirports();
+
+    let done = 0;
+    if(nD){
+      const db = await dossierDbOpen();
+      await new Promise((resolve, reject)=>{
+        const tx = db.transaction(DOSSIER_STORE, 'readwrite');
+        const store = tx.objectStore(DOSSIER_STORE);
+        (data.dossiers||[]).forEach(d=>{ if(d && d.id){ store.put(d); done++; } });
+        tx.oncomplete = resolve;
+        tx.onerror = ()=>reject(tx.error);
+      });
+    }
+
+    renderAircraftList();
+    renderAirportList();
+    refreshApExport();
+    refreshAircraftSelect();
+    toggleArrivalRunway();
+    renderDossierList();
+    setBackupMsg(`Restauration terminée : ${done} dossier(s) rétabli(s).`
+      + (data.withDocs === false ? ' (sauvegarde sans pièces jointes)' : ''), true);
+    refreshStorageInfo();
+  }catch(e){
+    setBackupMsg('Restauration impossible : ' + ((e && e.message) || e), false);
+  }
+}
+
+async function refreshStorageInfo(){
+  const info = document.getElementById('storageInfo');
+  const bar  = document.getElementById('storageBarFill');
+  if(!info) return;
+  if(!navigator.storage || !navigator.storage.estimate){
+    info.textContent = "Ce navigateur ne communique pas l'espace utilisé.";
+    return;
+  }
+  try{
+    const est = await navigator.storage.estimate();
+    const used = est.usage || 0, quota = est.quota || 0;
+    const pct = quota ? Math.min(100, used/quota*100) : 0;
+    if(bar) bar.style.width = Math.max(pct, 1) + '%';
+    let txt = humanSize(used) + (quota ? ' utilisés sur ' + humanSize(quota)
+      + ' disponibles (' + pct.toFixed(1) + ' %)' : ' utilisés');
+    const persisted = (navigator.storage.persisted) ? await navigator.storage.persisted() : false;
+    txt += persisted
+      ? ' · stockage marqué durable'
+      : ' · stockage non marqué durable : sauvegarde régulièrement';
+    info.textContent = txt;
+    if(quota && pct > 80){
+      info.style.color = 'var(--warn)';
+    } else {
+      info.style.color = '';
+    }
+  }catch(e){
+    info.textContent = "Espace utilisé indisponible.";
+  }
+}
+
+// Signale au système que ces données ne sont pas du cache jetable.
+// Demande gratuite et sans effet de bord : accordée ou non, rien ne casse.
+(async function requestPersistence(){
+  try{
+    if(navigator.storage && navigator.storage.persist && navigator.storage.persisted){
+      if(!(await navigator.storage.persisted())) await navigator.storage.persist();
+    }
+  }catch(e){}
+  refreshStorageInfo();
+})();
+
+async function purgeOldDocs(days){
+  const msg = document.getElementById('purgeMsg');
+  const cutoff = Date.now() - days*24*3600*1000;
+  try{
+    const list = await listDossiers();
+    const targets = list.filter(d=>{
+      const t = new Date(d.savedAt).getTime();
+      const heavy = ['wxdoc','ntmdoc','freedoc'].some(k=>d[k] && d[k].images && d[k].images.length);
+      return !isNaN(t) && t < cutoff && heavy && !d.fav;
+    });
+    if(!targets.length){
+      if(msg){ msg.className='rwyMsg'; msg.textContent = 'Rien à alléger : aucun dossier ancien ne porte de pièce jointe (les favoris sont épargnés).'; }
+      return;
+    }
+    if(!confirm(`Retirer les pièces jointes de ${targets.length} dossier(s) de plus de ${days} jours ?\n\n`
+      + `Les saisies et les calculs sont conservés. Les favoris ne sont pas touchés.\n`
+      + `Cette action est définitive.`)) return;
+
+    const db = await dossierDbOpen();
+    await new Promise((resolve, reject)=>{
+      const tx = db.transaction(DOSSIER_STORE, 'readwrite');
+      const store = tx.objectStore(DOSSIER_STORE);
+      targets.forEach(d=>{
+        ['wxdoc','ntmdoc','freedoc'].forEach(k=>{
+          if(d[k]) d[k] = {name: d[k].name, importedAt: d[k].importedAt, images: []};
+        });
+        store.put(d);
+      });
+      tx.oncomplete = resolve;
+      tx.onerror = ()=>reject(tx.error);
+    });
+    if(msg){ msg.className='rwyMsg ok'; msg.textContent = targets.length + ' dossier(s) allégé(s).'; }
+    renderDossierList();
+    refreshStorageInfo();
+  }catch(e){
+    if(msg){ msg.className='rwyMsg bad'; msg.textContent = 'Allègement impossible : ' + ((e && e.message)||e); }
+  }
+}
+
+(function initBackup(){
+  const b = document.getElementById('backupBtn');
+  if(b) b.addEventListener('click', doBackup);
+  const r = document.getElementById('restoreInput');
+  if(r) r.addEventListener('change', e=>{
+    const f = e.target.files && e.target.files[0];
+    doRestore(f);
+    e.target.value = '';
+  });
+  const s = document.getElementById('storageRefreshBtn');
+  if(s) s.addEventListener('click', refreshStorageInfo);
+  const p = document.getElementById('purgeDocsBtn');
+  if(p) p.addEventListener('click', ()=>purgeOldDocs(30));
 })();
 
 // Affichage de la version (contrôle visuel après une mise à jour GitHub)
