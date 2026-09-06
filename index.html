@@ -346,7 +346,16 @@
     html,body{background:#fff !important;background-image:none !important;}
     /* La bande de barre d'état est un artifice d'écran : jamais imprimée */
     body::before{display:none !important;}
-    .wrap > *:not(#printReportWrap){display:none !important;}
+    /* Le dossier à imprimer est imbriqué : .wrap > #pageFlight > #printReportWrap.
+       Il faut donc dégager les frères à CHAQUE niveau. Masquer seulement les
+       enfants directs de .wrap emporterait #pageFlight avec eux, et un
+       display:block sur un descendant ne ressuscite pas un ancêtre masqué :
+       la page sortait entièrement blanche.
+       Forcer #pageFlight visible permet aussi d'imprimer depuis n'importe
+       quel onglet (partage Safari → Imprimer alors qu'on est sur l'Accueil). */
+    .wrap > *{display:none !important;}
+    #pageFlight{display:block !important;}
+    #pageFlight > *:not(#printReportWrap){display:none !important;}
     .wrap{max-width:none !important;padding:0 !important;margin:0 !important;background:#fff !important;}
     #printReportWrap{display:block !important;background:#fff !important;}
     #printReportWrap .hint, #printReportWrap .btnrow{display:none !important;}
@@ -1060,7 +1069,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = '2026.09.06-b';
+const APP_VERSION = '2026.09.06-c';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
