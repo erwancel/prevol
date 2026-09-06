@@ -107,7 +107,7 @@
     --hairline:rgba(0,0,0,0.08);
     --chip-bg:rgba(0,0,0,.05);
     --track-bg:rgba(0,0,0,.09);
-    --grid-line:rgba(0,0,0,0.028);
+    --grid-line:transparent;   /* pas de quadrillage sur fond clair : trop marqué */
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--body);}
@@ -137,10 +137,10 @@
   .status-strip{display:flex;gap:14px;font-family:var(--mono);font-size:11px;color:var(--muted);}
   .status-strip .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block;margin-right:5px;box-shadow:0 0 6px var(--amber);}
 
-  section.card{background:linear-gradient(180deg, var(--panel2), var(--panel));border:1px solid var(--line);border-radius:10px;padding:18px 18px 20px;margin-bottom:16px;position:relative;overflow:hidden;}
-  section.card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amber-dim);}
-  section.card h2{font-family:var(--disp);font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);margin:0 0 14px;display:flex;align-items:center;gap:8px;}
-  section.card h2 .idx{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 6px;}
+  .card{background:linear-gradient(180deg, var(--panel2), var(--panel));border:1px solid var(--line);border-radius:10px;padding:18px 18px 20px;margin-bottom:16px;position:relative;overflow:hidden;}
+  .card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amber-dim);}
+  .card h2{font-family:var(--disp);font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);margin:0 0 14px;display:flex;align-items:center;gap:8px;}
+  .card h2 .idx{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 6px;}
 
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;}
   .grid.g2{grid-template-columns:repeat(2,1fr);}
@@ -853,6 +853,35 @@
       <h2><span class="idx">→</span> Performances</h2>
       <div class="readout" id="perfReadout"></div>
     </section>
+
+    <section class="card" id="lastMinuteCard">
+      <h2><span class="idx">ATIS</span> Dernière minute</h2>
+      <div class="smallhint" style="margin-bottom:12px;">
+        Conditions reçues au point d'attente : corrige ici sans rouvrir le
+        formulaire. Chaque modification recalcule immédiatement et met à jour
+        les résultats ci-dessus. Les valeurs sont reportées dans le dossier.
+      </div>
+      <div class="grid g2">
+        <div class="field"><label>Vent</label>
+          <input type="text" id="lmWind" class="noSave" placeholder="320/20G25">
+        </div>
+        <div class="field"><label>Piste</label>
+          <select id="lmRwy" class="noSave"></select>
+        </div>
+        <div class="field"><label>Température (°C)</label>
+          <input type="number" id="lmTemp" class="noSave" placeholder="°C">
+        </div>
+        <div class="field"><label>QNH (hPa)</label>
+          <input type="number" id="lmQnh" class="noSave" placeholder="hPa">
+        </div>
+      </div>
+      <div class="readout" id="lmDelta" style="margin-top:12px;"></div>
+    </section>
+
+    <section class="card" id="loadFixCard" style="display:none;">
+      <h2><span class="idx">⚖︎</span> Correction de chargement</h2>
+      <div id="loadFixBody"></div>
+    </section>
   </div>
 
   <div id="printReportWrap">
@@ -1098,7 +1127,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = '2026.09.06-d';
+const APP_VERSION = '2026.09.06-f';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -3432,6 +3461,220 @@ function badge(ok, okText, badText){
   return `<span class="badge ${ok?'ok':'bad'}">${ok?okText:badText}</span>`;
 }
 
+// ============ CORRECTION DE CHARGEMENT ============
+// Quand la masse ou le centrage sort de l'enveloppe, dire « HORS LIMITES »
+// ne suffit pas : il faut indiquer de combien et sur quoi agir.
+//
+// Principe : on n'affiche une correction que si elle est VÉRIFIÉE, c'est-à-dire
+// si le chargement corrigé repasse dans l'enveloppe au décollage ET à
+// l'atterrissage, masse comprise. Une suggestion calculée pour le décollage
+// seul pourrait faire sortir l'avion par l'arrière en fin de vol, une fois le
+// carburant consommé.
+
+// Recalcule masse et centrage pour un chargement donné, indépendamment
+// des champs du formulaire.
+function evalLoad(load, fuel){
+  const emptyWeight = num('emptyWeight'), emptyArm = num('emptyArm');
+  const armFront = num('armFront'), armRear = num('armRear');
+  const armBag = num('armBag'), armFuel = num('armFuel');
+  const density = fuel.density;
+
+  const fuelTO = load.fuelL * density;
+  const fuelLD = Math.max(load.fuelL - fuel.tripFuelL, 0) * density;
+  const dry = emptyWeight + load.pilot + load.copilot + load.paxRear + load.bag;
+  const momentDry = emptyWeight*emptyArm + (load.pilot + load.copilot)*armFront
+                  + load.paxRear*armRear + load.bag*armBag;
+
+  const massTO = dry + fuelTO;
+  const cgTO = (momentDry + fuelTO*armFuel)/massTO*1000;
+  const massLD = dry + fuelLD;
+  const cgLD = (momentDry + fuelLD*armFuel)/massLD*1000;
+
+  const okTO = cgTO >= fwdLimitAt(massTO) && cgTO <= ENV_AFT
+            && massTO <= ENV_W_MAX && massTO >= ENV_W_MIN;
+  const okLD = cgLD >= fwdLimitAt(massLD) && cgLD <= ENV_AFT
+            && massLD <= ENV_W_MAX && massLD >= ENV_W_MIN;
+  return {massTO, cgTO, massLD, cgLD, ok: okTO && okLD};
+}
+
+// Plus petit ajustement d'un levier qui rend le chargement conforme.
+// Balayage direct plutôt que résolution analytique : les limites avant
+// dépendent de la masse, donc le problème n'est pas linéaire.
+function solveLever(base, fuel, apply, from, to, step){
+  const n = Math.ceil(Math.abs(to - from)/step);
+  const dir = to >= from ? 1 : -1;
+  for(let i = 0; i <= n; i++){
+    const delta = from + dir*i*step;
+    const cand = apply(Object.assign({}, base), delta);
+    if(!cand) continue;
+    if(evalLoad(cand, fuel).ok) return delta;
+  }
+  return null;
+}
+
+function suggestLoadFix(mb, fuel){
+  if(mb.statusTO && mb.statusLD) return [];
+  const base = {
+    pilot: mb.pilot, copilot: mb.copilot, paxRear: mb.paxRear,
+    bag: mb.bag, fuelL: fuel.fuelOnBoardL
+  };
+  const capacity = (AC && AC.fuelCapacity) ? AC.fuelCapacity : fuel.fuelOnBoardL;
+  const out = [];
+
+  // 1. Bagages — le levier le plus simple à appliquer sur le terrain
+  const dBag = solveLever(base, fuel, (l,d)=>{
+    const v = base.bag + d;
+    if(v < 0) return null;
+    if(AC && AC.maxBaggage != null && v > AC.maxBaggage) return null;
+    l.bag = v; return l;
+  }, 0, base.bag > 0 ? -base.bag : 40, 0.5) ??
+  solveLever(base, fuel, (l,d)=>{
+    const v = base.bag + d;
+    if(AC && AC.maxBaggage != null && v > AC.maxBaggage) return null;
+    l.bag = v; return l;
+  }, 0, 40, 0.5);
+  if(dBag != null && Math.abs(dBag) > 0.01){
+    out.push(dBag < 0
+      ? `Retirer ${fmt(Math.abs(dBag),1)} kg de bagages`
+      : `Ajouter ${fmt(dBag,1)} kg dans le coffre (lest arrière) — vérifier la charge maximale du coffre sur l'AFM, l'appli ne la connaît pas`);
+  }
+
+  // 2. Carburant — jamais sous le minimum réglementaire calculé plus haut
+  const minL = fuel.minRequiredL;
+  const dFuel = solveLever(base, fuel, (l,d)=>{
+    const v = base.fuelL + d;
+    if(v < minL || v > capacity) return null;
+    l.fuelL = v; return l;
+  }, 0, minL - base.fuelL, 1) ??
+  solveLever(base, fuel, (l,d)=>{
+    const v = base.fuelL + d;
+    if(v > capacity) return null;
+    l.fuelL = v; return l;
+  }, 0, capacity - base.fuelL, 1);
+  if(dFuel != null && Math.abs(dFuel) > 0.5){
+    out.push(dFuel < 0
+      ? `Réduire le plein de ${fmt(Math.abs(dFuel),0)} L (reste ${fmt(base.fuelL+dFuel,0)} L, minimum requis ${fmt(minL,0)} L)`
+      : `Embarquer ${fmt(dFuel,0)} L de plus (soit ${fmt(base.fuelL+dFuel,0)} L)`);
+  }
+
+  // 3. Déplacer un passager arrière à l'avant — seulement si la place est libre
+  if(base.paxRear > 0 && base.copilot === 0){
+    const dMove = solveLever(base, fuel, (l,d)=>{
+      if(d > base.paxRear) return null;
+      l.paxRear = base.paxRear - d; l.copilot = d; return l;
+    }, 0, base.paxRear, 1);
+    if(dMove != null && dMove > 0){
+      out.push(`Installer à la place copilote un passager de ${fmt(dMove,0)} kg pris à l'arrière`);
+    }
+  }
+  return out;
+}
+
+function renderLoadFix(mb, fuel){
+  const card = document.getElementById('loadFixCard');
+  const body = document.getElementById('loadFixBody');
+  if(!card || !body) return;
+  if(mb.statusTO && mb.statusLD){ card.style.display = 'none'; return; }
+
+  const why = [];
+  if(mb.marginMassNTO < 0) why.push(`masse au décollage dépassée de ${fmt(-mb.marginMassNTO,1)} kg`);
+  if(mb.marginAftTO < 0)   why.push(`centrage décollage trop arrière de ${fmt(-mb.marginAftTO,1)} mm`);
+  if(mb.marginFwdTO < 0)   why.push(`centrage décollage trop avant de ${fmt(-mb.marginFwdTO,1)} mm`);
+  if(mb.marginAftLD < 0)   why.push(`centrage atterrissage trop arrière de ${fmt(-mb.marginAftLD,1)} mm`);
+  if(mb.marginFwdLD < 0)   why.push(`centrage atterrissage trop avant de ${fmt(-mb.marginFwdLD,1)} mm`);
+  if(mb.marginMinTO < 0)   why.push(`masse sous le minimum de ${fmt(-mb.marginMinTO,1)} kg`);
+
+  let fixes = [];
+  try{ fixes = suggestLoadFix(mb, fuel); }catch(e){ fixes = []; }
+
+  body.innerHTML =
+    `<div class="rwyMsg bad" style="margin-top:0;">Hors limites : ${why.join(' · ')}.</div>`
+    + (fixes.length
+        ? `<div class="smallhint" style="margin-top:10px;">Chacune de ces corrections, prise seule, ramène l'avion dans l'enveloppe au décollage <b>et</b> à l'atterrissage :</div>`
+          + `<div class="checklist" style="margin-top:6px;">`
+          + fixes.map(f=>`<div class="chk" style="cursor:default;"><span>${f}</span></div>`).join('')
+          + `</div>`
+          + `<div class="smallhint">Applique la correction dans les champs du formulaire, puis relance le calcul.</div>`
+        : `<div class="smallhint" style="margin-top:10px;">Aucune correction simple ne suffit : le chargement doit être revu dans son ensemble (passagers, bagages et carburant à la fois).</div>`);
+  card.style.display = '';
+}
+
+// ============ PANNEAU « DERNIÈRE MINUTE » ============
+// Recopie trois champs météo et la piste de départ, relance le calcul et
+// affiche l'écart avec les distances retenues à la préparation.
+let LM_REF = null;   // performances de référence, figées au premier calcul
+
+function syncLastMinuteFields(){
+  const w = document.getElementById('lmWind'), t = document.getElementById('lmTemp'),
+        q = document.getElementById('lmQnh'), r = document.getElementById('lmRwy');
+  if(w) w.value = str('wind');
+  if(t) t.value = str('temp');
+  if(q) q.value = str('qnh');
+  if(r){
+    const src = document.getElementById('rwyDepSel');
+    const txt = document.getElementById('rwyDepTxt');
+    if(src && src.style.display !== 'none'){
+      r.innerHTML = src.innerHTML;
+      r.value = src.value;
+      r.disabled = false;
+    } else {
+      const v = txt ? normRwy(txt.value) : '';
+      r.innerHTML = `<option value="${v}">${v || '—'}</option>`;
+      r.disabled = true;
+    }
+  }
+}
+
+function applyLastMinute(){
+  const set = (id, v)=>{ const el = document.getElementById(id); if(el) el.value = v; };
+  set('wind', str('lmWind'));
+  set('temp', str('lmTemp'));
+  set('qnh',  str('lmQnh'));
+  const r = document.getElementById('lmRwy');
+  const dep = document.getElementById('rwyDepSel');
+  if(r && !r.disabled && dep && dep.style.display !== 'none' && r.value){
+    dep.value = r.value;
+    applyRunwayToFields('dep');
+  }
+  // La saisie du pilote prime : le report automatique du METAR ne doit pas
+  // écraser une valeur reçue à l'ATIS.
+  ['wind','temp','qnh'].forEach(id=>{ if(str(id)) WX_MANUAL.add(id); });
+  refreshWindHints();
+  runCompute(false);
+  scheduleDraft();
+}
+
+function renderLmDelta(perf){
+  const box = document.getElementById('lmDelta');
+  if(!box) return;
+  if(!LM_REF){ box.innerHTML = ''; return; }
+  const line = (k, now, ref, unit, higherIsWorse)=>{
+    const d = now - ref;
+    const col = Math.abs(d) < 0.5 ? 'var(--muted)'
+              : ((higherIsWorse ? d > 0 : d < 0) ? 'var(--warn)' : 'var(--ok)');
+    const sign = d > 0 ? '+' : (d < 0 ? '−' : '±');
+    return `<div class="row"><span class="k">${k}</span><span class="v">${fmt(now,0)} ${unit}`
+      + ` <span style="color:${col};">(${sign}${fmt(Math.abs(d),0)})</span></span></div>`;
+  };
+  box.innerHTML =
+    `<div class="row"><span class="k">Écart avec la préparation</span><span class="v"></span></div>`
+    + line('Distance décollage', perf.toDist, LM_REF.toDist, 'm', true)
+    + line('Marge TODA', perf.marginToda, LM_REF.marginToda, 'm', false)
+    + line('Distance atterrissage', perf.ldDist, LM_REF.ldDist, 'm', true)
+    + line('Marge LDA', perf.marginLda, LM_REF.marginLda, 'm', false)
+    + `<div class="row"><span class="k">Statut</span><span class="v">`
+    + badge(perf.statusTO && perf.statusLD, 'DANS LES LIMITES', 'NON COMPATIBLE') + `</span></div>`;
+}
+
+(function initLastMinute(){
+  ['lmWind','lmTemp','lmQnh'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('input', applyLastMinute);
+  });
+  const r = document.getElementById('lmRwy');
+  if(r) r.addEventListener('change', applyLastMinute);
+})();
+
 function renderResults(fuel, mb, perf){
   document.getElementById('fuelReadout').innerHTML = `
     <div class="row"><span class="k">Trip fuel</span><span class="v">${fmt(fuel.tripFuelL)} L · ${fmt(fuel.tripFuelKg)} kg</span></div>
@@ -3471,6 +3714,15 @@ function renderResults(fuel, mb, perf){
 
   document.getElementById('results').classList.add('show');
   document.getElementById('pdfBtn').disabled = false;
+
+  // Référence figée au premier calcul : c'est elle qui sert de point de
+  // comparaison pour les corrections de dernière minute. Elle n'est reprise
+  // qu'au calcul lancé depuis le bouton, pas à chaque retouche ATIS.
+  if(!LM_REF) LM_REF = {toDist:perf.toDist, marginToda:perf.marginToda,
+                        ldDist:perf.ldDist, marginLda:perf.marginLda};
+  syncLastMinuteFields();
+  renderLmDelta(perf);
+  renderLoadFix(mb, fuel);
 }
 
 document.querySelectorAll('.imsafe').forEach(el=>{
@@ -3509,7 +3761,10 @@ function clearCalcError(){
   if(box){ box.innerHTML = ''; box.style.display = 'none'; }
 }
 
-document.getElementById('computeBtn').addEventListener('click', ()=>{
+// Calcul complet, extrait du gestionnaire de clic pour être rejouable :
+// le panneau « dernière minute » le relance après chaque correction ATIS.
+// scroll=false permet de recalculer sans déplacer la page sous le doigt.
+function runCompute(scroll){
   try{
     clearCalcError();
     const fuel = computeFuel();
@@ -3517,7 +3772,8 @@ document.getElementById('computeBtn').addEventListener('click', ()=>{
     const perf = computePerf(mb);
     LAST = {fuel, mb, perf};
     renderResults(fuel, mb, perf);
-    document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+    if(scroll) document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+    return true;
   }catch(e){
     // Un calcul qui échoue en silence est pire qu'une erreur affichée :
     // le pilote croirait que rien ne cloche.
@@ -3529,8 +3785,11 @@ document.getElementById('computeBtn').addEventListener('click', ()=>{
     if(pdfBtn) pdfBtn.disabled = true;
     if(window.__showError) window.__showError('CALCUL IMPOSSIBLE', String(e && e.stack || e));
     console.error(e);
+    return false;
   }
-});
+}
+
+document.getElementById('computeBtn').addEventListener('click', ()=>{ LM_REF = null; runCompute(true); });
 
 // ---------------- PDF GENERATION (via browser print → "Enregistrer en PDF") ----------------
 // No external library needed: this builds a printable report and opens the browser's
@@ -4814,8 +5073,11 @@ function dossierDbOpen(){
 function flightFieldEls(){
   const panel = document.getElementById('pageFlight');
   if(!panel) return [];
+  // .noSave exclut les champs de commodité (panneau « dernière minute ») :
+  // ils recopient d'autres champs et n'ont rien à faire dans un dossier
+  // enregistré ni dans le brouillon.
   return [...panel.querySelectorAll('input, select, textarea')]
-    .filter(el => el.id && el.type !== 'file');
+    .filter(el => el.id && el.type !== 'file' && !el.classList.contains('noSave'));
 }
 
 function snapshotFlight(){
@@ -5085,6 +5347,7 @@ async function newFlight(){
   // Le pilote a explicitement demandé une page vierge : le brouillon
   // précédent n'a plus lieu d'être proposé.
   CURRENT_DOSSIER_ID = null;
+  LM_REF = null;
   if(typeof clearDraft === 'function') clearDraft();
   const db = document.getElementById('draftBanner');
   if(db) db.style.display = 'none';
