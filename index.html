@@ -46,25 +46,25 @@
 })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0a141f;
-    --panel:#101f2e;
-    --panel2:#132537;
-    --line:#22394d;
-    --text:#e9f0f5;
-    --muted:#87a0b4;
-    --amber:#e8a33d;
-    --amber-dim:#8a651f;
+    --bg:#101418;
+    --panel:#171C21;
+    --panel2:#171C21;
+    --line:#333C45;
+    --text:#E6E9EA;
+    --muted:#95A1AB;
+    --accent:#79A9D4;
+    --accent-soft:#3C556E;
     --green:#3fbf7f;
     --red:#e2534b;
     /* Teintes dérivées, extraites du code pour rendre le thème permutable */
-    --input-bg:#0b1826;
-    --readout-bg:#081118;
-    --btn-bg:#12283c;
-    --placeholder:#4c6577;
-    --on-amber:#1a1005;      /* texte posé sur un fond ambre */
+    --input-bg:#0D1216;
+    --readout-bg:#12171B;
+    --btn-bg:#232A31;
+    --placeholder:#5E6B76;
+    --on-accent:#0E1418;      /* texte posé sur un aplat d'accent */
     --warn:#e0796d;
     --warn-soft:#f0b5ad;
     --ok:#5fd08a;
@@ -73,10 +73,14 @@
     --chip-bg:rgba(255,255,255,.06);
     --track-bg:rgba(255,255,255,.07);
     --grid-line:rgba(255,255,255,0.015);
-    --statusbar:#0a141f;     /* bande sous l'heure iOS, sombre dans les deux thèmes */
-    --mono: 'IBM Plex Mono', monospace;
-    --disp: 'Space Grotesk', sans-serif;
-    --body: 'IBM Plex Sans', sans-serif;
+    --statusbar:#101418;     /* bande sous l'heure iOS, sombre dans les deux thèmes */
+    /* Une seule famille, deux chasses : la condensée porte les chiffres et les
+       titres, la normale le texte courant. La chasse fixe est réservée aux
+       données brutes (METAR, TAF, sauvegardes) où l'alignement fait sens. */
+    --mono: 'Barlow Semi Condensed', sans-serif;
+    --disp: 'Barlow Semi Condensed', sans-serif;
+    --body: 'Barlow', system-ui, sans-serif;
+    --code: ui-monospace, 'SF Mono', Menlo, monospace;
   }
 
   /* ---- Thème clair (plein soleil) ----
@@ -85,21 +89,21 @@
      par un script placé dans le <head>, avant le premier affichage.
      L'ambre est assombri : la teinte d'origine est illisible sur du blanc. */
   :root[data-theme="light"]{
-    --bg:#eef1f5;
-    --panel:#ffffff;
-    --panel2:#f7f9fb;
-    --line:#c2ceda;
-    --text:#12212e;
-    --muted:#54697a;
-    --amber:#8a5610;
-    --amber-dim:#d2ab6c;
+    --bg:#E7E4DD;
+    --panel:#FCFBF8;
+    --panel2:#FCFBF8;
+    --line:#C3CBD2;
+    --text:#151E27;
+    --muted:#4A555E;
+    --accent:#1F4E79;
+    --accent-soft:#AFC0D0;
     --green:#1a7d43;
     --red:#b02a20;
-    --input-bg:#ffffff;
-    --readout-bg:#f1f5f8;
-    --btn-bg:#e5ebf1;
-    --placeholder:#6f8294;
-    --on-amber:#ffffff;
+    --input-bg:#FFFFFF;
+    --readout-bg:#F2F4F1;
+    --btn-bg:#ECEDE8;
+    --placeholder:#8794A0;
+    --on-accent:#FFFFFF;
     --warn:#a8281e;
     --warn-soft:#7d1c14;
     --ok:#146b38;
@@ -129,80 +133,92 @@
       repeating-linear-gradient(0deg, var(--grid-line) 0px, var(--grid-line) 1px, transparent 1px, transparent 44px);
   }
   .wrap{max-width:920px;margin:0 auto;padding:calc(28px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right)) calc(80px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));}
-  header.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:22px;border-bottom:1px solid var(--line);padding-bottom:16px;}
-  .brand{display:flex;flex-direction:column;gap:2px;}
-  .brand .tag{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--amber);text-transform:uppercase;}
-  .brand h1{font-family:var(--disp);font-size:26px;margin:0;font-weight:700;letter-spacing:-0.01em;}
-  .brand .sub{font-family:var(--mono);font-size:12px;color:var(--muted);}
-  .status-strip{display:flex;gap:14px;font-family:var(--mono);font-size:11px;color:var(--muted);}
-  .status-strip .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block;margin-right:5px;box-shadow:0 0 6px var(--amber);}
+  /* Cartouche : l'immatriculation est l'information d'identification, elle
+     prend la place que tenait le nom de l'application. */
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;
+    margin-bottom:18px;border-bottom:2px solid var(--text);padding-bottom:10px;}
+  .brand{display:flex;flex-direction:column;gap:1px;min-width:0;}
+  .brand h1{font-family:var(--disp);font-size:32px;margin:0;font-weight:700;
+    letter-spacing:0;line-height:1;}
+  .brand .sub{font-family:var(--body);font-size:13px;color:var(--muted);}
+  .status-strip{display:flex;align-items:center;gap:7px;font-family:var(--body);
+    font-size:12.5px;color:var(--muted);flex:0 0 auto;padding-bottom:3px;}
+  .status-strip .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);display:inline-block;}
 
-  .card{background:linear-gradient(180deg, var(--panel2), var(--panel));border:1px solid var(--line);border-radius:10px;padding:18px 18px 20px;margin-bottom:16px;position:relative;overflow:hidden;}
-  .card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amber-dim);}
-  .card h2{font-family:var(--disp);font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);margin:0 0 14px;display:flex;align-items:center;gap:8px;}
-  .card h2 .idx{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 6px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:3px;
+    padding:14px 16px 18px;margin-bottom:14px;position:relative;}
+  /* Titre de bloc : casse normale, pas de lettrage espacé. Le rôle du titre
+     est porté par la couleur et le filet, pas par une mise en majuscules. */
+  .card h2{font-family:var(--disp);font-size:19px;font-weight:600;letter-spacing:0;
+    color:var(--accent);margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line);
+    display:flex;align-items:baseline;gap:9px;}
+  /* Le numéro n'est conservé que là où le contenu est vraiment une séquence :
+     les dix étapes du dossier de vol. Ailleurs il est retiré du HTML. */
+  .card h2 .idx{font-family:var(--disp);font-size:14px;font-weight:500;color:var(--muted);
+    font-variant-numeric:tabular-nums;flex:0 0 auto;}
 
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;}
   .grid.g2{grid-template-columns:repeat(2,1fr);}
   .grid.g3{grid-template-columns:repeat(3,1fr);}
   @media(max-width:520px){.grid.g3{grid-template-columns:repeat(2,1fr);}}
 
-  label{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;
+  label{display:block;font-family:var(--body);font-size:12.5px;letter-spacing:0;color:var(--muted);margin-bottom:4px;
     white-space:normal;overflow-wrap:anywhere;word-break:break-word;line-height:1.35;}
-  input,select{width:100%;min-width:0;max-width:100%;background:var(--input-bg);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:9px 10px;font-family:var(--mono);font-size:14px;outline:none;transition:border-color .15s, box-shadow .15s;}
-  input:focus,select:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(232,163,61,0.12);}
+  input,select{width:100%;min-width:0;max-width:100%;background:var(--input-bg);border:1px solid var(--line);color:var(--text);border-radius:3px;padding:9px 10px;font-family:var(--disp);font-size:16px;font-variant-numeric:tabular-nums;outline:none;transition:border-color .15s, box-shadow .15s;}
+  input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,163,61,0.12);}
   input::placeholder{color:var(--placeholder);}
   .field{margin-bottom:2px;min-width:0;}
-  .field input.autofilled, .field select.autofilled{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber-dim);}
-  .field .avLabel{color:var(--amber);font-family:var(--mono);font-size:9px;letter-spacing:.06em;margin-left:6px;}
+  .field input.autofilled, .field select.autofilled{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent-soft);}
+  .field .avLabel{color:var(--accent);font-family:var(--mono);font-size:9px;letter-spacing:.06em;margin-left:6px;}
   input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-width:0;max-width:100%;}
   .field.opt label::after{content:' (optionnel)';color:var(--placeholder);text-transform:none;letter-spacing:0;}
 
   details.adv{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px;}
   details.adv summary{cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;}
-  details.adv summary:hover{color:var(--amber);}
+  details.adv summary:hover{color:var(--accent);}
 
   .runbar{display:flex;gap:8px;margin:22px 0;position:sticky;bottom:14px;z-index:5;}
   /* La barre flotte au-dessus du contenu : les libellés doivent tenir sur
      une seule ligne, sinon elle grandit et masque la section suivante. */
   .runbar button{white-space:nowrap;padding:13px 10px;}
   @media (max-width:520px){ .runbar button{font-size:12.5px;padding:12px 6px;letter-spacing:0;} }
-  button{font-family:var(--disp);font-weight:600;font-size:14px;letter-spacing:.03em;border-radius:8px;border:1px solid transparent;padding:13px 18px;cursor:pointer;transition:transform .08s, filter .15s;flex:1;}
+  button{font-family:var(--disp);font-weight:600;font-size:17px;letter-spacing:0;border-radius:3px;border:1px solid transparent;padding:11px 18px;cursor:pointer;transition:transform .08s, filter .15s;flex:1;}
   button:active{transform:scale(0.98);}
-  #computeBtn{background:var(--amber);color:var(--on-amber);box-shadow:0 6px 22px rgba(232,163,61,0.25);}
+  #computeBtn{background:var(--accent);color:var(--on-accent);box-shadow:0 6px 22px rgba(232,163,61,0.25);}
   #computeBtn:hover{filter:brightness(1.08);}
   #pdfBtn{background:transparent;color:var(--text);border-color:var(--line);}
-  #pdfBtn:hover:not(:disabled){border-color:var(--amber);color:var(--amber);}
+  #pdfBtn:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
   #pdfBtn:disabled{opacity:.4;cursor:not-allowed;}
 
   .results{display:none;}
   .results.show{display:block;}
-  .readout{background:var(--readout-bg);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:10px;}
-  .readout .row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--hairline);font-family:var(--mono);font-size:13px;}
+  .readout{background:var(--readout-bg);border:1px solid var(--line);border-radius:3px;padding:12px 14px;margin-bottom:10px;}
+  .readout .row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:6px 0;border-bottom:1px solid var(--hairline);font-size:13.5px;}
   .readout .row:last-child{border-bottom:none;}
-  .readout .row .k{color:var(--muted);}
-  .readout .row .v{color:var(--text);font-weight:600;}
-  .readout .row .v.big{font-size:17px;color:var(--amber);}
+  .readout .row .k{color:var(--muted);font-family:var(--body);}
+  .readout .row .v{color:var(--text);font-family:var(--disp);font-size:18px;font-weight:600;
+    font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right;}
+  .readout .row .v.big{font-size:23px;color:var(--accent);}
   .envchart-wrap{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px;}
   .envchart-wrap svg{display:block;margin:0 auto;font-family:Arial,sans-serif;width:100%;height:auto;max-width:100%;}
   textarea{width:100%;background:var(--input-bg);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:9px 10px;font-family:var(--body);font-size:13.5px;outline:none;resize:vertical;min-height:64px;}
-  textarea:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(232,163,61,0.12);}
+  textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,163,61,0.12);}
   .checklist{display:flex;flex-direction:column;gap:2px;}
   .chk{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--hairline);cursor:pointer;}
   .chk:last-child{border-bottom:none;}
-  .chk input[type=checkbox]{width:18px;height:18px;accent-color:var(--amber);flex:none;}
+  .chk input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);flex:none;}
   .chk span{font-size:13.5px;color:var(--text);}
-  .subhead{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px;border-top:1px dashed var(--line);padding-top:12px;}
+  .subhead{font-family:var(--disp);font-size:16px;font-weight:600;letter-spacing:0;color:var(--text);margin:16px 0 8px;border-top:1px solid var(--line);padding-top:12px;}
   .subhead:first-child{border-top:none;padding-top:0;margin-top:0;}
   .imsafe-status{margin-top:10px;}
-  .smallhint{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.4;}
+  .smallhint{font-family:var(--body);font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.5;}
   .smallhint.warn{color:var(--warn);}
   /* ---- Navigation par onglets ---- */
   .tabs{display:flex;gap:6px;margin:0 0 20px;border-bottom:1px solid var(--line);flex-wrap:wrap;}
   .tabs button{width:auto;flex:0 0 auto;background:none;border:none;border-bottom:2px solid transparent;
-    color:var(--muted);font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;
-    padding:11px 14px;cursor:pointer;border-radius:0;margin-bottom:-1px;}
-  .tabs button.active{color:var(--amber);border-bottom-color:var(--amber);}
+    color:var(--muted);font-family:var(--disp);font-size:17px;font-weight:500;letter-spacing:0;
+    padding:9px 13px;cursor:pointer;border-radius:0;margin-bottom:-1px;}
+  .tabs button.active{color:var(--accent);border-bottom-color:var(--accent);}
   .page-panel{display:none;}
   .page-panel.active{display:block;}
   .listCard{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:10px;
@@ -211,20 +227,20 @@
   .listCard .lcTitle{font-family:var(--disp);font-size:14px;color:var(--text);}
   .listCard .lcSub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;}
   .listCard .lcActions{display:flex;gap:8px;flex:0 0 auto;}
-  .btnMini{width:auto;padding:7px 12px;font-size:11px;border-radius:6px;border:1px solid var(--line);
-    background:var(--btn-bg);color:var(--text);font-family:var(--mono);cursor:pointer;}
+  .btnMini{width:auto;padding:8px 13px;font-size:14px;border-radius:3px;border:1px solid var(--line);
+    background:var(--btn-bg);color:var(--text);font-family:var(--disp);font-weight:500;cursor:pointer;}
   .btnMini.danger{color:var(--warn);border-color:rgba(224,121,109,.4);}
-  .btnMini.primary{background:var(--amber);color:var(--on-amber);border-color:var(--amber);font-weight:700;}
+  .btnMini.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:700;}
   .wizBar{height:5px;background:var(--track-bg);border-radius:3px;overflow:hidden;margin:4px 0 12px;}
-  .wizBarFill{height:100%;background:var(--amber);width:0;transition:width .25s;}
-  .wizStepLabel{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.05em;
+  .wizBarFill{height:100%;background:var(--accent);width:0;transition:width .25s;}
+  .wizStepLabel{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.05em;
     text-transform:uppercase;margin-bottom:8px;}
   .wizIntro{font-size:13.5px;color:var(--muted);line-height:1.6;margin-bottom:16px;}
   .wizQ{border-bottom:1px solid var(--hairline);padding:14px 0;}
   .wizQ:last-child{border-bottom:none;}
   .wizQ .qLabel{font-size:14px;color:var(--text);margin-bottom:4px;}
   .wizQ .qHelp{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:8px;}
-  .wizQ .qUnit{font-family:var(--mono);font-size:11px;color:var(--amber);}
+  .wizQ .qUnit{font-family:var(--mono);font-size:11px;color:var(--accent);}
   .wizQ .qRow{display:flex;gap:10px;align-items:center;}
   .wizQ .qRow input,.wizQ .qRow select{flex:1 1 auto;}
   .wizRecap{font-family:var(--mono);font-size:12px;line-height:1.9;}
@@ -233,19 +249,19 @@
   .wizGrid{overflow-x:auto;}
   .wizGrid table{border-collapse:collapse;font-family:var(--mono);font-size:12px;}
   .wizGrid th,.wizGrid td{border:1px solid var(--line);padding:4px;}
-  .wizGrid th{color:var(--amber);font-size:11px;white-space:nowrap;padding:6px 8px;}
+  .wizGrid th{color:var(--accent);font-size:11px;white-space:nowrap;padding:6px 8px;}
   .wizGrid input{width:78px;padding:6px 7px;font-size:12px;text-align:center;}
-  .dropZone{border:2px dashed var(--amber-dim);border-radius:10px;padding:26px 18px;text-align:center;
+  .dropZone{border:2px dashed var(--accent-soft);border-radius:10px;padding:26px 18px;text-align:center;
     background:rgba(232,163,61,0.05);cursor:pointer;transition:background .15s,border-color .15s;}
-  .dropZone.over{background:rgba(232,163,61,0.14);border-color:var(--amber);}
-  .dropZone .dzTitle{font-family:var(--disp);font-size:15px;color:var(--amber);margin-bottom:6px;}
+  .dropZone.over{background:rgba(232,163,61,0.14);border-color:var(--accent);}
+  .dropZone .dzTitle{font-family:var(--disp);font-size:15px;color:var(--accent);margin-bottom:6px;}
   .dropZone .dzHint{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.6;}
   .fileChip{display:inline-block;font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:12px;
     background:var(--chip-bg);color:var(--text);margin:4px 4px 0 0;}
   .warnBox{border:1px solid rgba(224,121,109,.45);background:rgba(224,121,109,.08);border-radius:8px;
     padding:12px 14px;font-family:var(--mono);font-size:11px;color:var(--warn-soft);line-height:1.6;margin-top:12px;}
-  .rwyEditor{border:1px solid var(--amber-dim);background:rgba(232,163,61,0.06);border-radius:8px;padding:14px;margin-top:14px;}
-  .rwyEditor h3{font-family:var(--disp);font-size:12px;color:var(--amber);margin:0;text-transform:uppercase;letter-spacing:.05em;}
+  .rwyEditor{border:1px solid var(--accent-soft);background:rgba(232,163,61,0.06);border-radius:8px;padding:14px;margin-top:14px;}
+  .rwyEditor h3{font-family:var(--disp);font-size:12px;color:var(--accent);margin:0;text-transform:uppercase;letter-spacing:.05em;}
   .rwyEdHead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
   .rwyEdHead h3{flex:0 0 auto;}
   .rwyEdIcaoPick{flex:1 1 150px;min-width:130px;display:flex;flex-direction:column;gap:6px;}
@@ -253,19 +269,19 @@
   .rwyEditor .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
   .rwyEditor button{width:auto;flex:0 0 auto;padding:9px 16px;font-size:12px;border-radius:6px;border:1px solid var(--line);
     background:var(--btn-bg);color:var(--text);font-family:var(--mono);cursor:pointer;}
-  .rwyEditor button.primary{background:var(--amber);color:var(--on-amber);border-color:var(--amber);font-weight:700;}
-  .rwyMsg{font-family:var(--mono);font-size:11px;margin-top:10px;line-height:1.5;}
+  .rwyEditor button.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:700;}
+  .rwyMsg{font-family:var(--body);font-size:13px;margin-top:10px;line-height:1.5;}
   .rwyMsg.ok{color:var(--ok);}
   .rwyMsg.bad{color:var(--warn);}
   .apBadge{display:inline-block;font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:10px;
     background:rgba(95,208,138,.12);color:var(--ok);margin-left:8px;}
-  .apBadge.unknown{background:rgba(232,163,61,.12);color:var(--amber);}
-  .badge{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:3px 10px;border-radius:20px;text-transform:uppercase;font-weight:600;}
+  .apBadge.unknown{background:rgba(232,163,61,.12);color:var(--accent);}
+  .badge{display:inline-block;font-family:var(--disp);font-size:14px;letter-spacing:0;padding:2px 9px;border-radius:3px;font-weight:600;}
   .badge.ok{background:rgba(63,191,127,0.12);color:var(--green);border:1px solid rgba(63,191,127,0.4);}
   .badge.bad{background:rgba(226,83,75,0.12);color:var(--red);border:1px solid rgba(226,83,75,0.4);}
 
   footer{margin-top:30px;font-family:var(--mono);font-size:10.5px;color:var(--footer-fg);text-align:center;line-height:1.6;}
-  a{color:var(--amber);}
+  a{color:var(--accent);}
 
   /* ---- Printable report — trame FLIGHT PLANNING FOLDER v2.0 ---- */
   /* Aperçu = feuille A4 entière (210x297) avec ses marges d'impression réelles (12mm) */
@@ -274,7 +290,7 @@
   #printReportWrap{display:none;}
   #printReportWrap.show{display:block;}
   #printScaler{overflow:hidden;}
-  #printReportWrap .hint{font-family:var(--mono);font-size:11px;color:var(--amber);background:rgba(232,163,61,0.08);border:1px solid var(--amber-dim);border-radius:8px;padding:12px 14px;margin-bottom:16px;line-height:1.6;}
+  #printReportWrap .hint{font-family:var(--mono);font-size:11px;color:var(--accent);background:rgba(232,163,61,0.08);border:1px solid var(--accent-soft);border-radius:8px;padding:12px 14px;margin-bottom:16px;line-height:1.6;}
 
   #printReport .page{background:#fff;color:#000;margin-bottom:26px;padding:12mm;
     border:1px solid rgba(255,255,255,.5);box-shadow:0 6px 26px rgba(0,0,0,.6);
@@ -377,13 +393,12 @@
 
   <header class="top">
     <div class="brand">
-      <div class="tag">Flight Preparation</div>
-      <h1>PréVol</h1>
-      <div class="sub" id="acHeaderLine">Fuel / Masse &amp; Centrage / Performances</div>
+      <h1 id="acHeaderImm">PréVol</h1>
+      <div class="sub" id="acHeaderLine">Préparation de vol</div>
     </div>
     <div class="status-strip">
-      <span><span class="dot"></span>Calcul local, aucune donnée envoyée</span>
-      <span><span class="dot" id="netDot"></span><span id="netStatusLabel">—</span></span>
+      <span id="netStatusLabel">—</span>
+      <span class="dot" id="netDot"></span>
     </div>
   </header>
 
@@ -397,8 +412,8 @@
   <div class="page-panel active" id="pageHome">
 
     <!-- Brouillon retrouvé après une fermeture inopinée de l'app -->
-    <div class="card" id="draftBanner" style="display:none;border-color:var(--amber);">
-      <h2><span class="idx">↩</span> DOSSIER EN COURS RETROUVÉ</h2>
+    <div class="card" id="draftBanner" style="display:none;border-color:var(--accent);">
+      <h2>DOSSIER EN COURS RETROUVÉ</h2>
       <div class="smallhint" id="draftBannerInfo" style="margin-bottom:10px;"></div>
       <div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
         <button type="button" class="btnMini primary" id="draftResume" style="flex:1 1 45%;">Reprendre</button>
@@ -407,7 +422,7 @@
     </div>
 
     <div class="card">
-      <h2><span class="idx">A</span> QUE VEUX-TU FAIRE&nbsp;?</h2>
+      <h2>QUE VEUX-TU FAIRE&nbsp;?</h2>
       <div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
         <button type="button" class="btnMini primary" id="homeNewFlight" style="flex:1 1 100%;padding:14px;">✈︎ Nouveau dossier de vol</button>
         <button type="button" class="btnMini" id="homeAircraft" style="flex:1 1 45%;">Ajouter / modifier un avion</button>
@@ -420,13 +435,13 @@
     </div>
 
     <div class="card">
-      <h2><span class="idx">B</span> DOSSIERS ENREGISTRÉS</h2>
+      <h2>DOSSIERS ENREGISTRÉS</h2>
       <div class="rwyMsg" id="dossierMsg"></div>
       <div id="dossierList"></div>
     </div>
 
     <div class="card">
-      <h2><span class="idx">C</span> SAUVEGARDE &amp; STOCKAGE</h2>
+      <h2>SAUVEGARDE &amp; STOCKAGE</h2>
       <div class="smallhint" style="margin-bottom:12px;">
         Tes dossiers de vol n'existent que dans le stockage de cette icône, qui
         n'est partagé avec rien d'autre. Une sauvegarde déposée dans Fichiers ou
@@ -455,7 +470,7 @@
     </div>
 
     <div class="card">
-      <h2><span class="idx">D</span> AFFICHAGE</h2>
+      <h2>AFFICHAGE</h2>
       <div class="field">
         <label>Thème</label>
         <select id="themeSelect">
@@ -560,7 +575,7 @@
         <input type="text" id="rwyDepTxt" maxlength="3" placeholder="ex. 07" style="text-transform:uppercase;display:none;">
       </div>
     </div>
-    <div class="smallhint" id="wxAutoDep" style="margin-top:6px;color:var(--amber);"></div>
+    <div class="smallhint" id="wxAutoDep" style="margin-top:6px;color:var(--accent);"></div>
     <div class="grid g3" style="margin-top:8px;">
       <div class="field"><label>TODA (m)</label><input type="number" id="toda" placeholder="m"></div>
       <div class="field"><label>ASDA (m)</label><input type="number" id="asda" placeholder="m"></div>
@@ -590,7 +605,7 @@
         </div>
       </div>
       <div class="smallhint" style="margin-top:6px;">Laisse les champs météo vides pour réutiliser les conditions du décollage. Choisir la piste d'atterrissage remplit automatiquement sa LDA et son revêtement.</div>
-      <div class="smallhint" id="wxAutoLdg" style="margin-top:4px;color:var(--amber);"></div>
+      <div class="smallhint" id="wxAutoLdg" style="margin-top:4px;color:var(--accent);"></div>
     </div>
 
     <div id="arrRunwayBlock" style="display:none;">
@@ -612,7 +627,7 @@
           <input type="text" id="rwyArrTxt" maxlength="3" placeholder="ex. 25" style="text-transform:uppercase;display:none;">
         </div>
       </div>
-      <div class="smallhint" id="wxAutoArr" style="margin-top:6px;color:var(--amber);"></div>
+      <div class="smallhint" id="wxAutoArr" style="margin-top:6px;color:var(--accent);"></div>
       <div class="grid g3" style="margin-top:8px;">
         <div class="field"><label>TODA (m)</label><input type="number" id="todaArr" placeholder="m"></div>
         <div class="field"><label>ASDA (m)</label><input type="number" id="asdaArr" placeholder="m"></div>
@@ -841,21 +856,21 @@
 
   <div class="results" id="results">
     <section class="card">
-      <h2><span class="idx">→</span> Carburant</h2>
+      <h2>Carburant</h2>
       <div class="readout" id="fuelReadout"></div>
     </section>
     <section class="card">
-      <h2><span class="idx">→</span> Masse & centrage</h2>
+      <h2>Masse & centrage</h2>
       <div class="readout" id="mbReadout"></div>
       <div id="mbChart" style="margin-top:12px;"></div>
     </section>
     <section class="card">
-      <h2><span class="idx">→</span> Performances</h2>
+      <h2>Performances</h2>
       <div class="readout" id="perfReadout"></div>
     </section>
 
     <section class="card" id="lastMinuteCard">
-      <h2><span class="idx">ATIS</span> Dernière minute</h2>
+      <h2>Dernière minute</h2>
       <div class="smallhint" style="margin-bottom:12px;">
         Conditions reçues au point d'attente : corrige ici sans rouvrir le
         formulaire. Chaque modification recalcule immédiatement et met à jour
@@ -879,7 +894,7 @@
     </section>
 
     <section class="card" id="loadFixCard" style="display:none;">
-      <h2><span class="idx">⚖︎</span> Correction de chargement</h2>
+      <h2>Correction de chargement</h2>
       <div id="loadFixBody"></div>
     </section>
   </div>
@@ -899,7 +914,7 @@
   <div class="page-panel" id="pageAircraft">
 
     <section class="card">
-      <h2><span class="idx">A</span> Avions enregistrés</h2>
+      <h2>Avions enregistrés</h2>
       <div id="acList"></div>
       <div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
         <button type="button" class="btnMini primary" id="acNewBtn">+ Nouvel avion</button>
@@ -907,7 +922,7 @@
       </div>
       <div id="acShareZone" style="display:none;margin-top:12px;">
         <label>Base avions</label>
-        <textarea id="acShareText" style="min-height:80px;font-family:var(--mono);font-size:11px;"></textarea>
+        <textarea id="acShareText" style="min-height:80px;font-family:var(--code);font-size:11px;"></textarea>
         <div class="btnrow" style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
           <button type="button" class="btnMini" id="acImportBtn">Restaurer depuis le texte</button>
           <button type="button" class="btnMini" id="acLinkBtn">Créer un lien de partage</button>
@@ -918,7 +933,7 @@
 
     <!-- Questionnaire guidé -->
     <section class="card" id="acWizardCard" style="display:none;">
-      <h2><span class="idx">B</span> <span id="wizTitle">Nouvel avion</span></h2>
+      <h2><span id="wizTitle">Nouvel avion</span></h2>
       <div class="wizBar"><div class="wizBarFill" id="wizBarFill"></div></div>
       <div class="wizStepLabel" id="wizStepLabel"></div>
       <div id="wizIntro" class="wizIntro"></div>
@@ -933,7 +948,7 @@
 
     <!-- Fiche avion (saisie / vérification) -->
     <section class="card" id="acEditorCard" style="display:none;">
-      <h2><span class="idx">C</span> Fiche avion <span style="font-weight:400;color:var(--muted);text-transform:none;font-family:var(--body);font-size:12px;">(saisie directe)</span></h2>
+      <h2>Fiche avion <span style="font-weight:400;color:var(--muted);text-transform:none;font-family:var(--body);font-size:12px;">(saisie directe)</span></h2>
 
       <div class="subhead" style="margin-top:0;">Identification</div>
       <div class="grid g3">
@@ -1001,7 +1016,7 @@
   <div class="page-panel" id="pageAirport">
 
     <section class="card">
-      <h2><span class="idx">A</span> Aérodromes enregistrés</h2>
+      <h2>Aérodromes enregistrés</h2>
       <div id="apList"></div>
       <div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
         <button type="button" class="btnMini primary" id="apNewBtn">+ Nouvel aérodrome</button>
@@ -1009,7 +1024,7 @@
     </section>
 
     <section class="card" id="apEditorCard" style="display:none;">
-      <h2><span class="idx">B</span> Fiche aérodrome</h2>
+      <h2>Fiche aérodrome</h2>
       <div class="grid g3">
         <div class="field"><label>Code OACI</label><input type="text" id="apfIcao" maxlength="4" placeholder="LFFI" style="text-transform:uppercase"></div>
         <div class="field opt"><label>Nom</label><input type="text" id="apfName" placeholder="Ancenis"></div>
@@ -1053,10 +1068,10 @@
     </section>
 
     <section class="card">
-      <h2><span class="idx">C</span> Sauvegarde & partage</h2>
+      <h2>Sauvegarde & partage</h2>
       <div class="smallhint" id="apSharedState" style="margin-bottom:10px;"></div>
       <label>Base aérodromes</label>
-      <textarea id="apExportText" style="min-height:90px;font-family:var(--mono);font-size:11px;"></textarea>
+      <textarea id="apExportText" style="min-height:90px;font-family:var(--code);font-size:11px;"></textarea>
       <div class="btnrow" style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
         <button type="button" class="btnMini primary" id="apShareLinkBtn">Créer un lien de partage</button>
         <button type="button" class="btnMini" id="apRebuildBtn">Régénérer le fichier HTML</button>
@@ -1127,7 +1142,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = '2026.09.06-f';
+const APP_VERSION = '2026.09.07-a';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -1599,8 +1614,10 @@ function applyAircraft(key){
   if(cap) cap.textContent = `Capacité : ${a.fuelCapacityNote} — max ${a.fuelCapacity} L`;
   const fob = document.getElementById('fuelOnBoard');
   if(fob) fob.max = a.fuelCapacity;
+  const imm = document.getElementById('acHeaderImm');
+  if(imm) imm.textContent = key;
   const hdr = document.getElementById('acHeaderLine');
-  if(hdr) hdr.textContent = `${a.type} · ${key} · Fuel / Masse & Centrage / Performances`;
+  if(hdr) hdr.textContent = a.type;
 }
 
 function clamp(v,lo,hi){ return Math.min(Math.max(v,lo),hi); }
@@ -2119,7 +2136,7 @@ function bestRunwayHtml(icao, raw, currentRwy, selectId){
 
   return `<div class="smallhint" style="margin-top:3px;">Piste favorable au vent : `
     + `<b><a href="#" data-bestrwy="${best.desig}" data-bestsel="${selectId}" `
-    + `style="color:var(--amber);text-decoration:underline;">${best.desig}</a></b> `
+    + `style="color:var(--accent);text-decoration:underline;">${best.desig}</a></b> `
     + `(${sens} ${Math.abs(best.comp.head)} kt · travers ${best.comp.cross} kt)${note}</div>`;
 }
 
@@ -3750,7 +3767,7 @@ function calcErrorBox(){
 function showCalcError(e){
   const box = calcErrorBox();
   const msg = String((e && e.message) || e).replace(/[<>&]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-  box.innerHTML = '<h2><span class="idx">!</span>CALCUL IMPOSSIBLE</h2>'
+  box.innerHTML = '<h2>CALCUL IMPOSSIBLE</h2>'
     + '<div class="rwyMsg bad">' + msg + '</div>'
     + '<div class="smallhint">Vérifie qu\'un avion est sélectionné et que les masses, le carburant et les terrains sont renseignés.</div>';
   box.style.display = '';
@@ -4329,7 +4346,7 @@ function ageInfo(ms){
             : mins < 60 ? 'il y a ' + mins + ' min'
             : mins < 1440 ? 'il y a ' + Math.floor(mins/60) + ' h ' + String(mins%60).padStart(2,'0')
             : 'il y a ' + Math.floor(mins/1440) + ' j';
-  const color = mins < 60 ? 'var(--green)' : (mins < 180 ? 'var(--amber)' : 'var(--red)');
+  const color = mins < 60 ? 'var(--green)' : (mins < 180 ? 'var(--accent)' : 'var(--red)');
   return {mins, txt, color, stale: mins >= 60};
 }
 
@@ -4468,11 +4485,11 @@ function renderWxResults(){
     }
     return `
     <div style="border-top:1px dashed var(--line);padding:8px 0;">
-      <div style="font-family:var(--mono);font-size:12px;color:${s.nearby?'var(--muted)':'var(--amber)'};">
+      <div style="font-family:var(--mono);font-size:12px;color:${s.nearby?'var(--muted)':'var(--accent)'};">
         ${esc(s.icao)}${s.name?' — '+esc(s.name):''}${s.nearby?' · alentour':''}${ageTag}
       </div>
-      ${s.metar?`<div style="font-family:var(--mono);font-size:11px;margin-top:3px;">METAR ${esc(s.metar)}</div>`:''}
-      ${s.taf  ?`<div style="font-family:var(--mono);font-size:11px;margin-top:3px;color:var(--muted);">TAF ${esc(s.taf)}</div>`:''}
+      ${s.metar?`<div style="font-family:var(--code);font-size:11.5px;margin-top:3px;">METAR ${esc(s.metar)}</div>`:''}
+      ${s.taf  ?`<div style="font-family:var(--code);font-size:11.5px;margin-top:3px;color:var(--muted);">TAF ${esc(s.taf)}</div>`:''}
     </div>`;
   }).join('');
 
@@ -5371,8 +5388,8 @@ function renderDossierList(){
       const nCartes = d.wxdoc && d.wxdoc.images ? d.wxdoc.images.length : 0;
       const nPib    = d.ntmdoc && d.ntmdoc.images ? d.ntmdoc.images.length : 0;
       return `
-        <div class="rwyCard" style="margin-bottom:10px;${d.fav?'border-color:var(--amber);':''}">
-          <div style="font-weight:600;">${d.fav?'★ ':''}${esc(d.label)}${d.id===CURRENT_DOSSIER_ID?' <span style="font-family:var(--mono);font-size:10px;color:var(--amber);">· ouvert</span>':''}</div>
+        <div class="rwyCard" style="margin-bottom:10px;${d.fav?'border-color:var(--accent);':''}">
+          <div style="font-weight:600;">${d.fav?'★ ':''}${esc(d.label)}${d.id===CURRENT_DOSSIER_ID?' <span style="font-family:var(--mono);font-size:10px;color:var(--accent);">· ouvert</span>':''}</div>
           <div class="smallhint">${esc(d.reg)}${d.pic?' · '+esc(d.pic):''} · enregistré le ${stamp}${nCartes?' · '+nCartes+' p. météo':''}${nPib?' · '+nPib+' p. NOTAM':''}</div>
           <div class="btnrow" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
             <button type="button" class="btnMini" data-open="${d.id}">Ouvrir</button>
@@ -5790,11 +5807,11 @@ function updateNetStatus(){
   const label = document.getElementById('netStatusLabel');
   if(!dot) return;
   if(navigator.onLine){
-    dot.style.background = 'var(--green)'; dot.style.boxShadow = '0 0 6px var(--green)';
+    dot.style.background = 'var(--ok)';
     if(label) label.textContent = 'En ligne';
   } else {
-    dot.style.background = 'var(--muted)'; dot.style.boxShadow = 'none';
-    if(label) label.textContent = 'Hors ligne — dernière version en cache';
+    dot.style.background = 'var(--warn)';
+    if(label) label.textContent = 'Hors ligne';
   }
 }
 window.addEventListener('online', updateNetStatus);
