@@ -293,6 +293,17 @@
   </nav>
 
   <div class="page-panel active" id="pageHome">
+
+    <!-- Brouillon retrouvé après une fermeture inopinée de l'app -->
+    <div class="card" id="draftBanner" style="display:none;border-color:var(--amber);">
+      <h2><span class="idx">↩</span> DOSSIER EN COURS RETROUVÉ</h2>
+      <div class="smallhint" id="draftBannerInfo" style="margin-bottom:10px;"></div>
+      <div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button type="button" class="btnMini primary" id="draftResume" style="flex:1 1 45%;">Reprendre</button>
+        <button type="button" class="btnMini danger" id="draftDiscard" style="flex:1 1 45%;">Abandonner</button>
+      </div>
+    </div>
+
     <div class="card">
       <h2><span class="idx">A</span> QUE VEUX-TU FAIRE&nbsp;?</h2>
       <div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -311,6 +322,8 @@
       <div class="rwyMsg" id="dossierMsg"></div>
       <div id="dossierList"></div>
     </div>
+
+    <div class="smallhint" id="appVersionLine" style="text-align:center;opacity:.7;margin-top:4px;"></div>
   </div>
 
   <div class="page-panel" id="pageFlight">
@@ -935,6 +948,14 @@
   window.__showError = showError;
 })();
 
+// ===================== VERSION DE L'APPLICATION =====================
+// Affichée en bas de l'accueil. Sert à vérifier d'un coup d'œil, après un
+// commit GitHub, que l'icône de l'écran d'accueil a bien récupéré la
+// nouvelle version : le service worker sert index.html en réseau-d'abord,
+// mais une app laissée en pause peut continuer d'afficher l'ancienne page.
+// À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
+const APP_VERSION = '2026.09.06-a';
+
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
 // plus haut que les blocs météo y accèdent (toggleArrivalRunway ->
@@ -1551,9 +1572,15 @@ function computeFuel(){
   const fuelOnBoardKg = fuelOnBoardL*density;
   const sufficient = fuelOnBoardL >= minRequiredL;
 
+  // Traduction en temps, plus parlante en vol que des litres. Référence :
+  // la consommation croisière (l'approche est déjà comptée dans le trip).
+  const enduranceMin = consoTrip > 0 ? fuelOnBoardL / consoTrip * 60 : 0;
+  const marginMin    = consoTrip > 0 ? (fuelOnBoardL - minRequiredL) / consoTrip * 60 : 0;
+
   return {consoTrip,consoAppr,density,flightTimeMin,reserveMin,fuelOnBoardL,
     tripFuelL,tripFuelKg,contingencyL,contingencyKg,reserveL,reserveKg,
-    minRequiredL,minRequiredKg,fuelOnBoardKg,sufficient};
+    minRequiredL,minRequiredKg,fuelOnBoardKg,sufficient,
+    enduranceMin,marginMin};
 }
 
 // Les limites d'enveloppe proviennent de la base avions (voir applyAircraft)
@@ -1885,8 +1912,46 @@ function effectiveWind(rawId, icao, rwy){
   return {kt: isNaN(n) ? 0 : n, comp: null};
 }
 
+// Classe les pistes enregistrées d'un terrain selon le vent saisi.
+// Critère : d'abord la composante de face la plus forte (donc le vent
+// arrière le plus faible), puis le travers le plus faible à égalité.
+function rankRunways(icao, raw){
+  const ap = getAirport(icao);
+  const w = parseWindString(raw);
+  if(!ap || !w) return [];
+  return Object.keys(ap.runways || {}).map(desig=>{
+    const qfu = runwayQfu(icao, desig);
+    if(qfu == null) return null;
+    const comp = resolveWindComponent(raw, qfu);
+    return comp ? {desig, comp} : null;
+  }).filter(Boolean).sort((a,b)=>{
+    if(b.comp.head !== a.comp.head) return b.comp.head - a.comp.head;
+    return a.comp.cross - b.comp.cross;
+  });
+}
+
+// Ligne « piste favorable », proposée seulement si elle change quelque chose
+function bestRunwayHtml(icao, raw, currentRwy, selectId){
+  const ranked = rankRunways(icao, raw);
+  if(ranked.length < 2) return '';
+  const best = ranked[0];
+  if(normRwy(currentRwy) === best.desig) return '';
+
+  const limX = (AC && AC.maxCrosswind) ? AC.maxCrosswind : null;
+  const limT = (AC && AC.maxTailwind)  ? AC.maxTailwind  : null;
+  const bad = (limX != null && best.comp.cross > limX)
+           || (limT != null && best.comp.head < 0 && Math.abs(best.comp.head) > limT);
+  const sens = best.comp.head >= 0 ? 'face' : 'arrière';
+  const note = bad ? ' — hors limites elle aussi' : '';
+
+  return `<div class="smallhint" style="margin-top:3px;">Piste favorable au vent : `
+    + `<b><a href="#" data-bestrwy="${best.desig}" data-bestsel="${selectId}" `
+    + `style="color:var(--amber);text-decoration:underline;">${best.desig}</a></b> `
+    + `(${sens} ${Math.abs(best.comp.head)} kt · travers ${best.comp.cross} kt)${note}</div>`;
+}
+
 // Affiche sous le champ le détail du calcul
-function renderWindHint(hintId, rawId, icao, rwy){
+function renderWindHint(hintId, rawId, icao, rwy, selectId){
   const el = document.getElementById(hintId);
   if(!el) return;
   const raw = str(rawId);
@@ -1911,17 +1976,36 @@ function renderWindHint(hintId, rawId, icao, rwy){
   let warnTxt = '';
   if(overX) warnTxt += ` — dépasse le vent travers démontré (${limX} kt)`;
   if(overT) warnTxt += ` — dépasse le vent arrière maximal (${limT} kt)`;
-  el.textContent = `Piste ${String(qfu).padStart(3,'0')}° · vent ${comp.dir}°/${comp.speed} kt ·${gustTxt} `
+  const main = `Piste ${String(qfu).padStart(3,'0')}° · vent ${comp.dir}°/${comp.speed} kt ·${gustTxt} `
     + `composante ${sens} ${Math.abs(comp.head)} kt · travers ${comp.cross} kt (${comp.from})`
     + warnTxt;
+  el.innerHTML = main.replace(/[<>&]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))
+    + (selectId ? bestRunwayHtml(icao, raw, rwy, selectId) : '');
 }
 
 function refreshWindHints(){
   const dep = str('depIcao'), arr = str('arrIcao');
-  renderWindHint('windDepHint','wind', dep, runwayValue('rwyDepSel','rwyDepTxt'));
-  renderWindHint('windArrHint','windArr', arr, runwayValue('rwyArrSel','rwyArrTxt'));
-  renderWindHint('windLdgHint','windLdg', dep, runwayValue('rwyLdgSel','rwyLdgTxt') || runwayValue('rwyDepSel','rwyDepTxt'));
+  renderWindHint('windDepHint','wind', dep, runwayValue('rwyDepSel','rwyDepTxt'), 'rwyDepSel');
+  renderWindHint('windArrHint','windArr', arr, runwayValue('rwyArrSel','rwyArrTxt'), 'rwyArrSel');
+  renderWindHint('windLdgHint','windLdg', dep, runwayValue('rwyLdgSel','rwyLdgTxt') || runwayValue('rwyDepSel','rwyDepTxt'), 'rwyLdgSel');
 }
+
+// Toucher la piste proposée la sélectionne et recharge ses distances.
+document.addEventListener('click', e=>{
+  const a = e.target.closest && e.target.closest('[data-bestrwy]');
+  if(!a) return;
+  e.preventDefault();
+  const sel = document.getElementById(a.dataset.bestsel);
+  if(!sel || sel.style.display === 'none') return;
+  const wanted = a.dataset.bestrwy;
+  if(![...sel.options].some(o=>o.value === wanted)) return;
+  sel.value = wanted;
+  const ctx = a.dataset.bestsel === 'rwyArrSel' ? 'arr'
+            : (a.dataset.bestsel === 'rwyLdgSel' ? 'ldg' : 'dep');
+  applyRunwayToFields(ctx);
+  refreshWindHints();
+  syncAllSurfaceLocks();
+});
 
 // ===================== GESTION DES PISTES =====================
 // Contexte courant de l'éditeur : 'dep' (départ) ou 'arr' (arrivée)
@@ -3193,6 +3277,13 @@ initAirports().then(()=>{
 
 function fmt(n,d=1){ return (Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d}); }
 
+// Durée en minutes -> « 2 h 35 » ou « 40 min »
+function hm(mins){
+  const m = Math.max(0, Math.round(mins));
+  if(m < 60) return m + ' min';
+  return Math.floor(m/60) + ' h ' + String(m%60).padStart(2,'0');
+}
+
 function badge(ok, okText, badText){
   return `<span class="badge ${ok?'ok':'bad'}">${ok?okText:badText}</span>`;
 }
@@ -3204,6 +3295,8 @@ function renderResults(fuel, mb, perf){
     <div class="row"><span class="k">Réserve finale (${fuel.reserveMin} min)</span><span class="v">${fmt(fuel.reserveL)} L · ${fmt(fuel.reserveKg)} kg</span></div>
     <div class="row"><span class="k">Minimum required fuel</span><span class="v big">${fmt(fuel.minRequiredL)} L · ${fmt(fuel.minRequiredKg)} kg</span></div>
     <div class="row"><span class="k">Fuel embarqué</span><span class="v">${fmt(fuel.fuelOnBoardL)} L · ${fmt(fuel.fuelOnBoardKg)} kg</span></div>
+    <div class="row"><span class="k">Autonomie totale</span><span class="v">${hm(fuel.enduranceMin)}</span></div>
+    <div class="row"><span class="k">Marge sur le minimum</span><span class="v${fuel.marginMin<0?'':' big'}">${fuel.marginMin<0?'−':'+'}${hm(Math.abs(fuel.marginMin))}</span></div>
     <div class="row"><span class="k">Statut</span><span class="v">${badge(fuel.sufficient,'SUFFISANT','INSUFFISANT')}</span></div>
   `;
 
@@ -3787,11 +3880,62 @@ function flightBbox(radiusKm){
 
 // WX_BULLETIN : déclaré en tête de fichier
 
+// Au-delà de cette durée, un bulletin conservé hors ligne n'a plus aucune
+// valeur opérationnelle : il est effacé plutôt que d'être affiché, pour
+// qu'aucune préparation ne puisse s'appuyer dessus par inadvertance.
+const WX_MAX_AGE_MS = 24 * 3600 * 1000;
+
+function purgeStaleBulletin(){
+  if(!WX_BULLETIN || !WX_BULLETIN.fetchedAt) return false;
+  const t = new Date(WX_BULLETIN.fetchedAt).getTime();
+  if(isNaN(t) || (Date.now() - t) < WX_MAX_AGE_MS) return false;
+  WX_BULLETIN = null;
+  try{ localStorage.removeItem(WX_STORE_KEY); }catch(e){}
+  renderWxResults();
+  const msg = document.getElementById('wxFetchMsg');
+  if(msg){
+    msg.className = 'rwyMsg bad';
+    msg.textContent = 'Bulletin vieux de plus de 24 h : supprimé automatiquement. Récupères-en un nouveau.';
+  }
+  return true;
+}
+
+// Heure d'observation lue dans le METAR brut (groupe JJHHMMZ), plus fiable
+// que l'heure de récupération : l'AWC peut servir une observation déjà
+// ancienne au moment où on la demande.
+function metarObsTime(raw){
+  const m = String(raw||'').match(/\b(\d{2})(\d{2})(\d{2})Z\b/);
+  if(!m) return null;
+  const day = +m[1], hh = +m[2], mm = +m[3];
+  if(day < 1 || day > 31 || hh > 23 || mm > 59) return null;
+  const now = new Date();
+  let t = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), day, hh, mm);
+  // Une observation ne peut pas être dans le futur : c'est alors le mois précédent
+  if(t > now.getTime() + 2*3600*1000){
+    t = Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, day, hh, mm);
+  }
+  return t;
+}
+
+// Libellé + couleur selon l'ancienneté. Un METAR est normalement émis
+// toutes les 30 min ; au-delà d'une heure il mérite un signalement, au-delà
+// de trois il ne décrit plus la situation.
+function ageInfo(ms){
+  const mins = Math.round((Date.now() - ms) / 60000);
+  const txt = mins < 0 ? 'à l\u2019instant'
+            : mins < 60 ? 'il y a ' + mins + ' min'
+            : mins < 1440 ? 'il y a ' + Math.floor(mins/60) + ' h ' + String(mins%60).padStart(2,'0')
+            : 'il y a ' + Math.floor(mins/1440) + ' j';
+  const color = mins < 60 ? 'var(--green)' : (mins < 180 ? 'var(--amber)' : 'var(--red)');
+  return {mins, txt, color, stale: mins >= 60};
+}
+
 function loadWxBulletin(){
   try{
     const raw = localStorage.getItem(WX_STORE_KEY);
     WX_BULLETIN = raw ? JSON.parse(raw) : null;
   }catch(e){ WX_BULLETIN = null; }
+  if(purgeStaleBulletin()) return;
   renderWxResults();
 }
 function saveWxBulletin(){
@@ -3912,16 +4056,53 @@ function renderWxResults(){
   }
   if(clr) clr.style.display = '';
   const esc = s => String(s||'').replace(/[<>&]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-  const rows = WX_BULLETIN.stations.map(s=>`
+  const rows = WX_BULLETIN.stations.map(s=>{
+    const obs = metarObsTime(s.metar);
+    let ageTag = '';
+    if(obs != null){
+      const a = ageInfo(obs);
+      ageTag = `<span style="color:${a.color};font-weight:600;"> · observé ${a.txt}</span>`;
+    }
+    return `
     <div style="border-top:1px dashed var(--line);padding:8px 0;">
       <div style="font-family:var(--mono);font-size:12px;color:${s.nearby?'var(--muted)':'var(--amber)'};">
-        ${esc(s.icao)}${s.name?' — '+esc(s.name):''}${s.nearby?' · alentour':''}
+        ${esc(s.icao)}${s.name?' — '+esc(s.name):''}${s.nearby?' · alentour':''}${ageTag}
       </div>
       ${s.metar?`<div style="font-family:var(--mono);font-size:11px;margin-top:3px;">METAR ${esc(s.metar)}</div>`:''}
       ${s.taf  ?`<div style="font-family:var(--mono);font-size:11px;margin-top:3px;color:var(--muted);">TAF ${esc(s.taf)}</div>`:''}
-    </div>`).join('');
-  box.innerHTML = `<div class="smallhint">Bulletin du ${wxAgeLabel(WX_BULLETIN.fetchedAt)}</div>${rows}`;
+    </div>`;
+  }).join('');
+
+  // Le plus ancien METAR du lot commande l'avertissement global : c'est lui
+  // qui détermine la confiance qu'on peut accorder à l'ensemble.
+  const times = WX_BULLETIN.stations.map(s=>metarObsTime(s.metar)).filter(t=>t!=null);
+  let head = `<div class="smallhint">Bulletin récupéré le ${wxAgeLabel(WX_BULLETIN.fetchedAt)}</div>`;
+  if(times.length){
+    const a = ageInfo(Math.min(...times));
+    if(a.stale){
+      head += `<div class="smallhint" style="color:${a.color};font-weight:600;">`
+        + `Observation la plus ancienne : ${a.txt}. `
+        + (a.mins >= 180 ? 'Ce bulletin ne décrit plus la situation — récupères-en un nouveau avant de décider.'
+                         : 'Vérifie qu\u2019il est encore représentatif avant de t\u2019en servir.')
+        + `</div>`;
+    }
+  }
+  box.innerHTML = head + rows;
 }
+
+// L'âge affiché doit vieillir tout seul pendant que la page reste ouverte,
+// et la purge des 24 h doit se déclencher même sans interaction.
+setInterval(()=>{
+  if(!WX_BULLETIN) return;
+  if(purgeStaleBulletin()) return;
+  renderWxResults();
+}, 60000);
+
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState !== 'visible' || !WX_BULLETIN) return;
+  if(purgeStaleBulletin()) return;
+  renderWxResults();
+});
 
 (function initWx(){
   const btn = document.getElementById('wxFetchBtn');
@@ -4521,6 +4702,7 @@ async function saveDossier(){
   const dossier = {
     id: 'd_' + Date.now(),
     savedAt: new Date().toISOString(),
+    fav: false,
     label: dossierLabel(),
     reg: str('registration') || '',
     pic: str('picName') || '',
@@ -4553,10 +4735,90 @@ async function listDossiers(){
     return await new Promise((resolve, reject)=>{
       const tx = db.transaction(DOSSIER_STORE, 'readonly');
       const r = tx.objectStore(DOSSIER_STORE).getAll();
-      r.onsuccess = ()=>resolve((r.result||[]).sort((a,b)=>b.savedAt.localeCompare(a.savedAt)));
+      r.onsuccess = ()=>resolve((r.result||[]).sort((a,b)=>{
+        // Les favoris d'abord — ce sont les vols locaux qu'on refait souvent
+        const fa = a.fav ? 1 : 0, fb = b.fav ? 1 : 0;
+        if(fa !== fb) return fb - fa;
+        return b.savedAt.localeCompare(a.savedAt);
+      }));
       r.onerror = ()=>reject(r.error);
     });
   }catch(e){ return []; }
+}
+
+async function getDossier(id){
+  try{
+    const db = await dossierDbOpen();
+    return await new Promise(resolve=>{
+      const tx = db.transaction(DOSSIER_STORE, 'readonly');
+      const r = tx.objectStore(DOSSIER_STORE).get(id);
+      r.onsuccess = ()=>resolve(r.result || null);
+      r.onerror = ()=>resolve(null);
+    });
+  }catch(e){ return null; }
+}
+
+async function toggleFavDossier(id){
+  const d = await getDossier(id);
+  if(!d) return;
+  d.fav = !d.fav;
+  try{
+    const db = await dossierDbOpen();
+    await new Promise(resolve=>{
+      const tx = db.transaction(DOSSIER_STORE, 'readwrite');
+      tx.objectStore(DOSSIER_STORE).put(d);
+      tx.oncomplete = resolve;
+      tx.onerror = resolve;
+    });
+  }catch(e){}
+}
+
+// Repart d'un dossier existant sans écraser l'original : on reprend l'avion,
+// les masses, les terrains et les pistes, mais tout ce qui est daté ou
+// périssable (date, EOBT, météo saisie, bulletin, pièces jointes) est remis
+// à zéro — c'est précisément ce qui doit être refait pour un nouveau vol.
+async function duplicateDossier(id){
+  const d = await getDossier(id);
+  if(!d) return;
+
+  restoreFlight(d.fields || {});
+
+  const clear = ids => ids.forEach(k=>{
+    const el = document.getElementById(k);
+    if(el) el.value = '';
+  });
+  clear(['eobt','temp','qnh','wind','tempArr','qnhArr','windArr',
+         'tempLdg','qnhLdg','windLdg','decisionNote']);
+  const dof = document.getElementById('dof');
+  if(dof) dof.value = new Date().toISOString().slice(0,10);
+
+  WX_MANUAL.clear();
+
+  WXDOC = null;  await wxdocClear();            renderWxDoc();
+  NTMDOC = null; await wxdocClear(NTMDOC_KEY);  renderNtmDoc();
+  FREEDOC = null;await wxdocClear(FREEDOC_KEY); renderFreeDoc();
+
+  WX_BULLETIN = null;
+  try{ localStorage.removeItem(WX_STORE_KEY); }catch(e){}
+  renderWxResults();
+
+  LAST = null;
+  const pdfBtn = document.getElementById('pdfBtn');
+  if(pdfBtn) pdfBtn.disabled = true;
+  const res = document.getElementById('results');
+  if(res) res.classList.remove('show');
+  const wrap = document.getElementById('printReportWrap');
+  if(wrap) wrap.classList.remove('show');
+  clearCalcError();
+
+  toggleArrivalRunway();
+  goToPage('pageFlight');
+
+  const msg = document.getElementById('wxFetchMsg');
+  if(msg){
+    msg.className = 'rwyMsg';
+    msg.textContent = 'Dossier dupliqué : date remise à aujourd\u2019hui, météo et pièces jointes à refaire.';
+  }
 }
 
 async function deleteDossier(id){
@@ -4595,7 +4857,8 @@ async function openDossier(id){
 
   WX_BULLETIN = d.wxBulletin || null;
   saveWxBulletin();
-  renderWxResults();
+  // Un dossier rouvert des jours plus tard ne doit pas ressusciter sa météo
+  if(!purgeStaleBulletin()) renderWxResults();
 
   toggleArrivalRunway();
   goToPage('pageFlight');
@@ -4661,6 +4924,12 @@ async function newFlight(){
   const wrap = document.getElementById('printReportWrap');
   if(wrap) wrap.classList.remove('show');
 
+  // Le pilote a explicitement demandé une page vierge : le brouillon
+  // précédent n'a plus lieu d'être proposé.
+  if(typeof clearDraft === 'function') clearDraft();
+  const db = document.getElementById('draftBanner');
+  if(db) db.style.display = 'none';
+
   toggleArrivalRunway();
   goToPage('pageFlight');
 }
@@ -4680,11 +4949,13 @@ function renderDossierList(){
       const nCartes = d.wxdoc && d.wxdoc.images ? d.wxdoc.images.length : 0;
       const nPib    = d.ntmdoc && d.ntmdoc.images ? d.ntmdoc.images.length : 0;
       return `
-        <div class="rwyCard" style="margin-bottom:10px;">
-          <div style="font-weight:600;">${esc(d.label)}</div>
+        <div class="rwyCard" style="margin-bottom:10px;${d.fav?'border-color:var(--amber);':''}">
+          <div style="font-weight:600;">${d.fav?'★ ':''}${esc(d.label)}</div>
           <div class="smallhint">${esc(d.reg)}${d.pic?' · '+esc(d.pic):''} · enregistré le ${stamp}${nCartes?' · '+nCartes+' p. météo':''}${nPib?' · '+nPib+' p. NOTAM':''}</div>
-          <div class="btnrow" style="display:flex;gap:8px;margin-top:8px;">
+          <div class="btnrow" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
             <button type="button" class="btnMini" data-open="${d.id}">Ouvrir</button>
+            <button type="button" class="btnMini" data-dup="${d.id}">Dupliquer</button>
+            <button type="button" class="btnMini" data-fav="${d.id}">${d.fav?'Retirer ★':'Favori ★'}</button>
             <button type="button" class="btnMini danger" data-del="${d.id}">Suppr.</button>
           </div>
         </div>`;
@@ -4692,6 +4963,15 @@ function renderDossierList(){
 
     box.querySelectorAll('[data-open]').forEach(b=>{
       b.addEventListener('click', ()=>openDossier(b.dataset.open));
+    });
+    box.querySelectorAll('[data-dup]').forEach(b=>{
+      b.addEventListener('click', ()=>duplicateDossier(b.dataset.dup));
+    });
+    box.querySelectorAll('[data-fav]').forEach(b=>{
+      b.addEventListener('click', async ()=>{
+        await toggleFavDossier(b.dataset.fav);
+        renderDossierList();
+      });
     });
     box.querySelectorAll('[data-del]').forEach(b=>{
       b.addEventListener('click', async ()=>{
@@ -4730,6 +5010,111 @@ function renderDossierList(){
   // État initial propre, capturé après l'application de l'avion par défaut :
   // c'est lui que « Nouveau dossier » restaure.
   PRISTINE_FLIGHT = snapshotFlight();
+})();
+
+// ============ BROUILLON AUTOMATIQUE ============
+// Le flux normal de préparation oblige à quitter l'app en pleine saisie :
+// aller chercher le dossier sur Aeroweb, le PIB sur SOFIA, une VAC sur
+// AirMate. iOS purge régulièrement la page de la mémoire pendant ce temps,
+// et tout ce qui était tapé disparaît. On enregistre donc en continu une
+// copie des champs du vol, proposée à la réouverture.
+//
+// Les pièces jointes (dossier météo, PIB, annexe) ne sont pas concernées :
+// elles vivent déjà en IndexedDB et survivent d'elles-mêmes.
+
+const DRAFT_KEY = 'prevol_draft_v1';
+let draftTimer = null;
+
+function writeDraft(){
+  try{
+    const fields = snapshotFlight();
+    // Rien à sauvegarder si la page est encore dans son état d'origine
+    if(PRISTINE_FLIGHT && JSON.stringify(fields) === JSON.stringify(PRISTINE_FLIGHT)){
+      localStorage.removeItem(DRAFT_KEY);
+      return;
+    }
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({
+      savedAt: new Date().toISOString(),
+      fields
+    }));
+  }catch(e){ /* quota plein ou stockage refusé : on n'alarme pas le pilote */ }
+}
+
+function scheduleDraft(){
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(writeDraft, 500);
+}
+
+function clearDraft(){
+  clearTimeout(draftTimer);
+  try{ localStorage.removeItem(DRAFT_KEY); }catch(e){}
+}
+
+function readDraft(){
+  try{
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if(!raw) return null;
+    const d = JSON.parse(raw);
+    return (d && d.fields) ? d : null;
+  }catch(e){ return null; }
+}
+
+(function initDraft(){
+  const panel = document.getElementById('pageFlight');
+  if(panel){
+    panel.addEventListener('input',  scheduleDraft);
+    panel.addEventListener('change', scheduleDraft);
+  }
+  // Un passage en arrière-plan peut être suivi d'une purge sans préavis :
+  // on écrit immédiatement, sans attendre la temporisation.
+  window.addEventListener('pagehide', writeDraft);
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState === 'hidden') writeDraft();
+  });
+
+  const d = readDraft();
+  const banner = document.getElementById('draftBanner');
+  if(!d || !banner) return;
+  if(PRISTINE_FLIGHT && JSON.stringify(d.fields) === JSON.stringify(PRISTINE_FLIGHT)){
+    clearDraft();
+    return;
+  }
+
+  const when = new Date(d.savedAt);
+  const stamp = isNaN(when) ? '' : when.toLocaleString('fr-FR',
+    {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+  const dep = (d.fields.depIcao || '???').toUpperCase();
+  const arr = (d.fields.arrIcao || '???').toUpperCase();
+  const info = document.getElementById('draftBannerInfo');
+  if(info){
+    info.textContent = `Saisie non enregistrée ${dep} → ${arr}, laissée le ${stamp}. `
+      + `Elle n'est pas dans les dossiers enregistrés : reprends-la, ou abandonne-la définitivement.`;
+  }
+  banner.style.display = '';
+
+  document.getElementById('draftResume').addEventListener('click', ()=>{
+    restoreFlight(d.fields);
+    WX_MANUAL.clear();
+    Object.keys(d.fields).forEach(id=>{
+      if(['temp','qnh','wind','tempArr','qnhArr','windArr','tempLdg','qnhLdg','windLdg'].includes(id)
+         && d.fields[id]) WX_MANUAL.add(id);
+    });
+    banner.style.display = 'none';
+    toggleArrivalRunway();
+    goToPage('pageFlight');
+  });
+
+  document.getElementById('draftDiscard').addEventListener('click', ()=>{
+    if(!confirm('Abandonner définitivement cette saisie non enregistrée ?')) return;
+    clearDraft();
+    banner.style.display = 'none';
+  });
+})();
+
+// Affichage de la version (contrôle visuel après une mise à jour GitHub)
+(function showVersion(){
+  const el = document.getElementById('appVersionLine');
+  if(el) el.textContent = 'PréVol · version ' + APP_VERSION;
 })();
 
 // --- PWA : service worker (cache hors-ligne) + indicateur réseau ---
