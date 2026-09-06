@@ -12,6 +12,39 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="PréVol">
+<script>
+// ---- Thème : résolu AVANT le premier affichage ----
+// La préférence (auto/light/dark) est en localStorage ; l'attribut
+// data-theme sur <html> porte le thème effectivement appliqué. Ce script
+// est délibérément placé dans le <head> et exécuté en synchrone : le
+// mettre en bas de page ferait apparaître l'interface sombre une fraction
+// de seconde avant de basculer en clair.
+(function(){
+  window.THEME_KEY = 'prevol_theme_v1';
+  window.readThemePref = function(){
+    try{ return localStorage.getItem(window.THEME_KEY) || 'auto'; }catch(e){ return 'auto'; }
+  };
+  window.applyTheme = function(pref){
+    var p = pref || window.readThemePref();
+    var dark = true;
+    if(p === 'light') dark = false;
+    else if(p === 'auto' && window.matchMedia){
+      dark = !window.matchMedia('(prefers-color-scheme: light)').matches;
+    }
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    var m = document.querySelector('meta[name="theme-color"]');
+    if(m) m.setAttribute('content', dark ? '#0a141f' : '#eef1f5');
+  };
+  window.applyTheme();
+  // Suit le réglage iOS en direct quand la préférence est « auto »
+  if(window.matchMedia){
+    var mq = window.matchMedia('(prefers-color-scheme: light)');
+    var onChange = function(){ if(window.readThemePref() === 'auto') window.applyTheme('auto'); };
+    if(mq.addEventListener) mq.addEventListener('change', onChange);
+    else if(mq.addListener) mq.addListener(onChange);
+  }
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -26,16 +59,74 @@
     --amber-dim:#8a651f;
     --green:#3fbf7f;
     --red:#e2534b;
+    /* Teintes dérivées, extraites du code pour rendre le thème permutable */
+    --input-bg:#0b1826;
+    --readout-bg:#081118;
+    --btn-bg:#12283c;
+    --placeholder:#4c6577;
+    --on-amber:#1a1005;      /* texte posé sur un fond ambre */
+    --warn:#e0796d;
+    --warn-soft:#f0b5ad;
+    --ok:#5fd08a;
+    --footer-fg:#3f586c;
+    --hairline:rgba(255,255,255,0.05);
+    --chip-bg:rgba(255,255,255,.06);
+    --track-bg:rgba(255,255,255,.07);
+    --grid-line:rgba(255,255,255,0.015);
+    --statusbar:#0a141f;     /* bande sous l'heure iOS, sombre dans les deux thèmes */
     --mono: 'IBM Plex Mono', monospace;
     --disp: 'Space Grotesk', sans-serif;
     --body: 'IBM Plex Sans', sans-serif;
   }
+
+  /* ---- Thème clair (plein soleil) ----
+     L'attribut data-theme porte le thème RÉSOLU (light/dark) ; la préférence
+     du pilote (auto/light/dark) vit dans localStorage et est traduite ici
+     par un script placé dans le <head>, avant le premier affichage.
+     L'ambre est assombri : la teinte d'origine est illisible sur du blanc. */
+  :root[data-theme="light"]{
+    --bg:#eef1f5;
+    --panel:#ffffff;
+    --panel2:#f7f9fb;
+    --line:#c2ceda;
+    --text:#12212e;
+    --muted:#54697a;
+    --amber:#8a5610;
+    --amber-dim:#d2ab6c;
+    --green:#1a7d43;
+    --red:#b02a20;
+    --input-bg:#ffffff;
+    --readout-bg:#f1f5f8;
+    --btn-bg:#e5ebf1;
+    --placeholder:#6f8294;
+    --on-amber:#ffffff;
+    --warn:#a8281e;
+    --warn-soft:#7d1c14;
+    --ok:#146b38;
+    --footer-fg:#647889;
+    --hairline:rgba(0,0,0,0.08);
+    --chip-bg:rgba(0,0,0,.05);
+    --track-bg:rgba(0,0,0,.09);
+    --grid-line:rgba(0,0,0,0.028);
+  }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--body);}
+
+  /* iOS affiche l'heure et la batterie en blanc en mode appli installée
+     (apple-mobile-web-app-status-bar-style: black-translucent), et cette
+     valeur est figée au lancement : impossible de la changer en JavaScript.
+     On garde donc une bande sombre derrière la barre d'état, y compris en
+     thème clair, sans quoi l'heure serait blanche sur fond blanc.
+     Hauteur nulle hors mode plein écran : aucune bande sur Safari. */
+  body::before{
+    content:'';position:fixed;top:0;left:0;right:0;
+    height:env(safe-area-inset-top);
+    background:var(--statusbar);z-index:1000;pointer-events:none;
+  }
   body{
     background-image:
       radial-gradient(circle at 12% 8%, rgba(232,163,61,0.06), transparent 40%),
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 44px);
+      repeating-linear-gradient(0deg, var(--grid-line) 0px, var(--grid-line) 1px, transparent 1px, transparent 44px);
   }
   .wrap{max-width:920px;margin:0 auto;padding:calc(28px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right)) calc(80px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));}
   header.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:22px;border-bottom:1px solid var(--line);padding-bottom:16px;}
@@ -58,14 +149,14 @@
 
   label{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;
     white-space:normal;overflow-wrap:anywhere;word-break:break-word;line-height:1.35;}
-  input,select{width:100%;min-width:0;max-width:100%;background:#0b1826;border:1px solid var(--line);color:var(--text);border-radius:6px;padding:9px 10px;font-family:var(--mono);font-size:14px;outline:none;transition:border-color .15s, box-shadow .15s;}
+  input,select{width:100%;min-width:0;max-width:100%;background:var(--input-bg);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:9px 10px;font-family:var(--mono);font-size:14px;outline:none;transition:border-color .15s, box-shadow .15s;}
   input:focus,select:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(232,163,61,0.12);}
-  input::placeholder{color:#4c6577;}
+  input::placeholder{color:var(--placeholder);}
   .field{margin-bottom:2px;min-width:0;}
   .field input.autofilled, .field select.autofilled{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber-dim);}
   .field .avLabel{color:var(--amber);font-family:var(--mono);font-size:9px;letter-spacing:.06em;margin-left:6px;}
   input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-width:0;max-width:100%;}
-  .field.opt label::after{content:' (optionnel)';color:#4c6577;text-transform:none;letter-spacing:0;}
+  .field.opt label::after{content:' (optionnel)';color:var(--placeholder);text-transform:none;letter-spacing:0;}
 
   details.adv{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px;}
   details.adv summary{cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;}
@@ -78,7 +169,7 @@
   @media (max-width:520px){ .runbar button{font-size:12.5px;padding:12px 6px;letter-spacing:0;} }
   button{font-family:var(--disp);font-weight:600;font-size:14px;letter-spacing:.03em;border-radius:8px;border:1px solid transparent;padding:13px 18px;cursor:pointer;transition:transform .08s, filter .15s;flex:1;}
   button:active{transform:scale(0.98);}
-  #computeBtn{background:var(--amber);color:#1a1005;box-shadow:0 6px 22px rgba(232,163,61,0.25);}
+  #computeBtn{background:var(--amber);color:var(--on-amber);box-shadow:0 6px 22px rgba(232,163,61,0.25);}
   #computeBtn:hover{filter:brightness(1.08);}
   #pdfBtn{background:transparent;color:var(--text);border-color:var(--line);}
   #pdfBtn:hover:not(:disabled){border-color:var(--amber);color:var(--amber);}
@@ -86,18 +177,18 @@
 
   .results{display:none;}
   .results.show{display:block;}
-  .readout{background:#081118;border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:10px;}
-  .readout .row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-family:var(--mono);font-size:13px;}
+  .readout{background:var(--readout-bg);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:10px;}
+  .readout .row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--hairline);font-family:var(--mono);font-size:13px;}
   .readout .row:last-child{border-bottom:none;}
   .readout .row .k{color:var(--muted);}
   .readout .row .v{color:var(--text);font-weight:600;}
   .readout .row .v.big{font-size:17px;color:var(--amber);}
   .envchart-wrap{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px;}
   .envchart-wrap svg{display:block;margin:0 auto;font-family:Arial,sans-serif;width:100%;height:auto;max-width:100%;}
-  textarea{width:100%;background:#0b1826;border:1px solid var(--line);color:var(--text);border-radius:6px;padding:9px 10px;font-family:var(--body);font-size:13.5px;outline:none;resize:vertical;min-height:64px;}
+  textarea{width:100%;background:var(--input-bg);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:9px 10px;font-family:var(--body);font-size:13.5px;outline:none;resize:vertical;min-height:64px;}
   textarea:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(232,163,61,0.12);}
   .checklist{display:flex;flex-direction:column;gap:2px;}
-  .chk{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;}
+  .chk{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--hairline);cursor:pointer;}
   .chk:last-child{border-bottom:none;}
   .chk input[type=checkbox]{width:18px;height:18px;accent-color:var(--amber);flex:none;}
   .chk span{font-size:13.5px;color:var(--text);}
@@ -105,7 +196,7 @@
   .subhead:first-child{border-top:none;padding-top:0;margin-top:0;}
   .imsafe-status{margin-top:10px;}
   .smallhint{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.4;}
-  .smallhint.warn{color:#e0796d;}
+  .smallhint.warn{color:var(--warn);}
   /* ---- Navigation par onglets ---- */
   .tabs{display:flex;gap:6px;margin:0 0 20px;border-bottom:1px solid var(--line);flex-wrap:wrap;}
   .tabs button{width:auto;flex:0 0 auto;background:none;border:none;border-bottom:2px solid transparent;
@@ -121,15 +212,15 @@
   .listCard .lcSub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;}
   .listCard .lcActions{display:flex;gap:8px;flex:0 0 auto;}
   .btnMini{width:auto;padding:7px 12px;font-size:11px;border-radius:6px;border:1px solid var(--line);
-    background:#12283c;color:var(--text);font-family:var(--mono);cursor:pointer;}
-  .btnMini.danger{color:#e0796d;border-color:rgba(224,121,109,.4);}
-  .btnMini.primary{background:var(--amber);color:#1a1005;border-color:var(--amber);font-weight:700;}
-  .wizBar{height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;margin:4px 0 12px;}
+    background:var(--btn-bg);color:var(--text);font-family:var(--mono);cursor:pointer;}
+  .btnMini.danger{color:var(--warn);border-color:rgba(224,121,109,.4);}
+  .btnMini.primary{background:var(--amber);color:var(--on-amber);border-color:var(--amber);font-weight:700;}
+  .wizBar{height:5px;background:var(--track-bg);border-radius:3px;overflow:hidden;margin:4px 0 12px;}
   .wizBarFill{height:100%;background:var(--amber);width:0;transition:width .25s;}
   .wizStepLabel{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.05em;
     text-transform:uppercase;margin-bottom:8px;}
   .wizIntro{font-size:13.5px;color:var(--muted);line-height:1.6;margin-bottom:16px;}
-  .wizQ{border-bottom:1px solid rgba(255,255,255,.05);padding:14px 0;}
+  .wizQ{border-bottom:1px solid var(--hairline);padding:14px 0;}
   .wizQ:last-child{border-bottom:none;}
   .wizQ .qLabel{font-size:14px;color:var(--text);margin-bottom:4px;}
   .wizQ .qHelp{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:8px;}
@@ -150,9 +241,9 @@
   .dropZone .dzTitle{font-family:var(--disp);font-size:15px;color:var(--amber);margin-bottom:6px;}
   .dropZone .dzHint{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.6;}
   .fileChip{display:inline-block;font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:12px;
-    background:rgba(255,255,255,.06);color:var(--text);margin:4px 4px 0 0;}
+    background:var(--chip-bg);color:var(--text);margin:4px 4px 0 0;}
   .warnBox{border:1px solid rgba(224,121,109,.45);background:rgba(224,121,109,.08);border-radius:8px;
-    padding:12px 14px;font-family:var(--mono);font-size:11px;color:#f0b5ad;line-height:1.6;margin-top:12px;}
+    padding:12px 14px;font-family:var(--mono);font-size:11px;color:var(--warn-soft);line-height:1.6;margin-top:12px;}
   .rwyEditor{border:1px solid var(--amber-dim);background:rgba(232,163,61,0.06);border-radius:8px;padding:14px;margin-top:14px;}
   .rwyEditor h3{font-family:var(--disp);font-size:12px;color:var(--amber);margin:0;text-transform:uppercase;letter-spacing:.05em;}
   .rwyEdHead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
@@ -161,19 +252,19 @@
   .rwyEdIcaoPick select,.rwyEdIcaoPick input{padding:7px 9px;font-size:13px;}
   .rwyEditor .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
   .rwyEditor button{width:auto;flex:0 0 auto;padding:9px 16px;font-size:12px;border-radius:6px;border:1px solid var(--line);
-    background:#12283c;color:var(--text);font-family:var(--mono);cursor:pointer;}
-  .rwyEditor button.primary{background:var(--amber);color:#1a1005;border-color:var(--amber);font-weight:700;}
+    background:var(--btn-bg);color:var(--text);font-family:var(--mono);cursor:pointer;}
+  .rwyEditor button.primary{background:var(--amber);color:var(--on-amber);border-color:var(--amber);font-weight:700;}
   .rwyMsg{font-family:var(--mono);font-size:11px;margin-top:10px;line-height:1.5;}
-  .rwyMsg.ok{color:#5fd08a;}
-  .rwyMsg.bad{color:#e0796d;}
+  .rwyMsg.ok{color:var(--ok);}
+  .rwyMsg.bad{color:var(--warn);}
   .apBadge{display:inline-block;font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:10px;
-    background:rgba(95,208,138,.12);color:#5fd08a;margin-left:8px;}
+    background:rgba(95,208,138,.12);color:var(--ok);margin-left:8px;}
   .apBadge.unknown{background:rgba(232,163,61,.12);color:var(--amber);}
   .badge{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:3px 10px;border-radius:20px;text-transform:uppercase;font-weight:600;}
   .badge.ok{background:rgba(63,191,127,0.12);color:var(--green);border:1px solid rgba(63,191,127,0.4);}
   .badge.bad{background:rgba(226,83,75,0.12);color:var(--red);border:1px solid rgba(226,83,75,0.4);}
 
-  footer{margin-top:30px;font-family:var(--mono);font-size:10.5px;color:#3f586c;text-align:center;line-height:1.6;}
+  footer{margin-top:30px;font-family:var(--mono);font-size:10.5px;color:var(--footer-fg);text-align:center;line-height:1.6;}
   a{color:var(--amber);}
 
   /* ---- Printable report — trame FLIGHT PLANNING FOLDER v2.0 ---- */
@@ -253,6 +344,8 @@
 
   @media print{
     html,body{background:#fff !important;background-image:none !important;}
+    /* La bande de barre d'état est un artifice d'écran : jamais imprimée */
+    body::before{display:none !important;}
     .wrap > *:not(#printReportWrap){display:none !important;}
     .wrap{max-width:none !important;padding:0 !important;margin:0 !important;background:#fff !important;}
     #printReportWrap{display:block !important;background:#fff !important;}
@@ -321,6 +414,19 @@
       <h2><span class="idx">B</span> DOSSIERS ENREGISTRÉS</h2>
       <div class="rwyMsg" id="dossierMsg"></div>
       <div id="dossierList"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="idx">C</span> AFFICHAGE</h2>
+      <div class="field">
+        <label>Thème</label>
+        <select id="themeSelect">
+          <option value="auto">Automatique (réglage iOS)</option>
+          <option value="light">Jour — clair</option>
+          <option value="dark">Nuit — sombre</option>
+        </select>
+        <div class="smallhint">Le dossier de vol imprimé reste sur fond blanc quel que soit le thème.</div>
+      </div>
     </div>
 
     <div class="smallhint" id="appVersionLine" style="text-align:center;opacity:.7;margin-top:4px;"></div>
@@ -954,7 +1060,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = '2026.09.06-a';
+const APP_VERSION = '2026.09.06-b';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -5115,6 +5221,19 @@ function readDraft(){
 (function showVersion(){
   const el = document.getElementById('appVersionLine');
   if(el) el.textContent = 'PréVol · version ' + APP_VERSION;
+})();
+
+// ============ RÉGLAGE DU THÈME ============
+// La bascule elle-même vit dans le <head> (window.applyTheme) pour agir
+// avant le premier affichage. Ici on ne branche que le sélecteur.
+(function initTheme(){
+  const sel = document.getElementById('themeSelect');
+  if(!sel) return;
+  sel.value = window.readThemePref();
+  sel.addEventListener('change', ()=>{
+    try{ localStorage.setItem(window.THEME_KEY, sel.value); }catch(e){}
+    window.applyTheme(sel.value);
+  });
 })();
 
 // --- PWA : service worker (cache hors-ligne) + indicateur réseau ---
