@@ -751,6 +751,34 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
   display:none !important;
 }
 </style>
+
+<style id="button-layout-fix">
+/* Corrige les groupes de boutons : aucun bouton ne doit s'étirer ou se superposer. */
+.btnrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.btnrow > .btnMini,
+.btnrow > a.btnMini,
+.btnrow > label.btnMini{
+  flex:0 0 auto !important;
+  width:auto !important;
+  max-width:100%;
+  display:inline-flex !important;
+  align-items:center;
+  justify-content:center;
+  vertical-align:middle;
+  position:relative;
+  box-sizing:border-box;
+}
+/* Les boutons d'action restent compacts même sur les écrans étroits. */
+@media(max-width:520px){
+  .btnrow > .btnMini,
+  .btnrow > a.btnMini,
+  .btnrow > label.btnMini{
+    flex:0 1 auto !important;
+    white-space:normal;
+  }
+}
+</style>
+
 </head>
 <body class="subpage" data-view="outils">
 <div class="wrap">
