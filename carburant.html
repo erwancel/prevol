@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-<title>PréVol — Dossier</title>
+<title>PréVol — Carburant</title>
 <meta content="#0a141f" name="theme-color"/>
 <link href="./manifest.json" rel="manifest"/>
 <link href="./icon-192.png" rel="icon"/>
@@ -765,8 +765,41 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 .section-open-link:hover{background:var(--accent-soft);}
 @media(max-width:520px){.section-title-row{align-items:flex-start;flex-direction:column;gap:9px}.section-open-link{font-size:11px;padding:7px 10px;}}
 </style>
+
+<style id="fuel-page-only">
+/* Page dédiée au chapitre 03 — tout le dossier reste dans le DOM pour
+   réutiliser ses données avion et son stockage, mais seule la partie carburant
+   est présentée à l'utilisateur. */
+#pageHome{display:none!important;}
+#pageFlight{display:block!important;}
+#pageFlight > *{display:none!important;}
+#pageFlight > .fuel-back,
+#pageFlight > #fuelContextCard,
+#pageFlight > #sectionPerf,
+#pageFlight > #fuelResults,
+#pageFlight > #fuelActions{display:block!important;}
+#sectionPerf{margin-top:0;}
+#sectionPerf > .grid{margin-bottom:0;}
+.fuel-page .page-panel{padding-top:16px;}
+.fuel-context{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:end;}
+.fuel-context .field{margin:0;}
+.fuel-context select{min-width:260px;}
+.fuel-back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--accent);font-family:var(--disp);font-weight:600;font-size:13px;margin:0 0 10px 4px;}
+.fuel-results-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+.fuel-result{background:var(--readout-bg);border:1px solid var(--line);border-radius:var(--r-md);padding:15px 16px;}
+.fuel-result .label{font-size:11px;color:var(--muted);margin-bottom:5px;}
+.fuel-result .value{font-family:var(--disp);font-size:24px;font-weight:700;color:var(--text);line-height:1.05;}
+.fuel-result .unit{font-size:12px;color:var(--muted);margin-left:3px;}
+.fuel-status{margin-top:14px;padding:13px 15px;border-radius:var(--r-md);border:1px solid var(--line);font-family:var(--body);font-size:14px;}
+.fuel-status.ok{background:color-mix(in srgb,var(--ok) 10%,var(--panel));border-color:color-mix(in srgb,var(--ok) 35%,var(--line));color:var(--text);}
+.fuel-status.bad{background:color-mix(in srgb,var(--red) 10%,var(--panel));border-color:color-mix(in srgb,var(--red) 35%,var(--line));color:var(--text);}
+#fuelActions{display:flex!important;gap:10px;align-items:center;flex-wrap:wrap;margin:0 var(--gutter) 12px var(--gutter-l);}
+#fuelActions .btnMini{margin:0;}
+@media(max-width:760px){.fuel-context{grid-template-columns:1fr}.fuel-context select{min-width:0}.fuel-results-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:460px){.fuel-results-grid{grid-template-columns:1fr 1fr}.fuel-result .value{font-size:21px;}}
+</style>
 </head>
-<body class="dossier-page" data-view="dossier">
+<body class="subpage fuel-page" data-view="fuel">
 <div class="wrap">
 <div class="app-shell">
 <aside aria-label="Navigation principale" class="sidebar">
@@ -782,8 +815,8 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 <div class="hero-copy">
 <div class="hero-date" id="hdrDate">—</div>
 <div class="hero-kicker">PRÉPARATION DE VOL</div>
-<h1>Dossier</h1>
-<p>Tous les éléments de votre préparation de vol réunis dans un seul dossier.</p>
+<h1>Carburant</h1>
+<p>Calculez le carburant nécessaire, l’autonomie et la marge disponible.</p>
 </div>
 </header>
 <nav aria-hidden="true" class="tabs"><a class="tab active" href="index.html">Dossier</a><a class="tab" href="meteo.html">Météo</a><a class="tab" href="notam.html">NOTAM</a><a class="tab" href="performances.html">Performances</a><a class="tab" href="masse-centrage.html">Masse &amp; centrage</a><a class="tab" href="navigation.html">Navigation</a><a class="tab" href="documents.html">Documents</a><a class="tab" href="outils.html">Outils</a></nav>
@@ -867,9 +900,17 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 </div>
 </details>
 </section>
+<a class="fuel-back" href="dossier.html">← Retour au dossier</a>
+<section class="card" id="fuelContextCard">
+  <div class="dash-head"><div><span class="eyebrow">PARAMÈTRES</span><h2>Avion sélectionné</h2></div></div>
+  <div class="fuel-context">
+    <div class="field"><label>Avion</label><select id="fuelAircraftSelect"></select></div>
+    <div class="smallhint" id="fuelAircraftInfo" style="margin:0 0 10px 0;"></div>
+  </div>
+</section>
 <!-- 4. CARBURANT -->
 <section class="card" id="sectionPerf">
-<div class="section-title-row"><h2><span class="idx">03</span> Carburant</h2><a class="section-open-link" href="carburant.html">Ouvrir la page Carburant ↗</a></div>
+<div class="section-title-row"><h2><span class="idx">03</span> Carburant</h2></div>
 <div class="grid g3">
 <div class="field"><label>Temps de vol prévu (min)</label><input id="flightTime" placeholder="min" type="number"/></div>
 <div class="field"><label>Réserve finale</label>
@@ -892,6 +933,19 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 </div>
 </details>
 </section>
+<section class="card" id="fuelResults">
+  <div class="dash-head"><div><span class="eyebrow">RÉSULTAT</span><h2>Calcul carburant</h2></div></div>
+  <div class="fuel-results-grid">
+    <div class="fuel-result"><div class="label">Carburant pour le trajet</div><div class="value" id="fuelTripResult">—</div></div>
+    <div class="fuel-result"><div class="label">Minimum réglementaire</div><div class="value" id="fuelMinResult">—</div></div>
+    <div class="fuel-result"><div class="label">Autonomie</div><div class="value" id="fuelEnduranceResult">—</div></div>
+    <div class="fuel-result"><div class="label">Marge</div><div class="value" id="fuelMarginResult">—</div></div>
+  </div>
+  <div class="fuel-status" id="fuelStatus">Renseignez le temps de vol et le fuel embarqué puis lancez le calcul.</div>
+</section>
+<div id="fuelActions">
+  <button class="btnMini primary" id="fuelCalculateBtn" type="button">Calculer</button>
+</div>
 <!-- ENVIRONNEMENT & PISTES -->
 <section class="card">
 <h2><span class="idx">04</span> Environnement &amp; pistes</h2>
@@ -6377,6 +6431,75 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 });
 
+</script>
+
+<script id="fuel-page-script">
+(function(){
+  function byId(id){return document.getElementById(id);}
+  function n(id){const e=byId(id); const v=parseFloat(e && e.value); return Number.isFinite(v)?v:0;}
+  function fmt(v,d){return Number.isFinite(v)?v.toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';}
+  function hm(min){
+    if(!Number.isFinite(min)) return '—';
+    const m=Math.max(0,Math.round(min));
+    return Math.floor(m/60)+' h '+String(m%60).padStart(2,'0')+' min';
+  }
+  function syncAircraft(key){
+    if(typeof applyAircraft==='function') applyAircraft(key);
+    const a=(typeof getAircraft==='function')?getAircraft(key):null;
+    if(!a) return;
+    const info=byId('fuelAircraftInfo');
+    if(info) info.textContent='Consommation : '+fmt(a.consoTrip,1)+' L/h · approche : '+fmt(a.consoAppr,1)+' L/h · capacité : '+a.fuelCapacityNote+' (max '+a.fuelCapacity+' L)';
+    const f=byId('fuelOnBoard'); if(f) f.max=a.fuelCapacity;
+    calculate();
+  }
+  function populateAircraft(){
+    const sel=byId('fuelAircraftSelect');
+    if(!sel || typeof allAircraft!=='function') return;
+    const all=allAircraft(); const keys=Object.keys(all).sort();
+    sel.innerHTML=keys.map(k=>'<option value="'+k.replace(/"/g,'&quot;')+'">'+(all[k].label||k)+'</option>').join('');
+    const main=byId('aircraftSelect');
+    const current=main && main.value && all[main.value] ? main.value : keys[0];
+    sel.value=current;
+    sel.addEventListener('change',()=>syncAircraft(sel.value));
+    syncAircraft(current);
+  }
+  function calculate(){
+    const flightTime=n('flightTime');
+    const reserve=n('reserveType') || 30;
+    const fuelOnBoard=n('fuelOnBoard');
+    const consoTrip=n('consoTrip');
+    const consoAppr=n('consoAppr');
+    const density=n('fuelDensity');
+    if(!(flightTime>0) || !(fuelOnBoard>=0) || !(consoTrip>0)){
+      byId('fuelTripResult').textContent='—'; byId('fuelMinResult').textContent='—'; byId('fuelEnduranceResult').textContent='—'; byId('fuelMarginResult').textContent='—';
+      byId('fuelStatus').className='fuel-status'; byId('fuelStatus').textContent='Renseignez le temps de vol et le fuel embarqué puis lancez le calcul.';
+      return;
+    }
+    const tripFuel=(flightTime/60)*consoTrip + (10/60)*consoAppr;
+    const contingency=(5/60)*consoTrip;
+    const reserveL=(reserve/60)*consoTrip;
+    const minRequired=tripFuel+contingency+reserveL;
+    const endurance=fuelOnBoard/consoTrip*60;
+    const margin=(fuelOnBoard-minRequired)/consoTrip*60;
+    byId('fuelTripResult').innerHTML=fmt(tripFuel,1)+'<span class="unit">L</span>';
+    byId('fuelMinResult').innerHTML=fmt(minRequired,1)+'<span class="unit">L</span>';
+    byId('fuelEnduranceResult').innerHTML=hm(endurance);
+    byId('fuelMarginResult').innerHTML=(margin>=0?'+':'−')+hm(Math.abs(margin));
+    const status=byId('fuelStatus');
+    if(fuelOnBoard>=minRequired){
+      status.className='fuel-status ok';
+      status.textContent='GO carburant : '+fmt(fuelOnBoard-minRequired,1)+' L de marge au-dessus du minimum réglementaire.';
+    }else{
+      status.className='fuel-status bad';
+      status.textContent='NOGO carburant : il manque '+fmt(minRequired-fuelOnBoard,1)+' L pour atteindre le minimum réglementaire.';
+    }
+  }
+  document.addEventListener('DOMContentLoaded',()=>{
+    populateAircraft();
+    const b=byId('fuelCalculateBtn'); if(b) b.addEventListener('click',calculate);
+    ['flightTime','reserveType','fuelOnBoard'].forEach(id=>{const e=byId(id); if(e) e.addEventListener('input',calculate); if(e) e && e.addEventListener('change',calculate);});
+  });
+})();
 </script>
 </body>
 </html>
