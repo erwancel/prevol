@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-<title>PréVol — Dossier</title>
+<title>PréVol — Tableau de bord</title>
 <meta content="#0a141f" name="theme-color"/>
 <link href="./manifest.json" rel="manifest"/>
 <link href="./icon-192.png" rel="icon"/>
@@ -600,14 +600,22 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
   }
 }
 </style>
-<style id="dossier-page">.dossier-page .tabs{display:none!important;} .pageHome.active,.pageFlight.active{display:block!important;}</style></head>
+<style id="dossier-page">.dossier-page .tabs{display:none!important;} .pageHome.active,.pageFlight.active{display:block!important;}</style>
+<style id="dashboard-only-home">
+/* Accueil = tableau de bord uniquement. Le dossier complet vit dans dossier.html. */
+#pageFlight, #pageAircraft, #pageAirport, .storage-card, .settings-card, .premium-footer { display:none !important; }
+#pageHome { display:block !important; }
+.tool-tile { text-decoration:none; color:inherit; }
+.dashboard-primary { text-decoration:none; }
+</style>
+</head>
 <body class="dossier-page" data-view="dossier">
 <div class="wrap">
 <div class="app-shell">
 <aside aria-label="Navigation principale" class="sidebar">
 <div class="side-brand"><div class="side-name">PréVol</div><div class="side-sub">Préparation de vol</div></div>
 <div class="side-rule"></div>
-<nav class="side-nav"><a class="tab nav-page-link active" href="index.html"><span class="nav-ico">⌂</span><span>Dossier</span></a><a class="tab nav-page-link" href="meteo.html"><span class="nav-ico">☁</span><span>Météo</span></a><a class="tab nav-page-link" href="notam.html"><span class="nav-ico">▤</span><span>NOTAM</span></a><a class="tab nav-page-link" href="performances.html"><span class="nav-ico">▥</span><span>Performances</span></a><a class="tab nav-page-link" href="masse-centrage.html"><span class="nav-ico">◇</span><span>Masse &amp; centrage</span></a><a class="tab nav-page-link" href="navigation.html"><span class="nav-ico">◉</span><span>Navigation</span></a><a class="tab nav-page-link" href="documents.html"><span class="nav-ico">□</span><span>Documents</span></a><a class="tab nav-page-link" href="outils.html"><span class="nav-ico">⌕</span><span>Outils</span></a></nav>
+<nav class="side-nav"><a class="tab nav-page-link active" href="index.html"><span class="nav-ico">⌂</span><span>Tableau de bord</span></a><a class="tab nav-page-link" href="meteo.html"><span class="nav-ico">☁</span><span>Météo</span></a><a class="tab nav-page-link" href="notam.html"><span class="nav-ico">▤</span><span>NOTAM</span></a><a class="tab nav-page-link" href="performances.html"><span class="nav-ico">▥</span><span>Performances</span></a><a class="tab nav-page-link" href="masse-centrage.html"><span class="nav-ico">◇</span><span>Masse &amp; centrage</span></a><a class="tab nav-page-link" href="navigation.html"><span class="nav-ico">◉</span><span>Navigation</span></a><a class="tab nav-page-link" href="documents.html"><span class="nav-ico">□</span><span>Documents</span></a><a class="tab nav-page-link" href="outils.html"><span class="nav-ico">⌕</span><span>Outils</span></a></nav>
 <div class="side-spacer"></div>
 <nav class="side-nav side-bottom"><a class="tab nav-page-link" href="parametres.html"><span class="nav-ico">⚙</span><span>Paramètres</span></a><a class="tab nav-page-link" href="a-propos.html"><span class="nav-ico">ⓘ</span><span>À propos</span></a></nav>
 <div class="side-footer">Fly safe. Fly prepared.</div>
@@ -616,9 +624,9 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 <header class="top">
 <div class="hero-copy">
 <div class="hero-date" id="hdrDate">—</div>
-<div class="hero-kicker">DOSSIER DE VOL</div>
+<div class="hero-kicker">PRÉPARATION DE VOL</div>
 <h1>PréVol</h1>
-<p>Tous les éléments de votre préparation de vol réunis dans un seul dossier.</p>
+<p>Tous les outils essentiels pour préparer vos vols en un seul endroit.</p>
 </div>
 </header>
 <nav aria-hidden="true" class="tabs"><a class="tab active" href="index.html">Dossier</a><a class="tab" href="meteo.html">Météo</a><a class="tab" href="notam.html">NOTAM</a><a class="tab" href="performances.html">Performances</a><a class="tab" href="masse-centrage.html">Masse &amp; centrage</a><a class="tab" href="navigation.html">Navigation</a><a class="tab" href="documents.html">Documents</a><a class="tab" href="outils.html">Outils</a></nav>
@@ -628,30 +636,30 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 <button class="dashboard-primary" id="homeNewFlight" type="button"><span class="action-icon">➤</span><span><b>Nouveau vol</b><small>Démarrer une préparation</small></span><span class="arrow">→</span></button>
 </section>
 <section class="quick-actions">
-<button class="quick-card" id="homeLoad" onclick="document.getElementById('recentDossiers')?.scrollIntoView({behavior:'smooth'})" type="button"><span class="quick-icon">▱</span><b>Charger un vol</b><small>Ouvrir une préparation</small></button>
-<button class="quick-card" id="homeRecent" onclick="document.getElementById('recentDossiers')?.scrollIntoView({behavior:'smooth'})" type="button"><span class="quick-icon">◷</span><b>Vol récent</b><small>Accéder à l’historique</small></button>
+<button class="quick-card" id="homeLoad" onclick="window.location.href='dossier.html'" type="button"><span class="quick-icon">▱</span><b>Charger un vol</b><small>Ouvrir une préparation</small></button>
+<button class="quick-card" id="homeRecent" onclick="window.location.href='dossier.html'" type="button"><span class="quick-icon">◷</span><b>Vol récent</b><small>Accéder à l’historique</small></button>
 <button class="quick-card" id="homeAircraft" type="button"><span class="quick-icon">✧</span><b>Avions</b><small>Gérer vos appareils</small></button>
 <button class="quick-card" id="homeAirport" type="button"><span class="quick-icon">☆</span><b>Aérodromes</b><small>Fiches et pistes</small></button>
 </section>
 <section class="dashboard-grid">
 <div class="card dashboard-card recent-card" id="recentDossiers">
-<div class="dash-head"><div><span class="eyebrow">HISTORIQUE</span><h2>Ma préparation</h2></div><button class="text-link" onclick="document.getElementById('recentDossiers')?.scrollIntoView({behavior:'smooth'})" type="button">Tout voir  →</button></div>
+<div class="dash-head"><div><span class="eyebrow">HISTORIQUE</span><h2>Ma préparation</h2></div><button class="text-link" onclick="window.location.href='dossier.html'" type="button">Tout voir  →</button></div>
 <div class="rwyMsg" id="dossierMsg"></div>
 <div id="dossierList"></div>
 </div>
 <div class="card dashboard-card quick-tools-card">
 <div class="dash-head"><div><span class="eyebrow">OUTILS</span><h2>Accès rapides</h2></div></div>
 <div class="tool-grid">
-<button class="tool-tile" data-page="pageFlight" data-scroll="#sectionWeather" type="button"><span>☁</span><b>Météo</b><small>METAR, TAF, cartes</small></button>
-<button class="tool-tile" data-page="pageFlight" data-scroll="#sectionWeather" type="button"><span>▤</span><b>NOTAM</b><small>Informations terrain</small></button>
-<button class="tool-tile" data-page="pageFlight" data-scroll="#sectionPerf" type="button"><span>▥</span><b>Performances</b><small>Distances, montées, etc.</small></button>
-<button class="tool-tile" data-page="pageFlight" data-scroll="#sectionMass" type="button"><span>◇</span><b>Masse &amp; centrage</b><small>Calculateur</small></button>
-<button class="tool-tile" data-page="pageFlight" data-scroll="#sectionVol" type="button"><span>◉</span><b>Navigation</b><small>Cartes, points, routes</small></button>
-<button class="tool-tile" data-page="pageFlight" data-scroll="#sectionDocs" type="button"><span>□</span><b>Documents</b><small>Checklist, export</small></button>
+<a class="tool-tile" href="meteo.html"><span>☁</span><b>Météo</b><small>METAR, TAF, cartes</small></a>
+<a class="tool-tile" href="notam.html"><span>▤</span><b>NOTAM</b><small>Informations terrain</small></a>
+<a class="tool-tile" href="performances.html"><span>▥</span><b>Performances</b><small>Distances, montées, etc.</small></a>
+<a class="tool-tile" href="masse-centrage.html"><span>◇</span><b>Masse &amp; centrage</b><small>Calculateur</small></a>
+<a class="tool-tile" href="navigation.html"><span>◉</span><b>Navigation</b><small>Cartes, points, routes</small></a>
+<a class="tool-tile" href="documents.html"><span>□</span><b>Documents</b><small>Checklist, export</small></a>
 </div>
 </div>
 <div class="dashboard-side">
-<div class="card weather-preview"><div class="dash-head"><div><span class="eyebrow">APERÇU</span><h2>Météo</h2></div><button class="icon-link" data-page="pageFlight" data-scroll="#sectionWeather" type="button">↗</button></div><div class="weather-placeholder"><div class="weather-sun" id="homeWxIcon">☼</div><div><span>Conditions actuelles · LFRS</span><strong id="homeWxState">Chargement…</strong><small id="homeWxObserved" style="display:block;margin-top:6px;color:#8a96a4;font-size:10px;"></small></div></div><div class="weather-stats"><span>Vent<strong id="homeWxWind">—</strong></span><span>Visibilité<strong id="homeWxVis">—</strong></span><span>QNH<strong id="homeWxQnh">—</strong></span><span>Temp.<strong id="homeWxTemp">—</strong></span></div></div>
+<div class="card weather-preview"><div class="dash-head"><div><span class="eyebrow">APERÇU</span><h2>Météo</h2></div><a class="icon-link" href="meteo.html">↗</a></div><div class="weather-placeholder"><div class="weather-sun" id="homeWxIcon">☼</div><div><span>Conditions actuelles · LFRS</span><strong id="homeWxState">Chargement…</strong><small id="homeWxObserved" style="display:block;margin-top:6px;color:#8a96a4;font-size:10px;"></small></div></div><div class="weather-stats"><span>Vent<strong id="homeWxWind">—</strong></span><span>Visibilité<strong id="homeWxVis">—</strong></span><span>QNH<strong id="homeWxQnh">—</strong></span><span>Temp.<strong id="homeWxTemp">—</strong></span></div></div>
 </div>
 </section>
 <section class="card storage-card">
@@ -5731,15 +5739,16 @@ function renderDossierList(){
 (function initHome(){
   const nf = document.getElementById('homeNewFlight');
   if(nf) nf.addEventListener('click', ()=>{
+    window.location.href='dossier.html';
+    return;
     if(LAST || str('depIcao')){
       if(!confirm('Repartir sur un dossier vierge ? Les saisies et cartes météo en cours seront effacées (enregistre-les d\'abord si besoin).')) return;
     }
     newFlight();
   });
-  const ba = document.getElementById('homeAircraft');
-  if(ba) ba.addEventListener('click', ()=>goToPage('pageAircraft'));
-  const bt = document.getElementById('homeAirport');
-  if(bt) bt.addEventListener('click', ()=>goToPage('pageAirport'));
+  // Les cartes Avions et Aérodromes restent des aperçus du tableau de bord.
+  // Les fonctions complètes seront accessibles depuis leurs pages dédiées lorsqu'elles seront publiées.
+
 
   const sd = document.getElementById('saveDossierBtn');
   if(sd) sd.addEventListener('click', async ()=>{

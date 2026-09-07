@@ -1,11 +1,16 @@
-# PréVol — Préparation de vol
+# PréVol — GitHub Pages
 
-Version finale prête pour GitHub Pages.
+## Pages
+- `index.html` — Tableau de bord d’accueil
+- `dossier.html` — Dossier de vol complet
+- `meteo.html` — Météo
+- `notam.html` — NOTAM
+- `performances.html` — Performances
+- `masse-centrage.html` — Masse & centrage
+- `navigation.html` — Navigation
+- `documents.html` — Documents
+- `outils.html` — Outils
+- `parametres.html` — Paramètres
+- `a-propos.html` — À propos
 
-## Déploiement
-1. Remplacer les fichiers du dépôt par le contenu de cette archive.
-2. Conserver `index.html` à la racine du dépôt.
-3. Dans GitHub : Settings → Pages → Deploy from a branch → `main` → `/ (root)`.
-4. Commit/push les fichiers.
-
-Le site est statique et ne nécessite aucun build.
+L’accueil reste volontairement limité au tableau de bord premium. Les fonctions de préparation sont isolées dans les pages dédiées.
