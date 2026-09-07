@@ -23,7 +23,7 @@
 (function(){
   window.THEME_KEY = 'prevol_theme_v1';
   window.readThemePref = function(){
-    try{ return localStorage.getItem(window.THEME_KEY) || 'auto'; }catch(e){ return 'auto'; }
+    try{ return localStorage.getItem(window.THEME_KEY) || 'light'; }catch(e){ return 'auto'; }
   };
   window.applyTheme = function(pref){
     var p = pref || window.readThemePref();
