@@ -12,6 +12,19 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="PréVol">
+<style id="pv-premium-footer">
+.pv-footer{position:relative;min-height:230px;margin-top:48px;overflow:hidden;color:#fff;background:#0c1b2d;border-radius:28px 28px 0 0;isolation:isolate}
+.pv-footer-photo{position:absolute;inset:0;z-index:-2;background-image:url("hero-wing.jpg");background-size:cover;background-position:center 72%;transform:scale(1.015)}
+.pv-footer-overlay{position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(7,20,35,.94) 0%,rgba(9,25,43,.78) 48%,rgba(7,18,31,.58) 100%)}
+.pv-footer-content{min-height:230px;padding:42px 52px;display:flex;align-items:center;justify-content:space-between;gap:48px}
+.pv-footer-quote{display:flex;align-items:flex-start;gap:18px;max-width:540px}
+.pv-footer-quote-mark{font-family:Georgia,serif;font-size:64px;line-height:.72;color:rgba(255,255,255,.42)}
+.pv-footer-quote-text{font-size:28px;line-height:1.25;font-weight:650;letter-spacing:-.025em}
+.pv-footer-quote-plane{margin-top:14px;font-size:20px;opacity:.78}
+.pv-footer-warning{max-width:560px;padding-left:30px;border-left:1px solid rgba(255,255,255,.28);font-size:13px;line-height:1.75;color:rgba(255,255,255,.82);text-align:right}
+.pv-footer-warning div+div{margin-top:2px}
+@media (max-width:800px){.pv-footer{border-radius:22px 22px 0 0;min-height:300px}.pv-footer-content{min-height:300px;padding:36px 26px;display:block}.pv-footer-quote{max-width:none}.pv-footer-quote-text{font-size:23px}.pv-footer-warning{margin-top:28px;padding:18px 0 0;border-left:0;border-top:1px solid rgba(255,255,255,.25);text-align:left}}
+</style>
 <script>
 // ---- Thème : résolu AVANT le premier affichage ----
 // La préférence (auto/light/dark) est en localStorage ; l'attribut
@@ -1225,10 +1238,23 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 
   </div><!-- /pageAirport -->
 
-  <footer>
-    Calculateur à usage informatif uniquement — vérifier les valeurs sur le manuel de vol.<br>
-    Vérifier systématiquement les résultats sur l'AFM avant tout vol.
-  </footer>
+  <footer class="pv-footer">
+  <div class="pv-footer-photo" aria-hidden="true"></div>
+  <div class="pv-footer-overlay"></div>
+  <div class="pv-footer-content">
+    <div class="pv-footer-quote">
+      <span class="pv-footer-quote-mark">“</span>
+      <div>
+        <div class="pv-footer-quote-text">Preparation turns uncertainty into confidence.</div>
+        <div class="pv-footer-quote-plane">✈</div>
+      </div>
+    </div>
+    <div class="pv-footer-warning">
+      <div>Calculateur à usage informatif uniquement — vérifier les valeurs sur le manuel de vol.</div>
+      <div>Vérifier systématiquement les résultats sur l’AFM avant tout vol.</div>
+    </div>
+  </div>
+</footer>
     </main>
   </div><!-- /app-shell -->
 </div>>
