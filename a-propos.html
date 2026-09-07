@@ -600,7 +600,6 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
   }
 }
 </style>
-
 <style id="multi-page-navigation">
   .nav-page-link{text-decoration:none;}
   .subpage .tabs{display:none !important;}
@@ -623,14 +622,18 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
     .subpage .hero-copy h1{font-size:48px;}
   }
 </style>
-</head>
+<style id="prevol-page-scope">
+        #pageFlight,#pageAircraft,#pageAirport{display:none!important}
+        #pageHome{display:block!important}
+        #pageHome > *:not(.about-page-content){display:none!important}
+        </style></head>
 <body class="subpage" data-view="apropos">
 <div class="wrap">
 <div class="app-shell">
 <aside aria-label="Navigation principale" class="sidebar">
 <div class="side-brand"><div class="side-name">PréVol</div><div class="side-sub">Préparation de vol</div></div>
 <div class="side-rule"></div>
-<nav class="side-nav"><a class="tab nav-page-link" href="index.html"><span class="nav-ico">⌂</span><span>Tableau de bord</span></a><a class="tab nav-page-link" href="meteo.html"><span class="nav-ico">☁</span><span>Météo</span></a><a class="tab nav-page-link" href="notam.html"><span class="nav-ico">▤</span><span>NOTAM</span></a><a class="tab nav-page-link" href="performances.html"><span class="nav-ico">▥</span><span>Performances</span></a><a class="tab nav-page-link" href="masse-centrage.html"><span class="nav-ico">◇</span><span>Masse &amp; centrage</span></a><a class="tab nav-page-link" href="navigation.html"><span class="nav-ico">◉</span><span>Navigation</span></a><a class="tab nav-page-link" href="documents.html"><span class="nav-ico">□</span><span>Documents</span></a><a class="tab nav-page-link" href="outils.html"><span class="nav-ico">⌕</span><span>Outils</span></a></nav>
+<nav class="side-nav"><a class="tab nav-page-link" href="index.html"><span class="nav-ico">⌂</span><span>Tableau de bord</span></a><a class="tab nav-page-link" href="dossier.html"><span class="nav-ico">▣</span><span>Dossier</span></a><a class="tab nav-page-link" href="meteo.html"><span class="nav-ico">☁</span><span>Météo</span></a><a class="tab nav-page-link" href="notam.html"><span class="nav-ico">▤</span><span>NOTAM</span></a><a class="tab nav-page-link" href="performances.html"><span class="nav-ico">▥</span><span>Performances</span></a><a class="tab nav-page-link" href="masse-centrage.html"><span class="nav-ico">◇</span><span>Masse &amp; centrage</span></a><a class="tab nav-page-link" href="navigation.html"><span class="nav-ico">◉</span><span>Navigation</span></a><a class="tab nav-page-link" href="documents.html"><span class="nav-ico">□</span><span>Documents</span></a><a class="tab nav-page-link" href="outils.html"><span class="nav-ico">⌕</span><span>Outils</span></a><a class="tab nav-page-link" href="parametres.html"><span class="nav-ico">⚙</span><span>Paramètres</span></a><a class="tab nav-page-link active" href="a-propos.html"><span class="nav-ico">ⓘ</span><span>À propos</span></a></nav>
 <div class="side-spacer"></div>
 <nav class="side-nav side-bottom"><a class="tab nav-page-link" href="parametres.html"><span class="nav-ico">⚙</span><span>Paramètres</span></a><a class="tab nav-page-link active" href="a-propos.html"><span class="nav-ico">ⓘ</span><span>À propos</span></a></nav>
 <div class="side-footer">Fly safe. Fly prepared.</div>
@@ -645,7 +648,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 </div>
 </header>
 <nav aria-hidden="true" class="tabs"><a class="tab" href="index.html">Dossier</a><a class="tab" href="meteo.html">Météo</a><a class="tab" href="notam.html">NOTAM</a><a class="tab" href="performances.html">Performances</a><a class="tab" href="masse-centrage.html">Masse &amp; centrage</a><a class="tab" href="navigation.html">Navigation</a><a class="tab" href="documents.html">Documents</a><a class="tab" href="outils.html">Outils</a></nav>
-<div class="page-panel active" id="pageHome"><section class="card about-content" style="display:grid;gap:24px;max-width:900px;margin:0 auto;">
+<div class="page-panel active" id="pageHome"><section class="card about-content about-page-content" style="display:grid;gap:24px;max-width:900px;margin:0 auto;">
 <div><span class="eyebrow">À PROPOS</span><h2 style="font-size:34px;margin:6px 0 10px;">PréVol</h2><p style="font-size:17px;line-height:1.7;color:var(--muted);margin:0;">PréVol est un outil de préparation de vol conçu pour réunir au même endroit les vérifications, données et documents nécessaires avant le départ.</p></div>
 <div class="grid g3">
 <div class="card"><b>Préparation</b><p class="smallhint">Un dossier structuré pour ne rien oublier.</p></div>

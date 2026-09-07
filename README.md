@@ -1,16 +1,15 @@
-# PréVol — GitHub Pages
+# PréVol — version multi-pages
 
-## Pages
-- `index.html` — Tableau de bord d’accueil
-- `dossier.html` — Dossier de vol complet
-- `meteo.html` — Météo
-- `notam.html` — NOTAM
-- `performances.html` — Performances
-- `masse-centrage.html` — Masse & centrage
-- `navigation.html` — Navigation
-- `documents.html` — Documents
-- `outils.html` — Outils
-- `parametres.html` — Paramètres
-- `a-propos.html` — À propos
+- `index.html` : Tableau de bord uniquement
+- `dossier.html` : dossier de vol complet
+- `meteo.html` : météo / METAR / TAF / cartes
+- `notam.html` : NOTAM et éléments aéronautiques
+- `performances.html` : performances et carburant
+- `masse-centrage.html` : masses et centrage
+- `navigation.html` : préparation/navigation du vol
+- `documents.html` : documents pilote et avion
+- `outils.html` : outils et accès rapides
+- `parametres.html` : paramètres, stockage et affichage
+- `a-propos.html` : présentation de PréVol
 
-L’accueil reste volontairement limité au tableau de bord premium. Les fonctions de préparation sont isolées dans les pages dédiées.
+Tous les fichiers sont statiques et compatibles GitHub Pages / Cloudflare Pages.
