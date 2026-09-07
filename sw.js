@@ -1,10 +1,10 @@
-// PréVol DR400 — service worker
+// PréVol — service worker
 // Stratégie : "réseau d'abord" pour la page principale, pour que la
 // dernière version en ligne soit toujours utilisée dès que le réseau
 // est disponible ; repli sur le cache en l'absence de réseau.
 // Augmente CACHE_VERSION si tu veux forcer un rafraîchissement complet
 // du cache (rarement nécessaire avec cette stratégie).
-const CACHE_VERSION = 'prevol-dr400-v5';
+const CACHE_VERSION = 'prevol-v6';
 
 const APP_SHELL = [
   './',

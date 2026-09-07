@@ -1,7 +1,7 @@
 {
-  "name": "PréVol DR400",
+  "name": "PréVol — Préparation de vol",
   "short_name": "PréVol",
-  "description": "Préparation de vol — Fuel, Masse & Centrage, Performances",
+  "description": "Outil de préparation de vol — carburant, masse et centrage, performances et météo",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
