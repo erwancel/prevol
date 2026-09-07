@@ -1,12 +1,11 @@
-# PréVol
+# PréVol — Préparation de vol
 
-Interface premium de préparation de vol, conçue pour être déployée comme site statique.
+Version finale prête pour GitHub Pages.
 
-## Déploiement GitHub Pages
+## Déploiement
+1. Remplacer les fichiers du dépôt par le contenu de cette archive.
+2. Conserver `index.html` à la racine du dépôt.
+3. Dans GitHub : Settings → Pages → Deploy from a branch → `main` → `/ (root)`.
+4. Commit/push les fichiers.
 
-1. Décompresser cette archive.
-2. Mettre **le contenu du dossier** à la racine d'un dépôt GitHub.
-3. Dans **Settings → Pages**, choisir **Deploy from a branch**, puis la branche `main` et `/ (root)`.
-4. Ouvrir l'URL GitHub Pages fournie par GitHub.
-
-Aucune étape de build n'est nécessaire : l'application est un site statique/PWA.
+Le site est statique et ne nécessite aucun build.
