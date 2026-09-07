@@ -648,11 +648,15 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 </style>
 <style id="dossier-page">.dossier-page .tabs{display:none!important;} .pageHome.active,.pageFlight.active{display:block!important;}</style>
 <style id="dashboard-only-home">
-/* Accueil = tableau de bord uniquement. Le dossier complet vit dans dossier.html. */
-#pageFlight, #pageAircraft, #pageAirport, .storage-card, .settings-card, .premium-footer { display:none !important; }
+/* Tableau de bord : les cartes Avions/Aérodromes ouvrent leurs panneaux internes. */
+#pageFlight, .storage-card, .settings-card { display:none !important; }
 #pageHome { display:block !important; }
+#pageHome:not(.active) { display:none !important; }
+#pageAircraft, #pageAirport { display:none !important; }
+#pageAircraft.active, #pageAirport.active { display:block !important; }
 .tool-tile { text-decoration:none; color:inherit; }
 .dashboard-primary { text-decoration:none; }
+.quick-card[data-page] { cursor:pointer; }
 </style>
 <style id="prevol-page-scope">
         #pageFlight,#pageAircraft,#pageAirport{display:none!important}
@@ -2913,6 +2917,17 @@ document.querySelectorAll('.tabs .tab').forEach(btn=>{
   });
 });
 function goToPage(id){
+  // Les panneaux Avions/Aérodromes sont des vues internes du tableau de bord
+  // et ne possèdent pas de bouton dans la barre .tabs.
+  const directPanel = document.getElementById(id);
+  if(directPanel && (id === 'pageAircraft' || id === 'pageAirport')){
+    document.querySelectorAll('.page-panel').forEach(p=>p.classList.remove('active'));
+    directPanel.classList.add('active');
+    if(id === 'pageAircraft') renderAircraftList();
+    if(id === 'pageAirport'){ renderAirportList(); refreshApExport(); }
+    window.scrollTo({top:0, behavior:'smooth'});
+    return;
+  }
   const btn = document.querySelector(`.tabs .tab[data-page="${id}"]`);
   if(btn) btn.click();
 }
