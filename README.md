@@ -1,15 +1,19 @@
-# PréVol — version multi-pages
+# PréVol — v27
 
-- `index.html` : Tableau de bord uniquement
-- `dossier.html` : dossier de vol complet
-- `meteo.html` : météo / METAR / TAF / cartes
-- `notam.html` : NOTAM et éléments aéronautiques
-- `performances.html` : performances et carburant
-- `masse-centrage.html` : masses et centrage
-- `navigation.html` : préparation/navigation du vol
-- `documents.html` : documents pilote et avion
-- `outils.html` : outils et accès rapides
-- `parametres.html` : paramètres, stockage et affichage
-- `a-propos.html` : présentation de PréVol
+Réorganisation du menu latéral pour suivre l'ordre logique des sections du Flight Folder.
 
-Tous les fichiers sont statiques et compatibles GitHub Pages / Cloudflare Pages.
+Ordre du menu :
+1. Tableau de bord
+2. Dossier
+3. Navigation
+4. Masse & centrage
+5. Carburant
+6. Performances
+7. Documents
+8. Météo
+9. NOTAM
+10. Outils
+11. Paramètres
+12. À propos
+
+Le Dossier reste le Flight Folder complet. Les pages du menu sont des vues spécialisées des sections correspondantes.
