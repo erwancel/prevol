@@ -703,6 +703,55 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 .tool-tile > span{display:grid;place-items:center;}
 .tool-tile > span svg{width:26px;height:26px;}
 </style>
+
+<style id="empty-placeholder-fix">
+/* Supprime les conteneurs visuels lorsqu'ils n'ont encore aucun contenu.
+   Ils réapparaissent automatiquement dès que le JavaScript les remplit. */
+.rwyMsg:empty,
+.smallhint:empty,
+.imsafe-status:empty,
+.wx-only:empty,
+.notam-only:empty,
+.verdict:empty,
+.feuille:empty,
+#loadFixBody:empty,
+#dossierList:empty,
+#wxResults:empty,
+#wxDocPreview:empty,
+#ntmDocPreview:empty,
+#freeDocPreview:empty,
+#vacPreview:empty,
+#acList:empty,
+#apList:empty,
+#apfRunwayRows:empty,
+#wizBody:empty,
+#rwyDepSel:empty,
+#rwyArrSel:empty,
+#rwyLdgSel:empty {
+  display:none !important;
+}
+
+/* Les blocs de résultat vides ne doivent jamais créer une bande colorée. */
+.results:not(.show),
+.results.show:has(.verdict:empty):has(.feuille:empty) {
+  display:none !important;
+}
+
+/* Évite qu'un message météo automatique vide conserve une hauteur de ligne. */
+#wxAutoDep:empty,
+#wxAutoLdg:empty,
+#wxAutoArr:empty,
+#windDepHint:empty,
+#windLdgHint:empty,
+#windArrHint:empty,
+#pisteTypeNote:empty,
+#pisteTypeLdgNote:empty,
+#pisteTypeArrNote:empty,
+#fuelCapacityHint:empty,
+#apStatusHint:empty {
+  display:none !important;
+}
+</style>
 </head>
 <body class="subpage" data-view="meteo">
 <div class="wrap">
