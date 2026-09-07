@@ -550,6 +550,69 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 
 .rwyCard{border:0!important;border-top:1px solid var(--premium-border)!important;border-radius:0!important;background:transparent!important;padding:12px 2px!important;margin:0!important;box-shadow:none!important}.rwyCard:first-child{border-top:0!important}.rwyCard .smallhint{font-size:11px!important;margin-top:4px}.rwyCard .btnrow{opacity:.0;max-height:0;overflow:hidden;transition:.18s}.rwyCard:hover .btnrow,.rwyCard:focus-within .btnrow{opacity:1;max-height:80px}.rwyCard .btnMini{font-size:10px!important;padding:6px 8px!important}.dashboard-card .rwyCard>div:first-child{font-size:13px!important;color:var(--premium-ink)}footer{max-width:1280px;margin:0 auto;padding:20px 32px 30px;text-align:center;color:#8a96a2;font-size:10px;line-height:1.6}
 </style>
+
+<style id="compact-premium-footer">
+  .premium-footer {
+    position: relative;
+    min-height: 0 !important;
+    height: auto !important;
+    margin-top: 24px !important;
+    padding: 16px 28px !important;
+    background: var(--navy, #0d1b2a) !important;
+    color: rgba(255,255,255,.78) !important;
+    border-top: 1px solid rgba(255,255,255,.08) !important;
+    box-sizing: border-box;
+  }
+
+  .premium-footer .footer-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .premium-footer .footer-brand {
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    white-space: nowrap;
+  }
+
+  .premium-footer .footer-legal {
+    font-size: 10.5px;
+    line-height: 1.5;
+    color: rgba(255,255,255,.58);
+    text-align: center;
+  }
+
+  .premium-footer .footer-author {
+    color: rgba(255,255,255,.9);
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 760px) {
+    .premium-footer {
+      padding: 14px 18px !important;
+      margin-top: 18px !important;
+    }
+
+    .premium-footer .footer-inner {
+      grid-template-columns: 1fr;
+      gap: 7px;
+      text-align: center;
+    }
+
+    .premium-footer .footer-legal {
+      font-size: 9.5px;
+    }
+  }
+</style>
+
 </head>
 <body>
 <div class="wrap">
@@ -1238,21 +1301,14 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 
   </div><!-- /pageAirport -->
 
-  <footer class="pv-footer">
-  <div class="pv-footer-photo" aria-hidden="true"></div>
-  <div class="pv-footer-overlay"></div>
-  <div class="pv-footer-content">
-    <div class="pv-footer-quote">
-      <span class="pv-footer-quote-mark">“</span>
-      <div>
-        <div class="pv-footer-quote-text">Preparation turns uncertainty into confidence.</div>
-        <div class="pv-footer-quote-plane">✈</div>
-      </div>
-    </div>
-    <div class="pv-footer-warning">
+  <footer class="premium-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">PréVol</div>
+    <div class="footer-legal">
       <div>Calculateur à usage informatif uniquement — vérifier les valeurs sur le manuel de vol.</div>
-      <div>Vérifier systématiquement les résultats sur l’AFM avant tout vol.</div>
+      <div>Vérifier systématiquement les résultats sur l'AFM avant tout vol.</div>
     </div>
+    <div class="footer-author">Erwan Cellerier</div>
   </div>
 </footer>
     </main>
