@@ -511,12 +511,6 @@
   <header class="top">
     <div class="brand">
       <div class="brand-title">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3.5 13.2 20.5 5.5l-2.8 5.6-5.2 2.1-2.2 4.1-1.7-.7 1.1-3.7-6.2.3-1.8-1.0Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-            <path d="m13.5 11.1 3.3 3.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-          </svg>
-        </span>
         <h1>PréVol</h1>
       </div>
       <div class="sub">Préparation de vol</div>
@@ -3868,17 +3862,30 @@ function renderVerdict(fuel, mb, perf){
 function renderCartouche(){
   const d = document.getElementById('hdrDate');
   if(!d) return;
-  const v = str('dof');
+  const input = document.getElementById('dof');
+  const v = input && input.value ? input.value : '';
   if(v){
-    const dt = new Date(v + 'T00:00:00');
-    d.textContent = isNaN(dt) ? v
-      : dt.toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'});
-  } else d.textContent = 'Date non définie';
+    const parts = v.split('-');
+    const dt = parts.length === 3
+      ? new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
+      : null;
+    d.textContent = dt && !isNaN(dt.getTime())
+      ? dt.toLocaleDateString('fr-FR', {day:'2-digit', month:'long', year:'numeric'})
+      : v;
+  } else {
+    d.textContent = 'Date non définie';
+  }
 }
-['dof'].forEach(id=>{
-  const el = document.getElementById(id);
-  if(el) el.addEventListener('input', renderCartouche);
-});
+const dofCartouche = document.getElementById('dof');
+if(dofCartouche){
+  dofCartouche.addEventListener('input', renderCartouche);
+  dofCartouche.addEventListener('change', renderCartouche);
+  if(!dofCartouche.value){
+    const now = new Date();
+    dofCartouche.value = new Date(now.getTime() - now.getTimezoneOffset()*60000).toISOString().slice(0,10);
+  }
+}
+renderCartouche();
 
 // Rose des vents : axe de piste et provenance du vent, lus d'un coup d'œil.
 // Un dessin remplace ici trois nombres qu'il fallait comparer mentalement.
@@ -5590,6 +5597,12 @@ async function newFlight(){
     else el.value = '';
   });
 
+  const dofNew = document.getElementById('dof');
+  if(dofNew){
+    const now = new Date();
+    dofNew.value = new Date(now.getTime() - now.getTimezoneOffset()*60000).toISOString().slice(0,10);
+    renderCartouche();
+  }
   // Le sélecteur d'avion peut avoir changé : on réapplique ses paramètres
   const acSel = document.getElementById('aircraftSelect');
   if(acSel && typeof applyAircraft === 'function') applyAircraft(acSel.value);
