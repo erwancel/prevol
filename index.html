@@ -12,19 +12,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="PréVol">
-<style id="pv-premium-footer">
-.pv-footer{position:relative;min-height:230px;margin-top:48px;overflow:hidden;color:#fff;background:#0c1b2d;border-radius:28px 28px 0 0;isolation:isolate}
-.pv-footer-photo{position:absolute;inset:0;z-index:-2;background-image:url("hero-wing.jpg");background-size:cover;background-position:center 72%;transform:scale(1.015)}
-.pv-footer-overlay{position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(7,20,35,.94) 0%,rgba(9,25,43,.78) 48%,rgba(7,18,31,.58) 100%)}
-.pv-footer-content{min-height:230px;padding:42px 52px;display:flex;align-items:center;justify-content:space-between;gap:48px}
-.pv-footer-quote{display:flex;align-items:flex-start;gap:18px;max-width:540px}
-.pv-footer-quote-mark{font-family:Georgia,serif;font-size:64px;line-height:.72;color:rgba(255,255,255,.42)}
-.pv-footer-quote-text{font-size:28px;line-height:1.25;font-weight:650;letter-spacing:-.025em}
-.pv-footer-quote-plane{margin-top:14px;font-size:20px;opacity:.78}
-.pv-footer-warning{max-width:560px;padding-left:30px;border-left:1px solid rgba(255,255,255,.28);font-size:13px;line-height:1.75;color:rgba(255,255,255,.82);text-align:right}
-.pv-footer-warning div+div{margin-top:2px}
-@media (max-width:800px){.pv-footer{border-radius:22px 22px 0 0;min-height:300px}.pv-footer-content{min-height:300px;padding:36px 26px;display:block}.pv-footer-quote{max-width:none}.pv-footer-quote-text{font-size:23px}.pv-footer-warning{margin-top:28px;padding:18px 0 0;border-left:0;border-top:1px solid rgba(255,255,255,.25);text-align:left}}
-</style>
 <script>
 // ---- Thème : résolu AVANT le premier affichage ----
 // La préférence (auto/light/dark) est en localStorage ; l'attribut
@@ -537,7 +524,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 #dossierList{display:flex;flex-direction:column}.dossier-row{border-top:1px solid var(--premium-border);padding:12px 2px!important}.dossier-row:first-child{border-top:0}.dossier-row *{font-family:inherit!important}.dossier-row .lcMain{font-size:13px!important}.dossier-row .lcSub{font-size:11px!important;color:#758292!important}
 .tool-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.tool-tile{border:1px solid rgba(20,35,52,.06);background:#f7f7f5;border-radius:13px;padding:16px 8px;min-height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--premium-ink);transition:.18s}.tool-tile>span{font-size:24px;line-height:1;margin-bottom:8px}.tool-tile b{font-size:13px}.tool-tile small{font-size:10px;color:#758292;margin-top:4px;text-align:center}
 .dashboard-side{display:flex;flex-direction:column;gap:16px}.advice-card{min-height:160px}.advice-title{display:flex;align-items:center;gap:10px;font-size:15px}.advice-title span{font-size:23px;color:#c99532}.advice-card p{font-size:15px;line-height:1.5;margin:25px 0 0;color:var(--premium-ink);max-width:26ch}.icon-link{border:0;background:none;color:#66778a;font-size:18px;cursor:pointer}.weather-placeholder{display:flex;align-items:center;gap:14px;margin:3px 0 16px}.weather-sun{width:86px;height:86px;border-radius:11px;background:linear-gradient(145deg,#9ebbd2,#f5dfaa);display:grid;place-items:center;font-size:42px;color:white}.weather-placeholder span{display:block;font-size:12px;color:#728091}.weather-placeholder strong{display:block;font-size:23px;margin-top:7px}.weather-stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--premium-border);padding-top:12px;gap:8px}.weather-stats span{font-size:10px;color:#7a8795}.weather-stats strong{display:block;color:var(--premium-ink);font-size:13px;margin-top:3px}.weather-preview .weather-placeholder strong{font-size:22px;line-height:1.05}.weather-preview .weather-sun{flex:0 0 86px}.weather-preview .weather-sun.live{background:linear-gradient(145deg,#8fb5cf,#f4d995)}.weather-preview .weather-sun.stale{background:linear-gradient(145deg,#a7b1bc,#d8c89f)}
-.dashboard-banner{height:104px;margin:16px 0 0;border-radius:15px;background:linear-gradient(90deg,rgba(42,66,91,.82),rgba(131,155,176,.72)),url('./hero-wing.jpg');background-size:cover;background-position:center 68%;display:flex;align-items:center;justify-content:center;gap:18px;color:white;position:relative;overflow:hidden}.banner-quote{font-size:16px;font-style:italic}.banner-line{height:1px;width:110px;background:rgba(255,255,255,.75)}.banner-plane{font-size:20px;transform:rotate(10deg)}
+
 .storage-card,.settings-card{margin-top:16px!important}.storage-layout{display:grid;grid-template-columns:1.4fr 1fr;gap:25px}.storage-copy p{font-size:13px;color:#6e7b89;margin:0 0 13px}.storage-card .btnrow{display:flex;gap:8px;flex-wrap:wrap}.storage-card .btnMini{font-size:12px!important}.storage-meter .subhead{border:0;padding:0;margin:0 0 9px;font-size:12px;color:#7a8795}.storage-meter .btnMini{margin-top:12px}.settings-card .smallhint{margin-top:8px}
 .card{border-radius:17px}.card h2::before{display:none}.card{box-shadow:var(--premium-shadow)}
 /* Rest of application: keep existing controls but bring them into the same premium language. */
@@ -551,67 +538,66 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 .rwyCard{border:0!important;border-top:1px solid var(--premium-border)!important;border-radius:0!important;background:transparent!important;padding:12px 2px!important;margin:0!important;box-shadow:none!important}.rwyCard:first-child{border-top:0!important}.rwyCard .smallhint{font-size:11px!important;margin-top:4px}.rwyCard .btnrow{opacity:.0;max-height:0;overflow:hidden;transition:.18s}.rwyCard:hover .btnrow,.rwyCard:focus-within .btnrow{opacity:1;max-height:80px}.rwyCard .btnMini{font-size:10px!important;padding:6px 8px!important}.dashboard-card .rwyCard>div:first-child{font-size:13px!important;color:var(--premium-ink)}footer{max-width:1280px;margin:0 auto;padding:20px 32px 30px;text-align:center;color:#8a96a2;font-size:10px;line-height:1.6}
 </style>
 
-<style id="compact-premium-footer">
-  .premium-footer {
-    position: relative;
-    min-height: 0 !important;
-    height: auto !important;
-    margin-top: 24px !important;
-    padding: 16px 28px !important;
-    background: var(--navy, #0d1b2a) !important;
-    color: rgba(255,255,255,.78) !important;
-    border-top: 1px solid rgba(255,255,255,.08) !important;
-    box-sizing: border-box;
+/* --- Premium footer: same visual language as the hero --- */
+.premium-footer{
+  position:relative;
+  overflow:hidden;
+  margin:34px 0 0 !important;
+  min-height:86px;
+  padding:24px 32px 28px !important;
+  border:0 !important;
+  border-top:1px solid rgba(255,255,255,.14) !important;
+  background:
+    linear-gradient(90deg,rgba(9,24,40,.90) 0%,rgba(18,39,61,.72) 48%,rgba(18,39,61,.58) 100%),
+    url('./hero-wing.jpg') center 62% / cover no-repeat !important;
+  color:#fff !important;
+  font-family:var(--body);
+  text-align:initial !important;
+  box-sizing:border-box;
+}
+.premium-footer-inner{
+  max-width:1400px;
+  min-height:34px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:30px;
+}
+.premium-footer-brand{
+  color:#fff;
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:-.02em;
+  white-space:nowrap;
+}
+.premium-footer-legal{
+  color:rgba(255,255,255,.72);
+  font-size:9.5px;
+  line-height:1.5;
+  text-align:center;
+}
+.premium-footer-author{
+  color:#fff;
+  font-size:10px;
+  font-weight:600;
+  white-space:nowrap;
+}
+@media(max-width:760px){
+  .premium-footer{
+    margin-top:24px !important;
+    min-height:76px;
+    padding:20px 18px 22px !important;
   }
-
-  .premium-footer .footer-inner {
-    max-width: 1400px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 28px;
+  .premium-footer-inner{
+    grid-template-columns:1fr;
+    gap:6px;
+    text-align:center;
   }
-
-  .premium-footer .footer-brand {
-    color: #fff;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: -.02em;
-    white-space: nowrap;
+  .premium-footer-legal{
+    font-size:8.5px;
   }
-
-  .premium-footer .footer-legal {
-    font-size: 10.5px;
-    line-height: 1.5;
-    color: rgba(255,255,255,.58);
-    text-align: center;
-  }
-
-  .premium-footer .footer-author {
-    color: rgba(255,255,255,.9);
-    font-size: 11px;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-
-  @media (max-width: 760px) {
-    .premium-footer {
-      padding: 14px 18px !important;
-      margin-top: 18px !important;
-    }
-
-    .premium-footer .footer-inner {
-      grid-template-columns: 1fr;
-      gap: 7px;
-      text-align: center;
-    }
-
-    .premium-footer .footer-legal {
-      font-size: 9.5px;
-    }
-  }
-</style>
+}
 
 </head>
 <body>
@@ -694,9 +680,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
       </div>
     </section>
 
-    <section class="dashboard-banner"><div class="banner-quote">“Preparation turns uncertainty into confidence.”</div><span class="banner-line"></span><span class="banner-plane">✈</span></section>
-
-    <section class="card storage-card">
+<section class="card storage-card">
       <div class="dash-head"><div><span class="eyebrow">DONNÉES LOCALES</span><h2>Sauvegarde &amp; stockage</h2></div></div>
       <div class="storage-layout">
         <div class="storage-copy"><p>Tes dossiers restent stockés localement sur cet appareil. Une sauvegarde permet de les récupérer en cas de perte.</p><div class="btnrow"><button type="button" class="btnMini primary" id="backupBtn">Tout sauvegarder</button><label class="btnMini" for="restoreInput" style="cursor:pointer;text-align:center;">Restaurer</label><input type="file" id="restoreInput" accept="application/json,.json" style="display:none;"><button type="button" class="btnMini" id="storageRefreshBtn">Actualiser</button></div><label class="chk"><input type="checkbox" id="backupWithDocs" checked><span>Inclure les pièces jointes</span></label><div class="rwyMsg" id="backupMsg"></div></div>
@@ -1302,13 +1286,13 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
   </div><!-- /pageAirport -->
 
   <footer class="premium-footer">
-  <div class="footer-inner">
-    <div class="footer-brand">PréVol</div>
-    <div class="footer-legal">
+  <div class="premium-footer-inner">
+    <div class="premium-footer-brand">PréVol</div>
+    <div class="premium-footer-legal">
       <div>Calculateur à usage informatif uniquement — vérifier les valeurs sur le manuel de vol.</div>
       <div>Vérifier systématiquement les résultats sur l'AFM avant tout vol.</div>
     </div>
-    <div class="footer-author">Erwan Cellerier</div>
+    <div class="premium-footer-author">Erwan Cellerier</div>
   </div>
 </footer>
     </main>
