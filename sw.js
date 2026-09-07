@@ -4,7 +4,7 @@
 // est disponible ; repli sur le cache en l'absence de réseau.
 // Augmente CACHE_VERSION si tu veux forcer un rafraîchissement complet
 // du cache (rarement nécessaire avec cette stratégie).
-const CACHE_VERSION = 'prevol-v11-empty-fix';
+const CACHE_VERSION = 'prevol-v19-aircraft-display';
 
 const APP_SHELL = [
   './',

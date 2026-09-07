@@ -1489,7 +1489,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = '2026.09.07-c';
+const APP_VERSION = '2026.09.07-d';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -6443,12 +6443,19 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const m=Math.max(0,Math.round(min));
     return Math.floor(m/60)+' h '+String(m%60).padStart(2,'0')+' min';
   }
+  function formatAircraftFuelInfo(a){
+    const trip = fmt(a.consoTrip,1);
+    const appr = fmt(a.consoAppr,1);
+    const capacity = String(a.fuelCapacityNote || (fmt(a.fuelCapacity,0)+' L')).trim().replace(/\s+/g,' ');
+    const max = fmt(a.fuelCapacity,0);
+    return `Consommation : ${trip} L/h · approche : ${appr} L/h · capacité : ${capacity} (max ${max} L)`;
+  }
   function syncAircraft(key){
     if(typeof applyAircraft==='function') applyAircraft(key);
     const a=(typeof getAircraft==='function')?getAircraft(key):null;
     if(!a) return;
     const info=byId('fuelAircraftInfo');
-    if(info) info.textContent='Consommation : '+fmt(a.consoTrip,1)+' L/h · approche : '+fmt(a.consoAppr,1)+' L/h · capacité : '+a.fuelCapacityNote+' (max '+a.fuelCapacity+' L)';
+    if(info) info.textContent=formatAircraftFuelInfo(a);
     const f=byId('fuelOnBoard'); if(f) f.max=a.fuelCapacity;
     calculate();
   }
