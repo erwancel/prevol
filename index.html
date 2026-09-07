@@ -49,31 +49,41 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#101418;
-    --panel:#171C21;
-    --panel2:#171C21;
-    --line:#333C45;
-    --text:#E6E9EA;
-    --muted:#95A1AB;
-    --accent:#79A9D4;
-    --accent-soft:#3C556E;
+    --bg:#0D1115;
+    --panel:#161C22;
+    --panel2:#11161B;
+    --line:#262F38;
+    --text:#E8EBED;
+    --muted:#8B97A1;
+    --accent:#6FA3D8;
+    --accent-soft:#233245;
+    --accent-strong:#4C87BE;
     --green:#3fbf7f;
     --red:#e2534b;
     /* Teintes dérivées, extraites du code pour rendre le thème permutable */
-    --input-bg:#0D1216;
-    --readout-bg:#12171B;
-    --btn-bg:#232A31;
-    --placeholder:#5E6B76;
-    --on-accent:#0E1418;      /* texte posé sur un aplat d'accent */
+    --input-bg:#0C1014;
+    --readout-bg:#12171C;
+    --btn-bg:#1C232A;
+    --placeholder:#57626C;
+    --on-accent:#0A1015;      /* texte posé sur un aplat d'accent */
     --warn:#e0796d;
     --warn-soft:#f0b5ad;
     --ok:#5fd08a;
-    --footer-fg:#3f586c;
-    --hairline:rgba(255,255,255,0.05);
-    --chip-bg:rgba(255,255,255,.06);
-    --track-bg:rgba(255,255,255,.07);
-    --grid-line:rgba(255,255,255,0.015);
-    --statusbar:#101418;     /* bande sous l'heure iOS, sombre dans les deux thèmes */
+    --footer-fg:#556270;
+    --hairline:rgba(255,255,255,0.06);
+    --chip-bg:rgba(111,163,216,.10);
+    --track-bg:rgba(255,255,255,.08);
+    --grid-line:rgba(255,255,255,0);
+    --statusbar:#0D1115;     /* bande sous l'heure iOS, sombre dans les deux thèmes */
+    /* Rayons et ombres : vocabulaire commun à toutes les surfaces posées
+       (cartes, feuille de résultat, cartouche, éditeurs) */
+    --r-sm:9px;
+    --r-md:13px;
+    --r-lg:20px;
+    --shadow-card:0 1px 2px rgba(0,0,0,.35), 0 10px 26px -14px rgba(0,0,0,.6);
+    --shadow-pop:0 16px 40px -16px rgba(0,0,0,.65);
+    --gutter:calc(14px + env(safe-area-inset-right));
+    --gutter-l:calc(14px + env(safe-area-inset-left));
     /* Une seule famille, deux chasses : la condensée porte les chiffres et les
        titres, la normale le texte courant. La chasse fixe est réservée aux
        données brutes (METAR, TAF, sauvegardes) où l'alignement fait sens. */
@@ -86,32 +96,34 @@
   /* ---- Thème clair (plein soleil) ----
      L'attribut data-theme porte le thème RÉSOLU (light/dark) ; la préférence
      du pilote (auto/light/dark) vit dans localStorage et est traduite ici
-     par un script placé dans le <head>, avant le premier affichage.
-     L'ambre est assombri : la teinte d'origine est illisible sur du blanc. */
+     par un script placé dans le <head>, avant le premier affichage. */
   :root[data-theme="light"]{
-    --bg:#E7E4DD;
-    --panel:#FCFBF8;
-    --panel2:#FCFBF8;
-    --line:#C3CBD2;
-    --text:#151E27;
-    --muted:#4A555E;
-    --accent:#1F4E79;
-    --accent-soft:#AFC0D0;
+    --bg:#F0EEE8;
+    --panel:#FFFFFF;
+    --panel2:#FAF9F5;
+    --line:#E3E0D8;
+    --text:#171F27;
+    --muted:#5B6773;
+    --accent:#215E8C;
+    --accent-soft:#DCE8F1;
+    --accent-strong:#164B71;
     --green:#1a7d43;
     --red:#b02a20;
     --input-bg:#FFFFFF;
-    --readout-bg:#F2F4F1;
-    --btn-bg:#ECEDE8;
-    --placeholder:#8794A0;
+    --readout-bg:#F5F3EE;
+    --btn-bg:#F1EFE9;
+    --placeholder:#93A0AB;
     --on-accent:#FFFFFF;
     --warn:#a8281e;
     --warn-soft:#7d1c14;
     --ok:#146b38;
-    --footer-fg:#647889;
-    --hairline:rgba(0,0,0,0.08);
-    --chip-bg:rgba(0,0,0,.05);
-    --track-bg:rgba(0,0,0,.09);
-    --grid-line:transparent;   /* pas de quadrillage sur fond clair : trop marqué */
+    --footer-fg:#818C95;
+    --hairline:rgba(15,25,35,0.08);
+    --chip-bg:rgba(33,94,140,.07);
+    --track-bg:rgba(15,25,35,.08);
+    --grid-line:transparent;
+    --shadow-card:0 1px 2px rgba(30,40,55,.05), 0 12px 26px -16px rgba(30,40,55,.18);
+    --shadow-pop:0 18px 40px -16px rgba(30,40,55,.26);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--body);}
@@ -127,61 +139,57 @@
     height:env(safe-area-inset-top);
     background:var(--statusbar);z-index:1000;pointer-events:none;
   }
-  body{
-    background-image:
-      radial-gradient(circle at 12% 8%, rgba(232,163,61,0.06), transparent 40%),
-      repeating-linear-gradient(0deg, var(--grid-line) 0px, var(--grid-line) 1px, transparent 1px, transparent 44px);
-  }
-  /* Une seule feuille, pas une pile de cartes. Le fond de page est le bureau,
-     .wrap est le document posé dessus, et les blocs ne sont séparés que par un
-     filet — comme les cases d'une carte VAC ou d'une fiche de pesée. */
-  .wrap{max-width:760px;margin:0 auto;background:var(--panel);
-    border-left:1px solid var(--line);border-right:1px solid var(--line);
-    padding:0 0 calc(60px + env(safe-area-inset-bottom));
+  body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  /* Un bureau neutre sur lequel les blocs reposent comme des cartes
+     distinctes — plus une pile de fiches qu'une feuille continue. */
+  .wrap{max-width:760px;margin:0 auto;background:transparent;
+    padding:0 0 calc(64px + env(safe-area-inset-bottom));
     min-height:100vh;}
   .sheetpad{padding-left:calc(16px + env(safe-area-inset-left));
             padding-right:calc(16px + env(safe-area-inset-right));}
-  /* Cartouche : l'immatriculation est l'information d'identification, elle
-     prend la place que tenait le nom de l'application. */
-  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;
-    margin-bottom:0;border-bottom:2px solid var(--text);
-    padding:calc(14px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 11px calc(16px + env(safe-area-inset-left));}
-  /* Colonne droite du cartouche : où et quand, comme sur un en-tête de fiche */
-  .cartouche-droite{text-align:right;font-family:var(--body);font-size:12.5px;
+
+  /* Cartouche : posée comme les autres blocs, avec sa propre carte —
+     l'immatriculation reste l'information d'identification première. */
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:14px;
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);
+    box-shadow:var(--shadow-card);
+    margin:calc(10px + env(safe-area-inset-top)) var(--gutter) 12px var(--gutter-l);
+    padding:15px 19px;}
+  .cartouche-droite{text-align:right;font-family:var(--body);font-size:12px;
     color:var(--muted);line-height:1.4;flex:0 0 auto;}
-  .cartouche-droite b{display:block;font-family:var(--disp);font-size:19px;
-    font-weight:600;color:var(--text);line-height:1.1;}
-  .brand{display:flex;flex-direction:column;gap:1px;min-width:0;}
-  .brand h1{font-family:var(--disp);font-size:32px;margin:0;font-weight:700;
-    letter-spacing:0;line-height:1;}
-  .brand .sub{font-family:var(--body);font-size:13px;color:var(--muted);}
+  .cartouche-droite b{display:block;font-family:var(--disp);font-size:18px;
+    font-weight:600;color:var(--text);line-height:1.15;}
+  .brand{display:flex;flex-direction:column;gap:2px;min-width:0;}
+  .brand h1{font-family:var(--disp);font-size:27px;margin:0;font-weight:700;
+    letter-spacing:0;line-height:1.05;}
+  .brand .sub{font-family:var(--body);font-size:12.5px;color:var(--muted);}
   .status-strip{display:flex;align-items:center;justify-content:flex-end;gap:6px;
-    font-family:var(--body);font-size:11.5px;color:var(--muted);margin-top:3px;}
-  .status-strip .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);display:inline-block;}
+    font-family:var(--body);font-size:11px;color:var(--muted);margin-top:4px;}
+  .status-strip .dot{width:6px;height:6px;border-radius:50%;background:var(--muted);display:inline-block;}
 
-  .card{background:none;border:none;border-radius:0;margin:0;position:relative;
-    padding:15px calc(16px + env(safe-area-inset-right)) 19px calc(16px + env(safe-area-inset-left));
-    border-bottom:1px solid var(--line);}
-  .card:last-child{border-bottom:none;}
-  /* Titre de bloc : casse normale, pas de lettrage espacé. Le rôle du titre
-     est porté par la couleur et le filet, pas par une mise en majuscules. */
-  .card h2{font-family:var(--disp);font-size:19px;font-weight:600;letter-spacing:0;
-    color:var(--accent);margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line);
-    display:flex;align-items:baseline;gap:9px;}
-  /* Le numéro n'est conservé que là où le contenu est vraiment une séquence :
-     les dix étapes du dossier de vol. Ailleurs il est retiré du HTML. */
-  .card h2 .idx{font-family:var(--disp);font-size:14px;font-weight:500;color:var(--muted);
-    font-variant-numeric:tabular-nums;flex:0 0 auto;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);
+    margin:0 var(--gutter) 12px var(--gutter-l);position:relative;
+    padding:19px 20px 21px;box-shadow:var(--shadow-card);}
+  /* Amorce colorée + numéro discret : hiérarchie sans lettrage en capitales
+     ni filet pleine largeur — un seul repère par titre suffit. */
+  .card h2{font-family:var(--disp);font-size:18.5px;font-weight:600;letter-spacing:0;
+    color:var(--text);margin:0 0 16px;padding:0;
+    display:flex;align-items:center;gap:10px;line-height:1.2;}
+  .card h2::before{content:'';width:4px;height:16px;border-radius:2px;background:var(--accent);
+    flex:0 0 auto;}
+  .card h2 .idx{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--accent);
+    background:var(--accent-soft);border-radius:20px;padding:2.5px 9px 3px;
+    font-variant-numeric:tabular-nums;flex:0 0 auto;letter-spacing:.02em;}
 
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px 12px;}
   .grid.g2{grid-template-columns:repeat(2,1fr);}
   .grid.g3{grid-template-columns:repeat(3,1fr);}
   @media(max-width:520px){.grid.g3{grid-template-columns:repeat(2,1fr);}}
 
-  label{display:block;font-family:var(--body);font-size:12.5px;letter-spacing:0;color:var(--muted);margin-bottom:4px;
+  label{display:block;font-family:var(--body);font-size:12.5px;font-weight:500;letter-spacing:0;color:var(--muted);margin-bottom:5px;
     white-space:normal;overflow-wrap:anywhere;word-break:break-word;line-height:1.35;}
-  input,select{width:100%;min-width:0;max-width:100%;background:var(--input-bg);border:1px solid var(--line);color:var(--text);border-radius:3px;padding:9px 10px;font-family:var(--disp);font-size:16px;font-variant-numeric:tabular-nums;outline:none;transition:border-color .15s, box-shadow .15s;}
-  input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,163,61,0.12);}
+  input,select{width:100%;min-width:0;max-width:100%;background:var(--input-bg);border:1px solid var(--line);color:var(--text);border-radius:var(--r-sm);padding:10px 12px;font-family:var(--disp);font-size:16px;font-variant-numeric:tabular-nums;outline:none;transition:border-color .15s, box-shadow .15s;}
+  input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--chip-bg);}
   input::placeholder{color:var(--placeholder);}
   .field{margin-bottom:2px;min-width:0;}
   .field input.autofilled, .field select.autofilled{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent-soft);}
@@ -189,122 +197,135 @@
   input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-width:0;max-width:100%;}
   .field.opt label::after{content:' (optionnel)';color:var(--placeholder);text-transform:none;letter-spacing:0;}
 
-  details.adv{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px;}
+  details.adv{margin-top:14px;border-top:1px dashed var(--line);padding-top:14px;}
   details.adv summary{cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;}
   details.adv summary:hover{color:var(--accent);}
 
-  .runbar{display:flex;gap:8px;margin:22px 0;position:sticky;bottom:14px;z-index:5;}
+  .runbar{display:flex;gap:10px;margin:20px var(--gutter) 0 var(--gutter-l);position:sticky;bottom:calc(14px + env(safe-area-inset-bottom));z-index:5;}
   /* La barre flotte au-dessus du contenu : les libellés doivent tenir sur
      une seule ligne, sinon elle grandit et masque la section suivante. */
   .runbar button{white-space:nowrap;padding:13px 10px;}
   @media (max-width:520px){ .runbar button{font-size:12.5px;padding:12px 6px;letter-spacing:0;} }
-  button{font-family:var(--disp);font-weight:600;font-size:17px;letter-spacing:0;border-radius:3px;border:1px solid transparent;padding:11px 18px;cursor:pointer;transition:transform .08s, filter .15s;flex:1;}
+  button{font-family:var(--disp);font-weight:600;font-size:16.5px;letter-spacing:0;border-radius:var(--r-sm);border:1px solid transparent;padding:12px 18px;cursor:pointer;transition:transform .08s, filter .15s, border-color .15s;flex:1;}
   button:active{transform:scale(0.98);}
-  #computeBtn{background:var(--accent);color:var(--on-accent);box-shadow:0 6px 22px rgba(232,163,61,0.25);}
+  #computeBtn{background:var(--accent);color:var(--on-accent);box-shadow:0 10px 26px -10px rgba(0,0,0,.5);}
   #computeBtn:hover{filter:brightness(1.08);}
-  #pdfBtn{background:transparent;color:var(--text);border-color:var(--line);}
+  #pdfBtn{background:var(--panel);color:var(--text);border-color:var(--line);box-shadow:var(--shadow-card);}
   #pdfBtn:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
   #pdfBtn:disabled{opacity:.4;cursor:not-allowed;}
+  #saveDossierBtn{background:var(--chip-bg);color:var(--accent);border-color:var(--accent-soft);}
+  #saveDossierBtn:hover{background:var(--accent-soft);}
 
   .results{display:none;}
   .results.show{display:block;}
 
-  /* ---- La feuille : l'écran de résultats se lit comme un document ----
-     Un seul contenant, des blocs séparés par des filets jointifs plutôt que
-     des cartes flottantes. Libellés à gauche, chiffres alignés à droite dans
-     une colonne unique, en chasse étroite et chiffres tabulaires. */
-  .feuille{background:var(--panel);border:1px solid var(--line);border-radius:3px;
-    margin-bottom:14px;overflow:hidden;}
-  .feuille .cartouche{display:flex;justify-content:space-between;align-items:flex-end;
-    gap:14px;padding:14px 16px 11px;border-bottom:2px solid var(--text);}
-  .feuille .imm{font-family:var(--disp);font-size:30px;font-weight:700;line-height:.95;}
-  .feuille .machine{font-size:13px;color:var(--muted);margin-top:2px;}
-  .feuille .quand{font-family:var(--disp);font-size:14px;text-align:right;line-height:1.35;
+  /* ---- La feuille de résultat : se lit comme un compte rendu posé,
+     dans le même vocabulaire visuel que les cartes de saisie. ---- */
+  .feuille{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);
+    margin:0 var(--gutter) 14px var(--gutter-l);overflow:hidden;box-shadow:var(--shadow-card);}
+  .feuille .cartouche{display:flex;justify-content:space-between;align-items:center;
+    gap:14px;padding:15px 18px;border-bottom:1px solid var(--line);background:var(--readout-bg);}
+  .feuille .imm{font-family:var(--disp);font-size:27px;font-weight:700;line-height:.95;}
+  .feuille .machine{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .feuille .quand{font-family:var(--disp);font-size:13.5px;text-align:right;line-height:1.35;
     color:var(--muted);flex:0 0 auto;}
-  .feuille .quand b{display:block;font-size:19px;font-weight:600;color:var(--text);}
+  .feuille .quand b{display:block;font-size:18px;font-weight:600;color:var(--text);}
 
   /* Le verdict est le seul élément autorisé à être fort */
-  .feuille .verdict{background:var(--accent);color:var(--on-accent);padding:15px 16px;}
+  .feuille .verdict{background:var(--accent);color:var(--on-accent);padding:17px 18px;}
   .feuille .verdict.refus{background:var(--red);color:#fff;}
-  .feuille .verdict .mot{font-family:var(--disp);font-size:34px;font-weight:700;line-height:.92;}
+  .feuille .verdict .mot{font-family:var(--disp);font-size:32px;font-weight:700;line-height:.92;}
   .feuille .verdict .glose{font-size:13.5px;line-height:1.5;margin-top:7px;opacity:.92;max-width:42ch;}
 
   .feuille .bloc{border-bottom:1px solid var(--line);}
   .feuille .bloc:last-child{border-bottom:none;}
-  .feuille .bloc > h3{font-family:var(--disp);font-size:16px;font-weight:600;margin:0;
-    padding:11px 16px 5px;color:var(--accent);}
+  .feuille .bloc > h3{font-family:var(--disp);font-size:15.5px;font-weight:600;margin:0;
+    padding:13px 18px 6px;color:var(--accent);}
   .feuille table{width:100%;border-collapse:collapse;}
-  .feuille td{padding:6px 16px;border-top:1px solid var(--hairline);vertical-align:baseline;}
+  .feuille td{padding:7px 18px;border-top:1px solid var(--hairline);vertical-align:baseline;}
   .feuille tr:first-child td{border-top:none;}
   .feuille td.k{color:var(--muted);font-size:13.5px;}
-  .feuille td.v{text-align:right;font-family:var(--disp);font-size:19px;font-weight:600;
+  .feuille td.v{text-align:right;font-family:var(--disp);font-size:18.5px;font-weight:600;
     white-space:nowrap;font-variant-numeric:tabular-nums;}
-  .feuille td.v.fort{font-size:24px;}
+  .feuille td.v.fort{font-size:23px;}
   .feuille td.v small{font-size:13px;font-weight:500;color:var(--muted);margin-left:2px;}
   .feuille .plus{color:var(--ok);}
   .feuille .moins{color:var(--warn);}
 
-  .feuille .vent{display:flex;gap:15px;align-items:center;padding:9px 16px 15px;}
+  .feuille .vent{display:flex;gap:15px;align-items:center;padding:10px 18px 18px;}
   .feuille .vent svg{flex:0 0 78px;}
   .feuille .vent-txt{font-size:13.5px;line-height:1.55;color:var(--muted);}
   .feuille .vent-txt b{font-family:var(--disp);font-size:17px;color:var(--text);font-weight:600;}
-  .feuille .graph{padding:8px 16px 16px;}
-  /* Verdict : le seul élément autorisé à être fort. Il répond à la seule
-     question qui compte avant de lire le détail. */
+  .feuille .graph{padding:10px 18px 18px;}
+  /* Verdict autonome (hors .feuille) : même traitement */
   .verdict{background:var(--accent);color:var(--on-accent);
-    padding:16px calc(16px + env(safe-area-inset-right)) 17px calc(16px + env(safe-area-inset-left));
-    border-bottom:1px solid var(--line);}
+    padding:17px var(--gutter) 18px var(--gutter-l);
+    border-radius:var(--r-lg);margin:0 var(--gutter) 14px var(--gutter-l);
+    box-shadow:var(--shadow-card);}
   .verdict.refus{background:var(--red);color:#fff;}
-  .verdict .mot{font-family:var(--disp);font-size:31px;font-weight:700;line-height:1;letter-spacing:0;}
+  .verdict .mot{font-family:var(--disp);font-size:30px;font-weight:700;line-height:1;letter-spacing:0;}
   .verdict .glose{font-family:var(--body);font-size:13.5px;line-height:1.5;margin-top:7px;
     opacity:.92;max-width:44ch;}
   /* Vent : une lecture géométrique, plus rapide que trois nombres alignés */
-  .ventbloc{display:flex;gap:15px;align-items:center;margin-top:12px;
-    border-top:1px solid var(--line);padding-top:13px;}
+  .ventbloc{display:flex;gap:15px;align-items:center;margin-top:13px;
+    border-top:1px solid var(--line);padding-top:14px;}
   .ventbloc svg{flex:0 0 82px;}
   .ventbloc .vtxt{font-family:var(--body);font-size:13.5px;line-height:1.55;color:var(--muted);}
   .ventbloc .vtxt b{font-family:var(--disp);font-size:18px;font-weight:600;color:var(--text);}
-  .readout{background:var(--readout-bg);border:1px solid var(--line);border-radius:3px;padding:12px 14px;margin-bottom:10px;}
+  .readout{background:var(--readout-bg);border:1px solid var(--line);border-radius:var(--r-sm);padding:13px 15px;margin-bottom:10px;}
   .readout .row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:6px 0;border-bottom:1px solid var(--hairline);font-size:13.5px;}
   .readout .row:last-child{border-bottom:none;}
   .readout .row .k{color:var(--muted);font-family:var(--body);}
   .readout .row .v{color:var(--text);font-family:var(--disp);font-size:18px;font-weight:600;
     font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right;}
-  .readout .row .v.big{font-size:23px;color:var(--accent);}
-  .envchart-wrap{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px;}
+  .readout .row .v.big{font-size:22px;color:var(--accent);}
+  .envchart-wrap{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:12px;box-shadow:var(--shadow-card);}
   .envchart-wrap svg{display:block;margin:0 auto;font-family:Arial,sans-serif;width:100%;height:auto;max-width:100%;}
-  textarea{width:100%;background:var(--input-bg);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:9px 10px;font-family:var(--body);font-size:13.5px;outline:none;resize:vertical;min-height:64px;}
-  textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,163,61,0.12);}
+  textarea{width:100%;background:var(--input-bg);border:1px solid var(--line);color:var(--text);border-radius:var(--r-sm);padding:10px 12px;font-family:var(--body);font-size:13.5px;outline:none;resize:vertical;min-height:64px;}
+  textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--chip-bg);}
   .checklist{display:flex;flex-direction:column;gap:2px;}
-  .chk{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--hairline);cursor:pointer;}
+  .chk{display:flex;align-items:center;gap:10px;padding:9px 6px;border-radius:8px;border-bottom:1px solid var(--hairline);cursor:pointer;transition:background .12s;}
+  .chk:hover{background:var(--chip-bg);}
   .chk:last-child{border-bottom:none;}
   .chk input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);flex:none;}
   .chk span{font-size:13.5px;color:var(--text);}
-  .subhead{font-family:var(--disp);font-size:16px;font-weight:600;letter-spacing:0;color:var(--text);margin:16px 0 8px;border-top:1px solid var(--line);padding-top:12px;}
+  .subhead{font-family:var(--disp);font-size:15.5px;font-weight:600;letter-spacing:0;color:var(--text);margin:18px 0 10px;border-top:1px solid var(--line);padding-top:14px;}
   .subhead:first-child{border-top:none;padding-top:0;margin-top:0;}
   .imsafe-status{margin-top:10px;}
-  .smallhint{font-family:var(--body);font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.5;}
+  .smallhint{font-family:var(--body);font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.5;}
   .smallhint.warn{color:var(--warn);}
-  /* ---- Navigation par onglets ---- */
-  .tabs{display:flex;gap:2px;margin:0;border-bottom:1px solid var(--line);flex-wrap:wrap;
-    padding:0 calc(10px + env(safe-area-inset-right)) 0 calc(10px + env(safe-area-inset-left));}
-  .tabs button{width:auto;flex:0 0 auto;background:none;border:none;border-bottom:2px solid transparent;
-    color:var(--muted);font-family:var(--disp);font-size:17px;font-weight:500;letter-spacing:0;
-    padding:9px 13px;cursor:pointer;border-radius:0;margin-bottom:-1px;}
-  .tabs button.active{color:var(--accent);border-bottom-color:var(--accent);}
+  /* ---- Navigation par onglets : contrôle segmenté, défilable, jamais
+     à la ligne — corrige au passage le retour à la ligne disgracieux
+     de l'ancienne barre sur les petits écrans. ---- */
+  .tabs{display:flex;gap:2px;margin:0 var(--gutter) 14px var(--gutter-l);
+    background:var(--btn-bg);border:1px solid var(--line);border-radius:var(--r-md);
+    padding:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+    mask-image:linear-gradient(to right, black calc(100% - 22px), transparent 100%);
+    -webkit-mask-image:linear-gradient(to right, black calc(100% - 22px), transparent 100%);}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tabs button{width:auto;flex:0 0 auto;background:none;border:none;
+    color:var(--muted);font-family:var(--disp);font-size:14px;font-weight:600;letter-spacing:0;
+    padding:9px 12px;cursor:pointer;border-radius:var(--r-sm);white-space:nowrap;
+    transition:background .15s,color .15s;}
+  .tabs button.active{color:var(--on-accent);background:var(--accent);}
   .page-panel{display:none;}
   .page-panel.active{display:block;}
-  .listCard{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:10px;
+  .listCard{border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;margin-bottom:10px;
+    background:var(--panel2);box-shadow:var(--shadow-card);
     display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
   .listCard .lcMain{flex:1 1 auto;min-width:0;}
   .listCard .lcTitle{font-family:var(--disp);font-size:14px;color:var(--text);}
   .listCard .lcSub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;}
   .listCard .lcActions{display:flex;gap:8px;flex:0 0 auto;}
-  .btnMini{width:auto;padding:8px 13px;font-size:14px;border-radius:3px;border:1px solid var(--line);
-    background:var(--btn-bg);color:var(--text);font-family:var(--disp);font-weight:500;cursor:pointer;}
+  .rwyCard{border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;margin-bottom:10px;
+    background:var(--panel2);box-shadow:var(--shadow-card);}
+  .btnMini{width:auto;padding:9px 15px;font-size:14px;border-radius:var(--r-sm);border:1px solid var(--line);
+    background:var(--btn-bg);color:var(--text);font-family:var(--disp);font-weight:600;cursor:pointer;
+    transition:border-color .15s, filter .15s;}
+  .btnMini:hover{border-color:var(--accent-soft);}
   .btnMini.danger{color:var(--warn);border-color:rgba(224,121,109,.4);}
   .btnMini.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:700;}
-  .wizBar{height:5px;background:var(--track-bg);border-radius:3px;overflow:hidden;margin:4px 0 12px;}
+  .wizBar{height:6px;background:var(--track-bg);border-radius:6px;overflow:hidden;margin:4px 0 14px;}
   .wizBarFill{height:100%;background:var(--accent);width:0;transition:width .25s;}
   .wizStepLabel{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.05em;
     text-transform:uppercase;margin-bottom:8px;}
@@ -324,23 +345,23 @@
   .wizGrid th,.wizGrid td{border:1px solid var(--line);padding:4px;}
   .wizGrid th{color:var(--accent);font-size:11px;white-space:nowrap;padding:6px 8px;}
   .wizGrid input{width:78px;padding:6px 7px;font-size:12px;text-align:center;}
-  .dropZone{border:2px dashed var(--accent-soft);border-radius:10px;padding:26px 18px;text-align:center;
-    background:rgba(232,163,61,0.05);cursor:pointer;transition:background .15s,border-color .15s;}
-  .dropZone.over{background:rgba(232,163,61,0.14);border-color:var(--accent);}
+  .dropZone{border:2px dashed var(--accent-soft);border-radius:var(--r-md);padding:28px 18px;text-align:center;
+    background:var(--chip-bg);cursor:pointer;transition:background .15s,border-color .15s;}
+  .dropZone.over{background:var(--accent-soft);border-color:var(--accent);}
   .dropZone .dzTitle{font-family:var(--disp);font-size:15px;color:var(--accent);margin-bottom:6px;}
   .dropZone .dzHint{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.6;}
   .fileChip{display:inline-block;font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:12px;
     background:var(--chip-bg);color:var(--text);margin:4px 4px 0 0;}
-  .warnBox{border:1px solid rgba(224,121,109,.45);background:rgba(224,121,109,.08);border-radius:8px;
+  .warnBox{border:1px solid rgba(224,121,109,.45);background:rgba(224,121,109,.08);border-radius:var(--r-sm);
     padding:12px 14px;font-family:var(--mono);font-size:11px;color:var(--warn-soft);line-height:1.6;margin-top:12px;}
-  .rwyEditor{border:1px solid var(--accent-soft);background:rgba(232,163,61,0.06);border-radius:8px;padding:14px;margin-top:14px;}
+  .rwyEditor{border:1px solid var(--accent-soft);background:var(--chip-bg);border-radius:var(--r-md);padding:16px;margin-top:14px;}
   .rwyEditor h3{font-family:var(--disp);font-size:12px;color:var(--accent);margin:0;text-transform:uppercase;letter-spacing:.05em;}
   .rwyEdHead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
   .rwyEdHead h3{flex:0 0 auto;}
   .rwyEdIcaoPick{flex:1 1 150px;min-width:130px;display:flex;flex-direction:column;gap:6px;}
   .rwyEdIcaoPick select,.rwyEdIcaoPick input{padding:7px 9px;font-size:13px;}
   .rwyEditor .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
-  .rwyEditor button{width:auto;flex:0 0 auto;padding:9px 16px;font-size:12px;border-radius:6px;border:1px solid var(--line);
+  .rwyEditor button{width:auto;flex:0 0 auto;padding:10px 16px;font-size:12px;border-radius:var(--r-sm);border:1px solid var(--line);
     background:var(--btn-bg);color:var(--text);font-family:var(--mono);cursor:pointer;}
   .rwyEditor button.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:700;}
   .rwyMsg{font-family:var(--body);font-size:13px;margin-top:10px;line-height:1.5;}
@@ -348,12 +369,13 @@
   .rwyMsg.bad{color:var(--warn);}
   .apBadge{display:inline-block;font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:10px;
     background:rgba(95,208,138,.12);color:var(--ok);margin-left:8px;}
-  .apBadge.unknown{background:rgba(232,163,61,.12);color:var(--accent);}
-  .badge{display:inline-block;font-family:var(--disp);font-size:14px;letter-spacing:0;padding:2px 9px;border-radius:3px;font-weight:600;}
+  .apBadge.unknown{background:var(--chip-bg);color:var(--accent);}
+  .badge{display:inline-block;font-family:var(--disp);font-size:14px;letter-spacing:0;padding:2px 9px;border-radius:6px;font-weight:600;}
   .badge.ok{background:rgba(63,191,127,0.12);color:var(--green);border:1px solid rgba(63,191,127,0.4);}
   .badge.bad{background:rgba(226,83,75,0.12);color:var(--red);border:1px solid rgba(226,83,75,0.4);}
 
-  footer{margin:0;padding:16px;border-top:1px solid var(--line);font-family:var(--body);
+  footer{margin:6px var(--gutter) 0 var(--gutter-l);padding:18px 4px calc(18px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--line);font-family:var(--body);
     font-size:11.5px;color:var(--footer-fg);text-align:center;line-height:1.6;}
   a{color:var(--accent);}
 
@@ -489,7 +511,7 @@
 
     <!-- Brouillon retrouvé après une fermeture inopinée de l'app -->
     <div class="card" id="draftBanner" style="display:none;background:var(--readout-bg);box-shadow:inset 4px 0 0 var(--accent);">
-      <h2>DOSSIER EN COURS RETROUVÉ</h2>
+      <h2>Dossier en cours retrouvé</h2>
       <div class="smallhint" id="draftBannerInfo" style="margin-bottom:10px;"></div>
       <div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
         <button type="button" class="btnMini primary" id="draftResume" style="flex:1 1 45%;">Reprendre</button>
@@ -498,7 +520,7 @@
     </div>
 
     <div class="card">
-      <h2>QUE VEUX-TU FAIRE&nbsp;?</h2>
+      <h2>Que veux-tu faire&nbsp;?</h2>
       <div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
         <button type="button" class="btnMini primary" id="homeNewFlight" style="flex:1 1 100%;padding:14px;">✈︎ Nouveau dossier de vol</button>
         <button type="button" class="btnMini" id="homeAircraft" style="flex:1 1 45%;">Ajouter / modifier un avion</button>
@@ -511,13 +533,13 @@
     </div>
 
     <div class="card">
-      <h2>DOSSIERS ENREGISTRÉS</h2>
+      <h2>Dossiers enregistrés</h2>
       <div class="rwyMsg" id="dossierMsg"></div>
       <div id="dossierList"></div>
     </div>
 
     <div class="card">
-      <h2>SAUVEGARDE &amp; STOCKAGE</h2>
+      <h2>Sauvegarde &amp; stockage</h2>
       <div class="smallhint" style="margin-bottom:12px;">
         Tes dossiers de vol n'existent que dans le stockage de cette icône, qui
         n'est partagé avec rien d'autre. Une sauvegarde déposée dans Fichiers ou
@@ -546,7 +568,7 @@
     </div>
 
     <div class="card">
-      <h2>AFFICHAGE</h2>
+      <h2>Affichage</h2>
       <div class="field">
         <label>Thème</label>
         <select id="themeSelect">
@@ -4002,7 +4024,7 @@ function calcErrorBox(){
 function showCalcError(e){
   const box = calcErrorBox();
   const msg = String((e && e.message) || e).replace(/[<>&]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-  box.innerHTML = '<h2>CALCUL IMPOSSIBLE</h2>'
+  box.innerHTML = '<h2>Calcul impossible</h2>'
     + '<div class="rwyMsg bad">' + msg + '</div>'
     + '<div class="smallhint">Vérifie qu\'un avion est sélectionné et que les masses, le carburant et les terrains sont renseignés.</div>';
   box.style.display = '';
