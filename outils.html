@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-<title>PréVol — Dossier</title>
+<title>PréVol — Outils</title>
 <meta content="#0a141f" name="theme-color"/>
 <link href="./manifest.json" rel="manifest"/>
 <link href="./icon-192.png" rel="icon"/>
@@ -600,14 +600,38 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
   }
 }
 </style>
-<style id="dossier-page">.dossier-page .tabs{display:none!important;} .pageHome.active,.pageFlight.active{display:block!important;}</style></head>
-<body class="dossier-page" data-view="dossier">
+
+<style id="multi-page-navigation">
+  .nav-page-link{text-decoration:none;}
+  .subpage .tabs{display:none !important;}
+  .subpage .main-content > header.top{height:230px;}
+  .subpage .hero-copy h1{font-size:58px;}
+  .subpage .hero-copy p{max-width:52ch;}
+  .subpage #pageHome,.subpage #pageAircraft,.subpage #pageAirport{display:none !important;}
+  .subpage #pageFlight{display:block !important;}
+  .subpage #pageFlight > *{display:none !important;}
+  .subpage #pageFlight > .view-show{display:block !important;}
+  .subpage .page-panel{padding-top:30px;}
+  .subpage .page-panel > .view-show{margin-bottom:18px;}
+  .subpage .page-panel > .view-show:last-child{margin-bottom:0;}
+  .subpage .page-panel > .view-show.card{scroll-margin-top:20px;}
+  .subpage .page-panel > .view-show + .view-show{margin-top:18px;}
+  .subpage .single-page-intro{display:block !important;}
+  .subpage .about-content{display:grid !important;}
+  @media(max-width:760px){
+    .subpage .main-content > header.top{height:210px;}
+    .subpage .hero-copy h1{font-size:48px;}
+  }
+</style>
+<style id="page-filter-outils">
+</style></head>
+<body class="subpage" data-view="outils">
 <div class="wrap">
 <div class="app-shell">
 <aside aria-label="Navigation principale" class="sidebar">
 <div class="side-brand"><div class="side-name">PréVol</div><div class="side-sub">Préparation de vol</div></div>
 <div class="side-rule"></div>
-<nav class="side-nav"><a class="tab nav-page-link active" href="index.html"><span class="nav-ico">⌂</span><span>Dossier</span></a><a class="tab nav-page-link" href="meteo.html"><span class="nav-ico">☁</span><span>Météo</span></a><a class="tab nav-page-link" href="notam.html"><span class="nav-ico">▤</span><span>NOTAM</span></a><a class="tab nav-page-link" href="performances.html"><span class="nav-ico">▥</span><span>Performances</span></a><a class="tab nav-page-link" href="masse-centrage.html"><span class="nav-ico">◇</span><span>Masse &amp; centrage</span></a><a class="tab nav-page-link" href="navigation.html"><span class="nav-ico">◉</span><span>Navigation</span></a><a class="tab nav-page-link" href="documents.html"><span class="nav-ico">□</span><span>Documents</span></a><a class="tab nav-page-link" href="outils.html"><span class="nav-ico">⌕</span><span>Outils</span></a></nav>
+<nav class="side-nav"><a class="tab nav-page-link" href="index.html"><span class="nav-ico">⌂</span><span>Dossier</span></a><a class="tab nav-page-link" href="meteo.html"><span class="nav-ico">☁</span><span>Météo</span></a><a class="tab nav-page-link" href="notam.html"><span class="nav-ico">▤</span><span>NOTAM</span></a><a class="tab nav-page-link" href="performances.html"><span class="nav-ico">▥</span><span>Performances</span></a><a class="tab nav-page-link" href="masse-centrage.html"><span class="nav-ico">◇</span><span>Masse &amp; centrage</span></a><a class="tab nav-page-link" href="navigation.html"><span class="nav-ico">◉</span><span>Navigation</span></a><a class="tab nav-page-link" href="documents.html"><span class="nav-ico">□</span><span>Documents</span></a><a class="tab nav-page-link active" href="outils.html"><span class="nav-ico">⌕</span><span>Outils</span></a></nav>
 <div class="side-spacer"></div>
 <nav class="side-nav side-bottom"><a class="tab nav-page-link" href="parametres.html"><span class="nav-ico">⚙</span><span>Paramètres</span></a><a class="tab nav-page-link" href="a-propos.html"><span class="nav-ico">ⓘ</span><span>À propos</span></a></nav>
 <div class="side-footer">Fly safe. Fly prepared.</div>
@@ -616,13 +640,13 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 <header class="top">
 <div class="hero-copy">
 <div class="hero-date" id="hdrDate">—</div>
-<div class="hero-kicker">DOSSIER DE VOL</div>
-<h1>PréVol</h1>
-<p>Tous les éléments de votre préparation de vol réunis dans un seul dossier.</p>
+<div class="hero-kicker">PRÉPARATION DE VOL</div>
+<h1>Outils</h1>
+<p>Préparez, vérifiez et documentez votre vol depuis un espace dédié.</p>
 </div>
 </header>
-<nav aria-hidden="true" class="tabs"><a class="tab active" href="index.html">Dossier</a><a class="tab" href="meteo.html">Météo</a><a class="tab" href="notam.html">NOTAM</a><a class="tab" href="performances.html">Performances</a><a class="tab" href="masse-centrage.html">Masse &amp; centrage</a><a class="tab" href="navigation.html">Navigation</a><a class="tab" href="documents.html">Documents</a><a class="tab" href="outils.html">Outils</a></nav>
-<div class="page-panel active" id="pageHome">
+<nav aria-hidden="true" class="tabs"><a class="tab" href="index.html">Dossier</a><a class="tab" href="meteo.html">Météo</a><a class="tab" href="notam.html">NOTAM</a><a class="tab" href="performances.html">Performances</a><a class="tab" href="masse-centrage.html">Masse &amp; centrage</a><a class="tab" href="navigation.html">Navigation</a><a class="tab" href="documents.html">Documents</a><a class="tab active" href="outils.html">Outils</a></nav>
+<div class="page-panel" id="pageHome">
 <section class="dashboard-hero-note">
 <div><span class="eyebrow">TABLEAU DE BORD</span><h2>Tout ce qu’il faut avant le départ.</h2><p>Préparez, vérifiez et conservez votre dossier de vol depuis un seul espace.</p></div>
 <button class="dashboard-primary" id="homeNewFlight" type="button"><span class="action-icon">➤</span><span><b>Nouveau vol</b><small>Démarrer une préparation</small></span><span class="arrow">→</span></button>
@@ -665,7 +689,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 </div>
 <div class="page-panel active" id="pageFlight">
 <!-- 1. GENERAL -->
-<section class="card" id="sectionVol">
+<section class="card view-vol" id="sectionVol">
 <h2><span class="idx">01</span> Vol</h2>
 <div class="grid g3">
 <div class="field"><label>Avion</label>
@@ -682,7 +706,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 </div>
 </section>
 <!-- 3. MASSE -->
-<section class="card" id="sectionMass">
+<section class="card view-mass" id="sectionMass">
 <h2><span class="idx">02</span> Masses</h2>
 <div class="grid g3">
 <div class="field"><label>Poids pilote (kg)</label><input id="wPilot" placeholder="kg" type="number"/></div>
@@ -703,7 +727,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 </details>
 </section>
 <!-- 4. CARBURANT -->
-<section class="card" id="sectionPerf">
+<section class="card view-perf" id="sectionPerf">
 <h2><span class="idx">03</span> Carburant</h2>
 <div class="grid g3">
 <div class="field"><label>Temps de vol prévu (min)</label><input id="flightTime" placeholder="min" type="number"/></div>
@@ -728,7 +752,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 </details>
 </section>
 <!-- ENVIRONNEMENT & PISTES -->
-<section class="card">
+<section class="card view-environment">
 <h2><span class="idx">04</span> Environnement &amp; pistes</h2>
 <div class="subhead" id="depEnvHead" style="margin-top:0;">Départ</div>
 <div class="grid g3">
@@ -839,7 +863,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 </div>
 </section>
 <!-- 6. OPTIONNEL / CARTOUCHE -->
-<section class="card">
+<section class="card view-folder">
 <h2><span class="idx">05</span> Cartouche folder <span style="font-weight:400;color:var(--muted);text-transform:none;font-family:var(--body);font-size:12px;">(pour la page de garde du PDF)</span></h2>
 <div class="grid g3">
 <div class="field opt"><label>MEL</label><input id="mel" placeholder="RAS" type="text"/></div>
@@ -849,7 +873,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 </div>
 </section>
 <!-- 7. DOCUMENTS & PILOTE -->
-<section class="card" id="sectionDocs">
+<section class="card view-docs" id="sectionDocs">
 <h2><span class="idx">06</span> Documents &amp; Pilote</h2>
 <div class="subhead">Documents avion</div>
 <div class="checklist">
@@ -884,10 +908,10 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 <div class="imsafe-status" id="imsafeStatus"></div>
 </section>
 <!-- 8. METEO & NOTAM -->
-<section class="card" id="sectionWeather">
-<h2><span class="idx">07</span> Météo &amp; NOTAM</h2>
-<div class="subhead">Éléments consultés</div>
-<div class="checklist">
+<section class="card view-weather" id="sectionWeather">
+<h2 class="wx-only notam-only"><span class="idx">07</span> Météo &amp; NOTAM</h2>
+<div class="subhead wx-only">Éléments consultés</div>
+<div class="checklist wx-only">
 <label class="chk"><input id="wxEuroc" type="checkbox"/><span>EUROC</span></label>
 <label class="chk"><input id="wxSigChart" type="checkbox"/><span>SIG WX Chart</span></label>
 <label class="chk"><input id="wxWintem" type="checkbox"/><span>WINTEM</span></label>
@@ -895,13 +919,13 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 <label class="chk"><input id="wxMinima" type="checkbox"/><span>Planning minima</span></label>
 <label class="chk"><input id="wxMaritime" type="checkbox"/><span>Survol maritime (vagues, T° eau)</span></label>
 </div>
-<div class="field" style="margin-top:12px;"><label>Minima de planification (T/O, dégagements, destination)</label><textarea id="wxMinimaText" placeholder="ICAO / RWY-APP / minima / météo / remarques"></textarea></div>
-<div class="subhead">Bulletin METAR / TAF</div>
-<div class="smallhint" style="margin-bottom:10px;">
+<div class="field wx-only" style="margin-top:12px;"><label>Minima de planification (T/O, dégagements, destination)</label><textarea id="wxMinimaText" placeholder="ICAO / RWY-APP / minima / météo / remarques"></textarea></div>
+<div class="subhead wx-only">Bulletin METAR / TAF</div>
+<div class="smallhint wx-only" style="margin-bottom:10px;">
       Données Aviation Weather Center (NOAA), gratuites et sans compte.
       Nécessite du réseau ; le dernier bulletin reçu reste consultable hors ligne.
     </div>
-<div class="grid g3">
+<div class="grid g3 wx-only">
 <div class="field"><label>Rayon terrains alentour</label>
 <select id="wxRadius">
 <option value="0">Aucun (vol seul)</option>
@@ -920,62 +944,62 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 <button class="btnMini primary" id="wxFetchBtn" style="width:100%;" type="button">Récupérer le bulletin</button>
 </div>
 </div>
-<div class="rwyMsg" id="wxFetchMsg"></div>
-<div id="wxResults" style="margin-top:10px;"></div>
-<div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+<div class="rwyMsg wx-only" id="wxFetchMsg"></div>
+<div class="wx-only" id="wxResults" style="margin-top:10px;"></div>
+<div class="btnrow wx-only" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
 <button class="btnMini" id="wxClearBtn" style="display:none;" type="button">Effacer le bulletin</button>
 </div>
-<div class="subhead">Cartes (TEMSI / WINTEM / SIGWX)</div>
-<div class="smallhint" style="margin-bottom:10px;">
+<div class="subhead wx-only">Cartes (TEMSI / WINTEM / SIGWX)</div>
+<div class="smallhint wx-only" style="margin-bottom:10px;">
       Les cartes Météo-France ne sont pas récupérables automatiquement (accès Aeroweb
       authentifié, images sous copyright). Télécharge ton dossier depuis Aeroweb, puis
       importe-le ici : ses pages seront jointes à la fin du document généré.
     </div>
-<div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
+<div class="btnrow wx-only" style="display:flex;gap:10px;flex-wrap:wrap;">
 <a class="btnMini" href="https://aviation.meteo.fr/login.php" rel="noopener" target="_blank">Ouvrir Aeroweb ↗</a>
 <label class="btnMini primary" for="wxDocInput" style="cursor:pointer;">Importer le dossier (PDF)</label>
 <input accept="application/pdf,image/*" id="wxDocInput" style="display:none;" type="file"/>
 <button class="btnMini" id="wxDocClear" style="display:none;" type="button">Retirer</button>
 </div>
-<div class="rwyMsg" id="wxDocMsg"></div>
-<div id="wxDocPreview"></div>
-<div class="subhead">NOTAMs</div>
-<div class="checklist">
+<div class="rwyMsg wx-only" id="wxDocMsg"></div>
+<div class="wx-only" id="wxDocPreview"></div>
+<div class="subhead notam-only">NOTAMs</div>
+<div class="checklist notam-only">
 <label class="chk"><input id="notamAirport" type="checkbox"/><span>NOTAMs aérodrome</span></label>
 <label class="chk"><input id="notamFir" type="checkbox"/><span>NOTAMs FIR</span></label>
 <label class="chk"><input id="notamAip" type="checkbox"/><span>AIP SUP / AIC</span></label>
 <label class="chk"><input id="notamRaim" type="checkbox"/><span>RAIM check</span></label>
 </div>
-<div class="smallhint" style="margin:10px 0;">
+<div class="smallhint notam-only" style="margin:10px 0;">
       Les NOTAM français (PIB Trajet) proviennent du SIA / Olivia, qui exige une
       authentification : ils ne peuvent pas être récupérés automatiquement.
       Génère ton PIB puis importe-le ici — ses pages seront jointes au dossier,
       juste après la page NOTAM.
     </div>
-<div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
+<div class="btnrow notam-only" style="display:flex;gap:10px;flex-wrap:wrap;">
 <a class="btnMini" href="https://sofia-briefing.aviation-civile.gouv.fr/" rel="noopener" target="_blank">Ouvrir SOFIA-Briefing ↗</a>
 <label class="btnMini primary" for="ntmDocInput" style="cursor:pointer;">Importer le PIB (PDF)</label>
 <input accept="application/pdf,image/*" id="ntmDocInput" style="display:none;" type="file"/>
 <button class="btnMini" id="ntmDocClear" style="display:none;" type="button">Retirer</button>
 </div>
-<div class="rwyMsg" id="ntmDocMsg"></div>
-<div id="ntmDocPreview"></div>
-<div class="subhead">Annexe libre</div>
-<div class="smallhint" style="margin-bottom:10px;">
+<div class="rwyMsg notam-only" id="ntmDocMsg"></div>
+<div class="notam-only" id="ntmDocPreview"></div>
+<div class="subhead wx-only">Annexe libre</div>
+<div class="smallhint wx-only" style="margin-bottom:10px;">
       Tout document ou photo à joindre au dossier (devis, autorisation, carte
       annotée, capture d'écran…) : les pages seront ajoutées à la toute fin
       du document imprimé.
     </div>
-<div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
+<div class="btnrow wx-only" style="display:flex;gap:10px;flex-wrap:wrap;">
 <label class="btnMini primary" for="freeDocInput" style="cursor:pointer;">Ajouter une pièce jointe (PDF/photo)</label>
 <input accept="application/pdf,image/*" id="freeDocInput" style="display:none;" type="file"/>
 <button class="btnMini" id="freeDocClear" style="display:none;" type="button">Retirer</button>
 </div>
-<div class="rwyMsg" id="freeDocMsg"></div>
-<div id="freeDocPreview"></div>
+<div class="rwyMsg wx-only" id="freeDocMsg"></div>
+<div class="wx-only" id="freeDocPreview"></div>
 </section>
 <!-- 10. CARBURANT PART-NCO (complément) -->
-<section class="card" id="altFuelSection">
+<section class="card view-environment" id="altFuelSection">
 <h2><span class="idx">08</span> Carburant — dégagement</h2>
 <div class="grid g2">
 <div class="field"><label>Réserve dégagement (L)</label><input id="altReserveL" placeholder="L" type="number"/></div>
@@ -983,7 +1007,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 <div class="smallhint">Carburant nécessaire pour rejoindre <span id="altReserveIcao">le terrain de dégagement</span> depuis la destination.</div>
 </section>
 <!-- 11. EQUIPEMENTS SECURITE -->
-<section class="card">
+<section class="card view-decision">
 <h2><span class="idx">09</span> Équipements de sécurité &amp; TEM</h2>
 <div class="checklist">
 <label class="chk"><input id="eqFirstAid" type="checkbox"/><span>Trousse premiers secours</span></label>
@@ -996,7 +1020,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 </div>
 </section>
 <!-- 12. MENACES GENERALES & DECISION -->
-<section class="card" id="sectionDecision">
+<section class="card view-decision" id="sectionDecision">
 <h2><span class="idx">10</span> Menaces générales &amp; décision</h2>
 <div class="field"><label>Revue des menaces spécifiques du vol &amp; mitigations</label><textarea id="genThreats"></textarea></div>
 <div class="grid g2">
@@ -1011,7 +1035,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 <button id="saveDossierBtn">Enregistrer</button>
 <button disabled="" id="pdfBtn">Générer PDF</button>
 </div>
-<div class="results" id="results">
+<div class="results view-results" id="results">
 <div class="verdict" id="verdict"></div>
 <div class="feuille" id="resultSheet"></div>
 <section class="card" id="lastMinuteCard">
@@ -1042,7 +1066,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 <div id="loadFixBody"></div>
 </section>
 </div>
-<div id="printReportWrap">
+<div class="view-print" id="printReportWrap">
 <div class="hint" id="printHint"></div>
 <div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
 <button class="btnMini primary" id="reportPrintBtn" style="flex:1 1 auto;padding:14px;" type="button">🖨️ Imprimer / Enregistrer en PDF</button>

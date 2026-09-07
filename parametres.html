@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-<title>PréVol — Dossier</title>
+<title>PréVol — Paramètres</title>
 <meta content="#0a141f" name="theme-color"/>
 <link href="./manifest.json" rel="manifest"/>
 <link href="./icon-192.png" rel="icon"/>
@@ -600,40 +600,63 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
   }
 }
 </style>
-<style id="dossier-page">.dossier-page .tabs{display:none!important;} .pageHome.active,.pageFlight.active{display:block!important;}</style></head>
-<body class="dossier-page" data-view="dossier">
+
+<style id="multi-page-navigation">
+  .nav-page-link{text-decoration:none;}
+  .subpage .tabs{display:none !important;}
+  .subpage .main-content > header.top{height:230px;}
+  .subpage .hero-copy h1{font-size:58px;}
+  .subpage .hero-copy p{max-width:52ch;}
+  .subpage #pageHome,.subpage #pageAircraft,.subpage #pageAirport{display:none !important;}
+  .subpage #pageFlight{display:block !important;}
+  .subpage #pageFlight > *{display:none !important;}
+  .subpage #pageFlight > .view-show{display:block !important;}
+  .subpage .page-panel{padding-top:30px;}
+  .subpage .page-panel > .view-show{margin-bottom:18px;}
+  .subpage .page-panel > .view-show:last-child{margin-bottom:0;}
+  .subpage .page-panel > .view-show.card{scroll-margin-top:20px;}
+  .subpage .page-panel > .view-show + .view-show{margin-top:18px;}
+  .subpage .single-page-intro{display:block !important;}
+  .subpage .about-content{display:grid !important;}
+  @media(max-width:760px){
+    .subpage .main-content > header.top{height:210px;}
+    .subpage .hero-copy h1{font-size:48px;}
+  }
+</style>
+<style id="settings-filter">.subpage #pageHome > .settings-hide{display:none!important}.subpage #pageHome > .settings-show{display:block!important}.subpage #pageHome{display:block!important}.subpage #pageFlight{display:none!important}.subpage .page-panel{padding-top:30px}</style></head>
+<body class="subpage" data-view="parametres">
 <div class="wrap">
 <div class="app-shell">
 <aside aria-label="Navigation principale" class="sidebar">
 <div class="side-brand"><div class="side-name">PréVol</div><div class="side-sub">Préparation de vol</div></div>
 <div class="side-rule"></div>
-<nav class="side-nav"><a class="tab nav-page-link active" href="index.html"><span class="nav-ico">⌂</span><span>Dossier</span></a><a class="tab nav-page-link" href="meteo.html"><span class="nav-ico">☁</span><span>Météo</span></a><a class="tab nav-page-link" href="notam.html"><span class="nav-ico">▤</span><span>NOTAM</span></a><a class="tab nav-page-link" href="performances.html"><span class="nav-ico">▥</span><span>Performances</span></a><a class="tab nav-page-link" href="masse-centrage.html"><span class="nav-ico">◇</span><span>Masse &amp; centrage</span></a><a class="tab nav-page-link" href="navigation.html"><span class="nav-ico">◉</span><span>Navigation</span></a><a class="tab nav-page-link" href="documents.html"><span class="nav-ico">□</span><span>Documents</span></a><a class="tab nav-page-link" href="outils.html"><span class="nav-ico">⌕</span><span>Outils</span></a></nav>
+<nav class="side-nav"><a class="tab nav-page-link" href="index.html"><span class="nav-ico">⌂</span><span>Dossier</span></a><a class="tab nav-page-link" href="meteo.html"><span class="nav-ico">☁</span><span>Météo</span></a><a class="tab nav-page-link" href="notam.html"><span class="nav-ico">▤</span><span>NOTAM</span></a><a class="tab nav-page-link" href="performances.html"><span class="nav-ico">▥</span><span>Performances</span></a><a class="tab nav-page-link" href="masse-centrage.html"><span class="nav-ico">◇</span><span>Masse &amp; centrage</span></a><a class="tab nav-page-link" href="navigation.html"><span class="nav-ico">◉</span><span>Navigation</span></a><a class="tab nav-page-link" href="documents.html"><span class="nav-ico">□</span><span>Documents</span></a><a class="tab nav-page-link" href="outils.html"><span class="nav-ico">⌕</span><span>Outils</span></a></nav>
 <div class="side-spacer"></div>
-<nav class="side-nav side-bottom"><a class="tab nav-page-link" href="parametres.html"><span class="nav-ico">⚙</span><span>Paramètres</span></a><a class="tab nav-page-link" href="a-propos.html"><span class="nav-ico">ⓘ</span><span>À propos</span></a></nav>
+<nav class="side-nav side-bottom"><a class="tab nav-page-link active" href="parametres.html"><span class="nav-ico">⚙</span><span>Paramètres</span></a><a class="tab nav-page-link" href="a-propos.html"><span class="nav-ico">ⓘ</span><span>À propos</span></a></nav>
 <div class="side-footer">Fly safe. Fly prepared.</div>
 </aside>
 <main class="main-content">
 <header class="top">
 <div class="hero-copy">
 <div class="hero-date" id="hdrDate">—</div>
-<div class="hero-kicker">DOSSIER DE VOL</div>
-<h1>PréVol</h1>
-<p>Tous les éléments de votre préparation de vol réunis dans un seul dossier.</p>
+<div class="hero-kicker">CONFIGURATION</div>
+<h1>Paramètres</h1>
+<p>Personnalisez l’affichage et gérez les données locales de PréVol.</p>
 </div>
 </header>
-<nav aria-hidden="true" class="tabs"><a class="tab active" href="index.html">Dossier</a><a class="tab" href="meteo.html">Météo</a><a class="tab" href="notam.html">NOTAM</a><a class="tab" href="performances.html">Performances</a><a class="tab" href="masse-centrage.html">Masse &amp; centrage</a><a class="tab" href="navigation.html">Navigation</a><a class="tab" href="documents.html">Documents</a><a class="tab" href="outils.html">Outils</a></nav>
+<nav aria-hidden="true" class="tabs"><a class="tab" href="index.html">Dossier</a><a class="tab" href="meteo.html">Météo</a><a class="tab" href="notam.html">NOTAM</a><a class="tab" href="performances.html">Performances</a><a class="tab" href="masse-centrage.html">Masse &amp; centrage</a><a class="tab" href="navigation.html">Navigation</a><a class="tab" href="documents.html">Documents</a><a class="tab" href="outils.html">Outils</a></nav>
 <div class="page-panel active" id="pageHome">
-<section class="dashboard-hero-note">
+<section class="dashboard-hero-note settings-hide">
 <div><span class="eyebrow">TABLEAU DE BORD</span><h2>Tout ce qu’il faut avant le départ.</h2><p>Préparez, vérifiez et conservez votre dossier de vol depuis un seul espace.</p></div>
 <button class="dashboard-primary" id="homeNewFlight" type="button"><span class="action-icon">➤</span><span><b>Nouveau vol</b><small>Démarrer une préparation</small></span><span class="arrow">→</span></button>
 </section>
-<section class="quick-actions">
+<section class="quick-actions settings-hide">
 <button class="quick-card" id="homeLoad" onclick="document.getElementById('recentDossiers')?.scrollIntoView({behavior:'smooth'})" type="button"><span class="quick-icon">▱</span><b>Charger un vol</b><small>Ouvrir une préparation</small></button>
 <button class="quick-card" id="homeRecent" onclick="document.getElementById('recentDossiers')?.scrollIntoView({behavior:'smooth'})" type="button"><span class="quick-icon">◷</span><b>Vol récent</b><small>Accéder à l’historique</small></button>
 <button class="quick-card" id="homeAircraft" type="button"><span class="quick-icon">✧</span><b>Avions</b><small>Gérer vos appareils</small></button>
 <button class="quick-card" id="homeAirport" type="button"><span class="quick-icon">☆</span><b>Aérodromes</b><small>Fiches et pistes</small></button>
 </section>
-<section class="dashboard-grid">
+<section class="dashboard-grid settings-hide">
 <div class="card dashboard-card recent-card" id="recentDossiers">
 <div class="dash-head"><div><span class="eyebrow">HISTORIQUE</span><h2>Ma préparation</h2></div><button class="text-link" onclick="document.getElementById('recentDossiers')?.scrollIntoView({behavior:'smooth'})" type="button">Tout voir  →</button></div>
 <div class="rwyMsg" id="dossierMsg"></div>
@@ -654,16 +677,16 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 <div class="card weather-preview"><div class="dash-head"><div><span class="eyebrow">APERÇU</span><h2>Météo</h2></div><button class="icon-link" data-page="pageFlight" data-scroll="#sectionWeather" type="button">↗</button></div><div class="weather-placeholder"><div class="weather-sun" id="homeWxIcon">☼</div><div><span>Conditions actuelles · LFRS</span><strong id="homeWxState">Chargement…</strong><small id="homeWxObserved" style="display:block;margin-top:6px;color:#8a96a4;font-size:10px;"></small></div></div><div class="weather-stats"><span>Vent<strong id="homeWxWind">—</strong></span><span>Visibilité<strong id="homeWxVis">—</strong></span><span>QNH<strong id="homeWxQnh">—</strong></span><span>Temp.<strong id="homeWxTemp">—</strong></span></div></div>
 </div>
 </section>
-<section class="card storage-card">
+<section class="card storage-card settings-show">
 <div class="dash-head"><div><span class="eyebrow">DONNÉES LOCALES</span><h2>Sauvegarde &amp; stockage</h2></div></div>
 <div class="storage-layout">
 <div class="storage-copy"><p>Tes dossiers restent stockés localement sur cet appareil. Une sauvegarde permet de les récupérer en cas de perte.</p><div class="btnrow"><button class="btnMini primary" id="backupBtn" type="button">Tout sauvegarder</button><label class="btnMini" for="restoreInput" style="cursor:pointer;text-align:center;">Restaurer</label><input accept="application/json,.json" id="restoreInput" style="display:none;" type="file"/><button class="btnMini" id="storageRefreshBtn" type="button">Actualiser</button></div><label class="chk"><input checked="" id="backupWithDocs" type="checkbox"/><span>Inclure les pièces jointes</span></label><div class="rwyMsg" id="backupMsg"></div></div>
 <div class="storage-meter"><div class="subhead">Espace occupé</div><div class="wizBar"><div class="wizBarFill" id="storageBarFill"></div></div><div class="smallhint" id="storageInfo">Mesure en cours…</div><button class="btnMini danger" id="purgeDocsBtn" type="button">Alléger les dossiers de plus de 30 jours</button><div class="rwyMsg" id="purgeMsg"></div></div>
 </div>
 </section>
-<section class="card settings-card"><div class="dash-head"><div><span class="eyebrow">PRÉFÉRENCES</span><h2>Affichage</h2></div></div><div class="field"><label>Thème</label><select id="themeSelect"><option value="auto">Automatique (réglage système)</option><option value="light">Jour — clair</option><option value="dark">Nuit — sombre</option></select></div><div class="smallhint" id="appVersionLine"></div></section>
+<section class="card settings-card settings-show"><div class="dash-head"><div><span class="eyebrow">PRÉFÉRENCES</span><h2>Affichage</h2></div></div><div class="field"><label>Thème</label><select id="themeSelect"><option value="auto">Automatique (réglage système)</option><option value="light">Jour — clair</option><option value="dark">Nuit — sombre</option></select></div><div class="smallhint" id="appVersionLine"></div></section>
 </div>
-<div class="page-panel active" id="pageFlight">
+<div class="page-panel" id="pageFlight">
 <!-- 1. GENERAL -->
 <section class="card" id="sectionVol">
 <h2><span class="idx">01</span> Vol</h2>
