@@ -204,6 +204,8 @@
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px 12px;}
   .grid.g2{grid-template-columns:repeat(2,1fr);}
   .grid.g3{grid-template-columns:repeat(3,1fr);}
+  .grid.g4{grid-template-columns:repeat(4,minmax(0,1fr));}
+  @media(max-width:900px){.grid.g4{grid-template-columns:repeat(2,minmax(0,1fr));}}
   @media(max-width:520px){.grid.g3{grid-template-columns:repeat(2,1fr);}}
 
   label{display:block;font-family:var(--body);font-size:12.5px;font-weight:500;letter-spacing:0;color:var(--muted);margin-bottom:5px;
@@ -887,7 +889,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 <!-- 4. CARBURANT -->
 <section class="card" id="sectionPerf">
 <div class="section-title-row"><h2><span class="idx">03</span> Carburant</h2><a class="section-open-link" href="carburant.html">Ouvrir la page Carburant ↗</a></div>
-<div class="grid g3">
+<div class="grid g4">
 <div class="field"><label>Temps de vol prévu (min)</label><input id="flightTime" placeholder="min" type="number"/></div>
 <div class="field"><label>Réserve finale</label>
 <select id="reserveType">
@@ -899,6 +901,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 <div class="field"><label>Fuel embarqué (L)</label><input id="fuelOnBoard" placeholder="L" type="number"/>
 <div class="smallhint" id="fuelCapacityHint"></div>
 </div>
+<div class="field" id="altFuelField"><label>Réserve dégagement (L)</label><input id="altReserveL" placeholder="L" type="number"/><div class="smallhint">Carburant nécessaire pour rejoindre <span id="altReserveIcao">le terrain de dégagement</span> depuis la destination.</div></div>
 </div>
 <details class="adv" style="display:none;">
 <summary>Paramètres carburant (consommations, densité)</summary>
@@ -1156,17 +1159,9 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 <div class="rwyMsg" id="freeDocMsg"></div>
 <div id="freeDocPreview"></div>
 </section>
-<!-- 10. CARBURANT PART-NCO (complément) -->
-<section class="card" id="altFuelSection">
-<h2><span class="idx">07</span> Carburant — dégagement</h2>
-<div class="grid g2">
-<div class="field"><label>Réserve dégagement (L)</label><input id="altReserveL" placeholder="L" type="number"/></div>
-</div>
-<div class="smallhint">Carburant nécessaire pour rejoindre <span id="altReserveIcao">le terrain de dégagement</span> depuis la destination.</div>
-</section>
 <!-- 11. EQUIPEMENTS SECURITE -->
 <section class="card">
-<h2><span class="idx">08</span> Équipements de sécurité &amp; TEM</h2>
+<h2><span class="idx">07</span> Équipements de sécurité &amp; TEM</h2>
 <div class="checklist">
 <label class="chk"><input id="eqFirstAid" type="checkbox"/><span>Trousse premiers secours</span></label>
 <label class="chk"><input id="eqOxygen" type="checkbox"/><span>Oxygène supplémentaire</span></label>
@@ -1179,7 +1174,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 </section>
 <!-- 12. MENACES GENERALES & DECISION -->
 <section class="card" id="sectionDecision">
-<h2><span class="idx">09</span> Menaces générales &amp; décision</h2>
+<h2><span class="idx">08</span> Menaces générales &amp; décision</h2>
 <div class="field"><label>Revue des menaces spécifiques du vol &amp; mitigations</label><textarea id="genThreats"></textarea></div>
 <div class="grid g2">
 <div class="field"><label>Décision</label>
@@ -2314,7 +2309,7 @@ function hasAlternate(){
   return (str('altn1')||'').trim() !== '';
 }
 function toggleAlternateFuel(){
-  const sec = document.getElementById('altFuelSection');
+  const sec = document.getElementById('altFuelField');
   if(!sec) return;
   const show = hasAlternate();
   sec.style.display = show ? '' : 'none';
