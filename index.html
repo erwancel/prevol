@@ -132,21 +132,37 @@
       radial-gradient(circle at 12% 8%, rgba(232,163,61,0.06), transparent 40%),
       repeating-linear-gradient(0deg, var(--grid-line) 0px, var(--grid-line) 1px, transparent 1px, transparent 44px);
   }
-  .wrap{max-width:920px;margin:0 auto;padding:calc(28px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right)) calc(80px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));}
+  /* Une seule feuille, pas une pile de cartes. Le fond de page est le bureau,
+     .wrap est le document posé dessus, et les blocs ne sont séparés que par un
+     filet — comme les cases d'une carte VAC ou d'une fiche de pesée. */
+  .wrap{max-width:760px;margin:0 auto;background:var(--panel);
+    border-left:1px solid var(--line);border-right:1px solid var(--line);
+    padding:0 0 calc(60px + env(safe-area-inset-bottom));
+    min-height:100vh;}
+  .sheetpad{padding-left:calc(16px + env(safe-area-inset-left));
+            padding-right:calc(16px + env(safe-area-inset-right));}
   /* Cartouche : l'immatriculation est l'information d'identification, elle
      prend la place que tenait le nom de l'application. */
-  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;
-    margin-bottom:18px;border-bottom:2px solid var(--text);padding-bottom:10px;}
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;
+    margin-bottom:0;border-bottom:2px solid var(--text);
+    padding:calc(14px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 11px calc(16px + env(safe-area-inset-left));}
+  /* Colonne droite du cartouche : où et quand, comme sur un en-tête de fiche */
+  .cartouche-droite{text-align:right;font-family:var(--body);font-size:12.5px;
+    color:var(--muted);line-height:1.4;flex:0 0 auto;}
+  .cartouche-droite b{display:block;font-family:var(--disp);font-size:19px;
+    font-weight:600;color:var(--text);line-height:1.1;}
   .brand{display:flex;flex-direction:column;gap:1px;min-width:0;}
   .brand h1{font-family:var(--disp);font-size:32px;margin:0;font-weight:700;
     letter-spacing:0;line-height:1;}
   .brand .sub{font-family:var(--body);font-size:13px;color:var(--muted);}
-  .status-strip{display:flex;align-items:center;gap:7px;font-family:var(--body);
-    font-size:12.5px;color:var(--muted);flex:0 0 auto;padding-bottom:3px;}
+  .status-strip{display:flex;align-items:center;justify-content:flex-end;gap:6px;
+    font-family:var(--body);font-size:11.5px;color:var(--muted);margin-top:3px;}
   .status-strip .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);display:inline-block;}
 
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:3px;
-    padding:14px 16px 18px;margin-bottom:14px;position:relative;}
+  .card{background:none;border:none;border-radius:0;margin:0;position:relative;
+    padding:15px calc(16px + env(safe-area-inset-right)) 19px calc(16px + env(safe-area-inset-left));
+    border-bottom:1px solid var(--line);}
+  .card:last-child{border-bottom:none;}
   /* Titre de bloc : casse normale, pas de lettrage espacé. Le rôle du titre
      est porté par la couleur et le filet, pas par une mise en majuscules. */
   .card h2{font-family:var(--disp);font-size:19px;font-weight:600;letter-spacing:0;
@@ -192,6 +208,62 @@
 
   .results{display:none;}
   .results.show{display:block;}
+
+  /* ---- La feuille : l'écran de résultats se lit comme un document ----
+     Un seul contenant, des blocs séparés par des filets jointifs plutôt que
+     des cartes flottantes. Libellés à gauche, chiffres alignés à droite dans
+     une colonne unique, en chasse étroite et chiffres tabulaires. */
+  .feuille{background:var(--panel);border:1px solid var(--line);border-radius:3px;
+    margin-bottom:14px;overflow:hidden;}
+  .feuille .cartouche{display:flex;justify-content:space-between;align-items:flex-end;
+    gap:14px;padding:14px 16px 11px;border-bottom:2px solid var(--text);}
+  .feuille .imm{font-family:var(--disp);font-size:30px;font-weight:700;line-height:.95;}
+  .feuille .machine{font-size:13px;color:var(--muted);margin-top:2px;}
+  .feuille .quand{font-family:var(--disp);font-size:14px;text-align:right;line-height:1.35;
+    color:var(--muted);flex:0 0 auto;}
+  .feuille .quand b{display:block;font-size:19px;font-weight:600;color:var(--text);}
+
+  /* Le verdict est le seul élément autorisé à être fort */
+  .feuille .verdict{background:var(--accent);color:var(--on-accent);padding:15px 16px;}
+  .feuille .verdict.refus{background:var(--red);color:#fff;}
+  .feuille .verdict .mot{font-family:var(--disp);font-size:34px;font-weight:700;line-height:.92;}
+  .feuille .verdict .glose{font-size:13.5px;line-height:1.5;margin-top:7px;opacity:.92;max-width:42ch;}
+
+  .feuille .bloc{border-bottom:1px solid var(--line);}
+  .feuille .bloc:last-child{border-bottom:none;}
+  .feuille .bloc > h3{font-family:var(--disp);font-size:16px;font-weight:600;margin:0;
+    padding:11px 16px 5px;color:var(--accent);}
+  .feuille table{width:100%;border-collapse:collapse;}
+  .feuille td{padding:6px 16px;border-top:1px solid var(--hairline);vertical-align:baseline;}
+  .feuille tr:first-child td{border-top:none;}
+  .feuille td.k{color:var(--muted);font-size:13.5px;}
+  .feuille td.v{text-align:right;font-family:var(--disp);font-size:19px;font-weight:600;
+    white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .feuille td.v.fort{font-size:24px;}
+  .feuille td.v small{font-size:13px;font-weight:500;color:var(--muted);margin-left:2px;}
+  .feuille .plus{color:var(--ok);}
+  .feuille .moins{color:var(--warn);}
+
+  .feuille .vent{display:flex;gap:15px;align-items:center;padding:9px 16px 15px;}
+  .feuille .vent svg{flex:0 0 78px;}
+  .feuille .vent-txt{font-size:13.5px;line-height:1.55;color:var(--muted);}
+  .feuille .vent-txt b{font-family:var(--disp);font-size:17px;color:var(--text);font-weight:600;}
+  .feuille .graph{padding:8px 16px 16px;}
+  /* Verdict : le seul élément autorisé à être fort. Il répond à la seule
+     question qui compte avant de lire le détail. */
+  .verdict{background:var(--accent);color:var(--on-accent);
+    padding:16px calc(16px + env(safe-area-inset-right)) 17px calc(16px + env(safe-area-inset-left));
+    border-bottom:1px solid var(--line);}
+  .verdict.refus{background:var(--red);color:#fff;}
+  .verdict .mot{font-family:var(--disp);font-size:31px;font-weight:700;line-height:1;letter-spacing:0;}
+  .verdict .glose{font-family:var(--body);font-size:13.5px;line-height:1.5;margin-top:7px;
+    opacity:.92;max-width:44ch;}
+  /* Vent : une lecture géométrique, plus rapide que trois nombres alignés */
+  .ventbloc{display:flex;gap:15px;align-items:center;margin-top:12px;
+    border-top:1px solid var(--line);padding-top:13px;}
+  .ventbloc svg{flex:0 0 82px;}
+  .ventbloc .vtxt{font-family:var(--body);font-size:13.5px;line-height:1.55;color:var(--muted);}
+  .ventbloc .vtxt b{font-family:var(--disp);font-size:18px;font-weight:600;color:var(--text);}
   .readout{background:var(--readout-bg);border:1px solid var(--line);border-radius:3px;padding:12px 14px;margin-bottom:10px;}
   .readout .row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:6px 0;border-bottom:1px solid var(--hairline);font-size:13.5px;}
   .readout .row:last-child{border-bottom:none;}
@@ -214,7 +286,8 @@
   .smallhint{font-family:var(--body);font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.5;}
   .smallhint.warn{color:var(--warn);}
   /* ---- Navigation par onglets ---- */
-  .tabs{display:flex;gap:6px;margin:0 0 20px;border-bottom:1px solid var(--line);flex-wrap:wrap;}
+  .tabs{display:flex;gap:2px;margin:0;border-bottom:1px solid var(--line);flex-wrap:wrap;
+    padding:0 calc(10px + env(safe-area-inset-right)) 0 calc(10px + env(safe-area-inset-left));}
   .tabs button{width:auto;flex:0 0 auto;background:none;border:none;border-bottom:2px solid transparent;
     color:var(--muted);font-family:var(--disp);font-size:17px;font-weight:500;letter-spacing:0;
     padding:9px 13px;cursor:pointer;border-radius:0;margin-bottom:-1px;}
@@ -280,7 +353,8 @@
   .badge.ok{background:rgba(63,191,127,0.12);color:var(--green);border:1px solid rgba(63,191,127,0.4);}
   .badge.bad{background:rgba(226,83,75,0.12);color:var(--red);border:1px solid rgba(226,83,75,0.4);}
 
-  footer{margin-top:30px;font-family:var(--mono);font-size:10.5px;color:var(--footer-fg);text-align:center;line-height:1.6;}
+  footer{margin:0;padding:16px;border-top:1px solid var(--line);font-family:var(--body);
+    font-size:11.5px;color:var(--footer-fg);text-align:center;line-height:1.6;}
   a{color:var(--accent);}
 
   /* ---- Printable report — trame FLIGHT PLANNING FOLDER v2.0 ---- */
@@ -396,9 +470,11 @@
       <h1 id="acHeaderImm">PréVol</h1>
       <div class="sub" id="acHeaderLine">Préparation de vol</div>
     </div>
-    <div class="status-strip">
-      <span id="netStatusLabel">—</span>
-      <span class="dot" id="netDot"></span>
+    <div class="cartouche-droite">
+      <b id="hdrTerrain">—</b>
+      <span id="hdrElev"></span><br>
+      <span id="hdrDate"></span>
+      <span class="status-strip"><span class="dot" id="netDot"></span><span id="netStatusLabel"></span></span>
     </div>
   </header>
 
@@ -412,7 +488,7 @@
   <div class="page-panel active" id="pageHome">
 
     <!-- Brouillon retrouvé après une fermeture inopinée de l'app -->
-    <div class="card" id="draftBanner" style="display:none;border-color:var(--accent);">
+    <div class="card" id="draftBanner" style="display:none;background:var(--readout-bg);box-shadow:inset 4px 0 0 var(--accent);">
       <h2>DOSSIER EN COURS RETROUVÉ</h2>
       <div class="smallhint" id="draftBannerInfo" style="margin-bottom:10px;"></div>
       <div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -855,19 +931,8 @@
   </div>
 
   <div class="results" id="results">
-    <section class="card">
-      <h2>Carburant</h2>
-      <div class="readout" id="fuelReadout"></div>
-    </section>
-    <section class="card">
-      <h2>Masse & centrage</h2>
-      <div class="readout" id="mbReadout"></div>
-      <div id="mbChart" style="margin-top:12px;"></div>
-    </section>
-    <section class="card">
-      <h2>Performances</h2>
-      <div class="readout" id="perfReadout"></div>
-    </section>
+    <div class="verdict" id="verdict"></div>
+    <div class="feuille" id="resultSheet"></div>
 
     <section class="card" id="lastMinuteCard">
       <h2>Dernière minute</h2>
@@ -1142,7 +1207,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = '2026.09.07-a';
+const APP_VERSION = '2026.09.07-b';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -3692,42 +3757,212 @@ function renderLmDelta(perf){
   if(r) r.addEventListener('change', applyLastMinute);
 })();
 
+// Rose des vents : axe de piste et flèche du vent, dessinés à l'échelle.
+// La flèche pointe dans le sens où le vent va, comme sur une carte.
+function windRoseSvg(comp){
+  if(!comp) return '';
+  const rot = comp.dir + 180;          // le vent vient de dir, il va vers dir+180
+  const axe = comp.qfu;
+  return `<svg viewBox="0 0 84 84" width="82" height="82" aria-hidden="true">
+    <circle cx="42" cy="42" r="32" fill="none" stroke="var(--accent-soft)" stroke-width="9" opacity=".45"/>
+    <line x1="42" y1="10" x2="42" y2="74" stroke="var(--muted)" stroke-width="8"
+          transform="rotate(${axe} 42 42)"/>
+    <g transform="rotate(${rot} 42 42)">
+      <line x1="42" y1="42" x2="42" y2="12" stroke="var(--accent)" stroke-width="2.6"/>
+      <polygon points="42,7 37.5,17 46.5,17" fill="var(--accent)"/>
+    </g>
+    <circle cx="42" cy="42" r="3.2" fill="var(--text)"/>
+  </svg>`;
+}
+
+// Bloc vent placé sous les performances : la piste retenue, la composante
+// obtenue, et la géométrie qui explique les deux.
+function windBlockHtml(){
+  const icao = normIcao(str('depIcao'));
+  const rwy  = runwayValue('rwyDepSel','rwyDepTxt');
+  const comp = resolveWindComponent(str('wind'), runwayQfu(icao, rwy));
+  if(!comp) return '';
+  const sens = comp.head >= 0 ? 'de face' : 'arrière';
+  const ranked = rankRunways(icao, str('wind'));
+  const best = ranked.length ? ranked[0].desig : null;
+  const favo = (best && best !== normRwy(rwy))
+    ? `La piste ${best} serait plus favorable.`
+    : (ranked.length > 1 ? 'C\u2019est la plus favorable des pistes connues.' : '');
+  return `<div class="ventbloc">${windRoseSvg(comp)}<div class="vtxt">`
+    + `Vent du ${String(comp.dir).padStart(3,'0')} à ${comp.speed} kt`
+    + (comp.gust != null ? `, rafales ${comp.gust} kt` : '') + `.<br>`
+    + `<b>${Math.abs(comp.head)} kt ${sens}</b>, ${comp.cross} kt de travers `
+    + `venant de la ${comp.from}.<br>${favo}</div></div>`;
+}
+
+// Verdict : la réponse à « est-ce que je pars ? », avant tout le détail.
+function renderVerdict(fuel, mb, perf){
+  const box = document.getElementById('verdict');
+  if(!box) return;
+  const griefs = [];
+  if(!fuel.sufficient) griefs.push('carburant insuffisant');
+  if(!mb.statusTO) griefs.push('masse ou centrage hors limites au décollage');
+  if(!mb.statusLD) griefs.push('centrage hors limites à l\u2019atterrissage');
+  if(!perf.statusTO) griefs.push('distance de décollage incompatible avec la piste');
+  if(!perf.statusLD) griefs.push('distance d\u2019atterrissage incompatible avec la piste');
+
+  const ok = griefs.length === 0;
+  const glose = ok
+    ? `Masse, centrage et distances dans les limites, avec ${hm(Math.max(fuel.marginMin,0))} `
+      + `de carburant au-delà du minimum réglementaire.`
+    : `${griefs.join(', ').replace(/^./, c=>c.toUpperCase())}. Le détail est ci-dessous.`;
+
+  box.className = 'verdict' + (ok ? '' : ' refus');
+  box.innerHTML = `<div class="mot">${ok ? 'Vol possible' : 'Vol impossible en l\u2019état'}</div>`
+                + `<div class="glose">${glose}</div>`;
+}
+
+// Cartouche : où et quand, à droite de l'immatriculation
+function renderCartouche(){
+  const icao = normIcao(str('depIcao'));
+  const ap = icao ? getAirport(icao) : null;
+  const t = document.getElementById('hdrTerrain');
+  const e = document.getElementById('hdrElev');
+  const d = document.getElementById('hdrDate');
+  if(t) t.textContent = ap && ap.name ? ap.name : (icao || '—');
+  if(e) e.textContent = icao ? (icao + (ap && ap.elev != null ? ' · ' + ap.elev + ' ft' : '')) : '';
+  if(d){
+    const v = str('dof');
+    if(v){
+      const dt = new Date(v + 'T00:00:00');
+      d.textContent = isNaN(dt) ? v
+        : dt.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
+    } else d.textContent = '';
+  }
+}
+['depIcao','dof'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('input', renderCartouche);
+});
+
+// Rose des vents : axe de piste et provenance du vent, lus d'un coup d'œil.
+// Un dessin remplace ici trois nombres qu'il fallait comparer mentalement.
+function svgWindRose(comp){
+  if(!comp) return '';
+  const qfu = comp.qfu, dir = comp.dir;
+  return `<svg viewBox="0 0 80 80" width="78" height="78" aria-hidden="true">
+    <circle cx="40" cy="40" r="31" fill="none" stroke="var(--accent-soft)" stroke-width="9" opacity="0.45"/>
+    <line x1="40" y1="12" x2="40" y2="68" stroke="var(--muted)" stroke-width="7"
+          transform="rotate(${qfu - 180} 40 40)"/>
+    <g transform="rotate(${dir} 40 40)">
+      <line x1="40" y1="40" x2="40" y2="9" stroke="var(--accent)" stroke-width="2.5"/>
+      <polygon points="40,6 36,15 44,15" fill="var(--accent)"/>
+    </g>
+    <circle cx="40" cy="40" r="3" fill="var(--text)"/>
+  </svg>`;
+}
+
+// Ligne de tableau : libellé à gauche, valeur cadrée à droite.
+function ligne(k, v, unit, cls){
+  return `<tr><td class="k">${k}</td><td class="v${cls?' '+cls:''}">${v}`
+       + (unit ? `<small>${unit}</small>` : '') + `</td></tr>`;
+}
+// Marge signée : le signe et la couleur disent le sens avant même le chiffre.
+function marge(v, unit, dec){
+  const cls = v >= 0 ? 'plus' : 'moins';
+  return `<span class="${cls}">${v >= 0 ? '+' : '\u2212'}${fmt(Math.abs(v), dec == null ? 0 : dec)}</span>`
+       + (unit ? `<small>${unit}</small>` : '');
+}
+
 function renderResults(fuel, mb, perf){
-  document.getElementById('fuelReadout').innerHTML = `
-    <div class="row"><span class="k">Trip fuel</span><span class="v">${fmt(fuel.tripFuelL)} L · ${fmt(fuel.tripFuelKg)} kg</span></div>
-    <div class="row"><span class="k">Contingency (5 min)</span><span class="v">${fmt(fuel.contingencyL)} L · ${fmt(fuel.contingencyKg)} kg</span></div>
-    <div class="row"><span class="k">Réserve finale (${fuel.reserveMin} min)</span><span class="v">${fmt(fuel.reserveL)} L · ${fmt(fuel.reserveKg)} kg</span></div>
-    <div class="row"><span class="k">Minimum required fuel</span><span class="v big">${fmt(fuel.minRequiredL)} L · ${fmt(fuel.minRequiredKg)} kg</span></div>
-    <div class="row"><span class="k">Fuel embarqué</span><span class="v">${fmt(fuel.fuelOnBoardL)} L · ${fmt(fuel.fuelOnBoardKg)} kg</span></div>
-    <div class="row"><span class="k">Autonomie totale</span><span class="v">${hm(fuel.enduranceMin)}</span></div>
-    <div class="row"><span class="k">Marge sur le minimum</span><span class="v${fuel.marginMin<0?'':' big'}">${fuel.marginMin<0?'−':'+'}${hm(Math.abs(fuel.marginMin))}</span></div>
-    <div class="row"><span class="k">Statut</span><span class="v">${badge(fuel.sufficient,'SUFFISANT','INSUFFISANT')}</span></div>
-  `;
+  const sheet = document.getElementById('resultSheet');
+  if(!sheet) return;
 
-  document.getElementById('mbReadout').innerHTML = `
-    <div class="row"><span class="k">Masse décollage</span><span class="v big">${fmt(mb.massTakeoff)} kg</span></div>
-    <div class="row"><span class="k">Centrage décollage</span><span class="v">${fmt(mb.cgTakeoff,1)} mm</span></div>
-    <div class="row"><span class="k">Masse atterrissage</span><span class="v">${fmt(mb.massLanding)} kg</span></div>
-    <div class="row"><span class="k">Centrage atterrissage</span><span class="v">${fmt(mb.cgLanding,1)} mm</span></div>
-    <div class="row"><span class="k">Marge avant / arrière (décollage)</span><span class="v">${fmt(mb.marginFwdTO,1)} mm / ${fmt(mb.marginAftTO,1)} mm</span></div>
-    <div class="row"><span class="k">Marge avant / arrière (atterrissage)</span><span class="v">${fmt(mb.marginFwdLD,1)} mm / ${fmt(mb.marginAftLD,1)} mm</span></div>
-    <div class="row"><span class="k">Marge masse (CAT N, 1000 kg)</span><span class="v">${fmt(mb.marginMassNTO)} kg</span></div>
-    <div class="row"><span class="k">Statut décollage</span><span class="v">${badge(mb.statusTO,'OK','HORS LIMITES')}</span></div>
-    <div class="row"><span class="k">Statut atterrissage</span><span class="v">${badge(mb.statusLD,'OK','HORS LIMITES')}</span></div>
-  `;
+  const reg   = str('registration') || '';
+  const type  = (AC && AC.type) ? AC.type : '';
+  const icao  = normIcao(str('depIcao'));
+  const ap    = icao ? getAirport(icao) : null;
+  const rwy   = runwayValue('rwyDepSel','rwyDepTxt');
+  const comp  = resolveWindComponent(str('wind'), runwayQfu(icao, rwy));
 
-  document.getElementById('mbChart').innerHTML = `<div class="envchart-wrap">${svgEnvelope(mb)}</div>`;
+  const dofRaw = str('dof');
+  let quandTxt = '';
+  if(dofRaw){
+    const d = new Date(dofRaw + 'T00:00:00');
+    if(!isNaN(d)) quandTxt = d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
+  }
 
-  document.getElementById('perfReadout').innerHTML = `
-    <div class="row"><span class="k">Altitude densité</span><span class="v">${fmt(perf.da,0)} ft</span></div>
-    <div class="row"><span class="k">Écart ISA</span><span class="v">${fmt(perf.isaDev,1)} °C</span></div>
-    <div class="row"><span class="k">Distance décollage</span><span class="v big">${fmt(perf.toDist,0)} m</span></div>
-    <div class="row"><span class="k">Marge TODA / ASDA</span><span class="v">${fmt(perf.marginToda,0)} m / ${fmt(perf.marginAsda,0)} m</span></div>
-    <div class="row"><span class="k">Statut décollage</span><span class="v">${badge(perf.statusTO,'DÉCOLLAGE OK','NON COMPATIBLE')}</span></div>
-    <div class="row"><span class="k">Distance atterrissage</span><span class="v big">${fmt(perf.ldDist,0)} m</span></div>
-    <div class="row"><span class="k">Marge LDA</span><span class="v">${fmt(perf.marginLda,0)} m</span></div>
-    <div class="row"><span class="k">Statut atterrissage</span><span class="v">${badge(perf.statusLD,'ATTERRISSAGE OK','NON COMPATIBLE')}</span></div>
-  `;
+  // ---- Verdict : la question à laquelle le pilote veut répondre ----
+  const ok = fuel.sufficient && mb.statusTO && mb.statusLD && perf.statusTO && perf.statusLD;
+  const griefs = [];
+  if(!fuel.sufficient) griefs.push('carburant insuffisant');
+  if(!mb.statusTO)     griefs.push('masse ou centrage hors limites au décollage');
+  if(!mb.statusLD)     griefs.push('centrage hors limites à l\u2019atterrissage');
+  if(!perf.statusTO)   griefs.push('distance de décollage supérieure au disponible');
+  if(!perf.statusLD)   griefs.push('distance d\u2019atterrissage supérieure au disponible');
+  const glose = ok
+    ? `Masse, centrage et distances dans les limites, avec ${hm(fuel.marginMin)} de carburant au-del\u00e0 du minimum.`
+    : griefs.join(', ').replace(/^./, c=>c.toUpperCase()) + '.';
+
+  // ---- Assemblage ----
+  let html = `
+  <div class="cartouche">
+    <div>
+      <div class="imm">${reg || 'Dossier'}</div>
+      ${type ? `<div class="machine">${type}</div>` : ''}
+    </div>
+    <div class="quand">
+      ${ap ? `<b>${ap.name || icao}</b>${icao}${ap.elev != null ? ' \u00b7 ' + ap.elev + ' ft' : ''}` : (icao ? `<b>${icao}</b>` : '')}
+      ${quandTxt ? `<br>${quandTxt}` : ''}
+    </div>
+  </div>
+
+  <div class="verdict${ok ? '' : ' refus'}">
+    <div class="mot">${ok ? 'Vol possible' : 'Vol impossible'}</div>
+    <div class="glose">${glose}</div>
+  </div>
+
+  <div class="bloc">
+    <h3>Masse et centrage</h3>
+    <table>
+      ${ligne('Masse au décollage', fmt(mb.massTakeoff, 0), ' kg', 'fort')}
+      ${ligne('Reste avant la masse maximale', marge(mb.marginMassNTO, ' kg'))}
+      ${ligne('Centrage au décollage', fmt(mb.cgTakeoff, 0), ' mm')}
+      ${ligne('Centrage à l\u2019atterrissage', fmt(mb.cgLanding, 0), ' mm')}
+      ${ligne('Marges avant et arrière au décollage',
+              marge(mb.marginFwdTO, '') + ' <small>/</small> ' + marge(mb.marginAftTO, ' mm'))}
+    </table>
+    <div class="graph"><div class="envchart-wrap">${svgEnvelope(mb)}</div></div>
+  </div>
+
+  <div class="bloc">
+    <h3>${rwy ? 'Piste ' + rwy : 'Performances'}${ap && rwy && ap.runways[rwy] && ap.runways[rwy].toda ? ' \u2014 ' + ap.runways[rwy].toda + ' m' : ''}</h3>
+    <table>
+      ${ligne('Décollage', fmt(perf.toDist, 0), ' m', 'fort')}
+      ${ligne('Marge sur la distance disponible', marge(perf.marginToda, ' m'))}
+      ${ligne('Atterrissage', fmt(perf.ldDist, 0), ' m', 'fort')}
+      ${ligne('Marge sur la distance disponible', marge(perf.marginLda, ' m'))}
+      ${ligne('Altitude densité', fmt(perf.da, 0), ' ft')}
+      ${ligne('Écart à l\u2019atmosphère type', fmt(perf.isaDev, 1), ' °C')}
+    </table>
+    ${comp ? `<div class="vent">
+      ${svgWindRose(comp)}
+      <div class="vent-txt">
+        Vent du ${comp.dir}\u00b0 à ${comp.speed} kt${comp.gust != null ? `, rafales ${comp.gust} kt` : ''}.<br>
+        <b>${Math.abs(comp.head)} kt ${comp.head >= 0 ? 'de face' : 'arrière'}</b>,
+        ${comp.cross} kt de travers venant de la ${comp.from}.
+      </div>
+    </div>` : ''}
+  </div>
+
+  <div class="bloc">
+    <h3>Carburant</h3>
+    <table>
+      ${ligne('Emport', fmt(fuel.fuelOnBoardL, 0), ' L', 'fort')}
+      ${ligne('Minimum réglementaire', fmt(fuel.minRequiredL, 0), ' L')}
+      ${ligne('Autonomie', hm(fuel.enduranceMin))}
+      ${ligne('Marge au-delà du minimum',
+              `<span class="${fuel.marginMin >= 0 ? 'plus' : 'moins'}">${fuel.marginMin >= 0 ? '+' : '\u2212'}${hm(Math.abs(fuel.marginMin))}</span>`)}
+      ${ligne('Roulage et approche comprises', fmt(fuel.tripFuelL, 1), ' L')}
+    </table>
+  </div>`;
+
+  sheet.innerHTML = html;
 
   document.getElementById('results').classList.add('show');
   document.getElementById('pdfBtn').disabled = false;
@@ -3795,7 +4030,7 @@ function runCompute(scroll){
     // Un calcul qui échoue en silence est pire qu'une erreur affichée :
     // le pilote croirait que rien ne cloche.
     // On écrit dans un conteneur dédié : écraser #results détruirait
-    // fuelReadout / mbReadout / perfReadout, qui ne reviendraient qu'au
+    // #resultSheet et les cartes qui le suivent, qui ne reviendraient qu'au
     // rechargement de la page.
     showCalcError(e);
     const pdfBtn = document.getElementById('pdfBtn');
@@ -5348,15 +5583,13 @@ async function newFlight(){
   LAST = null;
   const pdfBtn = document.getElementById('pdfBtn');
   if(pdfBtn) pdfBtn.disabled = true;
-  // Ne jamais faire innerHTML='' sur #results : cela supprimerait
-  // fuelReadout / mbReadout / perfReadout du DOM. On masque le bloc et on
-  // vide seulement les zones de texte.
+  // Ne jamais faire innerHTML='' sur #results : cela supprimerait la feuille
+  // et les cartes « dernière minute » et « correction de chargement » du DOM.
+  // On masque le bloc et on vide seulement la feuille.
   const res = document.getElementById('results');
   if(res) res.classList.remove('show');
-  ['fuelReadout','mbReadout','perfReadout','mbChart'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.innerHTML = '';
-  });
+  const sheet = document.getElementById('resultSheet');
+  if(sheet) sheet.innerHTML = '';
   clearCalcError();
   const wrap = document.getElementById('printReportWrap');
   if(wrap) wrap.classList.remove('show');
