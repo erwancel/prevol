@@ -501,26 +501,84 @@
       -webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
     @page{margin:12mm;background:#fff;}
   }
+
+/* ================= PREMIUM DASHBOARD ================= */
+:root{--premium-navy:#101b2b;--premium-navy-2:#17253a;--premium-blue:#8fb0cf;--premium-ink:#132033;--premium-paper:#f5f5f2;--premium-border:rgba(20,35,52,.10);--premium-shadow:0 12px 30px rgba(23,37,58,.08)}
+:root[data-theme="dark"]{--premium-paper:#0e141c;--premium-border:rgba(255,255,255,.09);--premium-ink:#edf1f5;--premium-shadow:0 16px 36px rgba(0,0,0,.28)}
+html,body{min-height:100%;background:var(--premium-paper)}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{max-width:none!important;width:100%;padding:0!important;margin:0!important;min-height:100vh;background:var(--premium-paper)}
+.app-shell{min-height:100vh;display:grid;grid-template-columns:234px minmax(0,1fr)}
+.sidebar{position:sticky;top:0;height:100vh;background:linear-gradient(180deg,#101b2b 0%,#0d1725 100%);color:#e9eef4;padding:28px 10px 22px;display:flex;flex-direction:column;z-index:20}
+.side-brand{padding:0 18px}.side-name{font-size:34px;line-height:1;font-weight:650;letter-spacing:-.04em}.side-sub{font-size:14px;color:#aebccc;margin-top:10px}.side-rule{height:1px;background:rgba(255,255,255,.16);margin:20px 18px 16px}
+.side-nav{display:flex;flex-direction:column;gap:4px}.side-nav .tab{appearance:none;border:0;background:transparent;color:#b8c5d3;text-align:left;border-radius:0 15px 15px 0;padding:12px 16px;display:flex;align-items:center;gap:15px;font:500 15px/1.2 Inter,ui-sans-serif,sans-serif;cursor:pointer;transition:.18s}.side-nav .tab:hover{background:rgba(255,255,255,.06);color:#fff}.side-nav .tab.active{background:linear-gradient(90deg,rgba(130,165,201,.30),rgba(130,165,201,.16));color:#fff;box-shadow:inset 4px 0 0 #b7d1e8}.nav-ico{width:23px;display:grid;place-items:center;font-size:21px;line-height:1;color:#dbe6f0}.side-spacer{flex:1}.side-bottom{margin-bottom:18px}.side-footer{margin:0 18px;padding-top:22px;border-top:1px solid rgba(255,255,255,.15);font-size:13px;color:#aab7c5}
+.main-content{min-width:0;overflow:hidden;background:var(--premium-paper)}
+header.top{height:270px;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background-image:linear-gradient(90deg,rgba(14,27,44,.90) 0%,rgba(18,35,55,.64) 38%,rgba(18,35,55,.12) 72%),url('./hero-wing.jpg');background-size:cover;background-position:center right;position:relative;overflow:hidden;padding:42px 56px!important;color:white;display:flex;align-items:flex-end!important}
+header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width:700px}.hero-kicker{font-size:11px;letter-spacing:.17em;font-weight:700;color:#d8e4ef;margin-bottom:13px}.hero-copy h1{font-size:72px;line-height:.88;letter-spacing:-.055em;margin:0;font-weight:700;color:#fff}.hero-sub{font-size:30px;line-height:1.15;font-weight:500;margin-top:13px;letter-spacing:-.02em}.hero-copy p{font-size:16px;margin:10px 0 0;color:#e1e8ef}.hero-meta{position:absolute;right:34px;top:28px;text-align:right;z-index:2}.hero-date-label{font-size:11px;text-transform:uppercase;letter-spacing:.14em;font-weight:700;color:#e3ebf2;margin-bottom:5px}.hero-meta #hdrDate{font-size:15px;font-weight:600;color:#fff}.hero-meta .status-strip{font-size:12px;color:#e5edf4;margin-top:8px}.hero-meta .dot{width:8px;height:8px;box-shadow:0 0 0 4px rgba(255,255,255,.13)}.hero-quote{position:absolute;right:54px;bottom:52px;border-left:1px solid rgba(255,255,255,.75);padding-left:18px;font-size:17px;line-height:1.45;font-style:italic;color:#fff;z-index:2}
+.tabs{display:none!important}
+.page-panel{max-width:1280px;margin:0 auto;padding:20px 32px 70px}.page-panel:not(#pageHome){max-width:1000px}
+.dashboard-hero-note{display:flex;justify-content:space-between;align-items:center;gap:22px;margin-bottom:20px;padding:6px 2px}.eyebrow{display:block;font-size:10px;letter-spacing:.15em;font-weight:800;color:#7890a7;margin-bottom:6px}.dashboard-hero-note h2,.dash-head h2{font-size:24px;line-height:1.15;letter-spacing:-.025em;margin:0;color:var(--premium-ink);font-weight:700}.dashboard-hero-note p{margin:7px 0 0;color:#6b7886;font-size:14px}.dashboard-primary{border:1px solid rgba(18,32,51,.10);background:var(--premium-navy);color:white;border-radius:15px;display:flex;align-items:center;gap:13px;padding:13px 16px;min-width:255px;box-shadow:0 8px 20px rgba(16,27,43,.16);cursor:pointer;text-align:left}.dashboard-primary .action-icon{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.12);display:grid;place-items:center}.dashboard-primary b{display:block;font-size:14px}.dashboard-primary small{display:block;color:#b8c8d7;font-size:11px;margin-top:3px}.dashboard-primary .arrow{margin-left:auto;font-size:20px;color:#c9d8e6}
+.quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}.quick-card{border:1px solid var(--premium-border);background:rgba(255,255,255,.80);border-radius:15px;min-height:122px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--premium-ink);box-shadow:var(--premium-shadow);cursor:pointer;transition:.18s}.quick-card:hover,.tool-tile:hover{transform:translateY(-2px);box-shadow:0 16px 32px rgba(23,37,58,.12)}:root[data-theme="dark"] .quick-card,:root[data-theme="dark"] .tool-tile{background:#151d28}.quick-icon{font-size:29px;line-height:1;color:#172b43;margin-bottom:2px}.quick-card b{font-size:15px}.quick-card small{font-size:12px;color:#728091}
+.dashboard-grid{display:grid;grid-template-columns:1.05fr 1fr 300px;gap:16px;align-items:start}.dashboard-card,.advice-card,.weather-preview,.storage-card,.settings-card{margin:0!important;border:1px solid var(--premium-border)!important;border-radius:17px!important;background:rgba(255,255,255,.82)!important;box-shadow:var(--premium-shadow)!important;padding:20px!important}:root[data-theme="dark"] .dashboard-card,:root[data-theme="dark"] .advice-card,:root[data-theme="dark"] .weather-preview,:root[data-theme="dark"] .storage-card,:root[data-theme="dark"] .settings-card{background:#151d28!important}.dash-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:15px}.dash-head h2{font-size:21px}.text-link{border:0;background:none;color:#1b5b88;font-size:13px;cursor:pointer;padding:5px 0}.dashboard-card h2::before,.storage-card h2::before,.settings-card h2::before,.weather-preview h2::before{display:none!important}.dashboard-card h2 .idx,.storage-card h2 .idx,.settings-card h2 .idx{display:none}
+#dossierList{display:flex;flex-direction:column}.dossier-row{border-top:1px solid var(--premium-border);padding:12px 2px!important}.dossier-row:first-child{border-top:0}.dossier-row *{font-family:inherit!important}.dossier-row .lcMain{font-size:13px!important}.dossier-row .lcSub{font-size:11px!important;color:#758292!important}
+.tool-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.tool-tile{border:1px solid rgba(20,35,52,.06);background:#f7f7f5;border-radius:13px;padding:16px 8px;min-height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--premium-ink);transition:.18s}.tool-tile>span{font-size:24px;line-height:1;margin-bottom:8px}.tool-tile b{font-size:13px}.tool-tile small{font-size:10px;color:#758292;margin-top:4px;text-align:center}
+.dashboard-side{display:flex;flex-direction:column;gap:16px}.advice-card{min-height:160px}.advice-title{display:flex;align-items:center;gap:10px;font-size:15px}.advice-title span{font-size:23px;color:#c99532}.advice-card p{font-size:15px;line-height:1.5;margin:25px 0 0;color:var(--premium-ink);max-width:26ch}.icon-link{border:0;background:none;color:#66778a;font-size:18px;cursor:pointer}.weather-placeholder{display:flex;align-items:center;gap:14px;margin:3px 0 16px}.weather-sun{width:86px;height:86px;border-radius:11px;background:linear-gradient(145deg,#9ebbd2,#f5dfaa);display:grid;place-items:center;font-size:42px;color:white}.weather-placeholder span{display:block;font-size:12px;color:#728091}.weather-placeholder strong{display:block;font-size:23px;margin-top:7px}.weather-stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--premium-border);padding-top:12px;gap:8px}.weather-stats span{font-size:10px;color:#7a8795}.weather-stats strong{display:block;color:var(--premium-ink);font-size:13px;margin-top:3px}
+.dashboard-banner{height:104px;margin:16px 0 0;border-radius:15px;background:linear-gradient(90deg,rgba(42,66,91,.82),rgba(131,155,176,.72)),url('./hero-wing.jpg');background-size:cover;background-position:center 68%;display:flex;align-items:center;justify-content:center;gap:18px;color:white;position:relative;overflow:hidden}.banner-quote{font-size:16px;font-style:italic}.banner-line{height:1px;width:110px;background:rgba(255,255,255,.75)}.banner-plane{font-size:20px;transform:rotate(10deg)}
+.storage-card,.settings-card{margin-top:16px!important}.storage-layout{display:grid;grid-template-columns:1.4fr 1fr;gap:25px}.storage-copy p{font-size:13px;color:#6e7b89;margin:0 0 13px}.storage-card .btnrow{display:flex;gap:8px;flex-wrap:wrap}.storage-card .btnMini{font-size:12px!important}.storage-meter .subhead{border:0;padding:0;margin:0 0 9px;font-size:12px;color:#7a8795}.storage-meter .btnMini{margin-top:12px}.settings-card .smallhint{margin-top:8px}
+.card{border-radius:17px}.card h2::before{display:none}.card{box-shadow:var(--premium-shadow)}
+/* Rest of application: keep existing controls but bring them into the same premium language. */
+.page-panel:not(#pageHome) .card{background:rgba(255,255,255,.86);border-color:var(--premium-border);box-shadow:var(--premium-shadow)}:root[data-theme="dark"] .page-panel:not(#pageHome) .card{background:#151d28}
+.page-panel:not(#pageHome) .card h2{font-size:21px}.page-panel:not(#pageHome) input,.page-panel:not(#pageHome) select,.page-panel:not(#pageHome) textarea{border-radius:10px}.btnMini{border-radius:10px}.readout,.feuille{border-radius:14px}
+@media(max-width:1050px){.app-shell{grid-template-columns:78px minmax(0,1fr)}.side-brand,.side-rule,.side-nav .tab span:not(.nav-ico),.side-footer{display:none}.sidebar{padding:24px 8px}.side-nav .tab{justify-content:center;padding:13px 8px;border-radius:12px}.nav-ico{font-size:22px}.dashboard-grid{grid-template-columns:1fr 1fr}.dashboard-side{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}.hero-quote{display:none}}
+@media(max-width:760px){.app-shell{display:block}.sidebar{position:sticky;top:0;height:auto;padding:8px 10px;background:#101b2b;display:block}.side-brand,.side-rule,.side-spacer,.side-bottom,.side-footer{display:none}.side-nav{display:flex;flex-direction:row;overflow:auto;gap:4px}.side-nav .tab{flex:0 0 auto;justify-content:center;border-radius:10px;padding:9px 12px}.side-nav .tab span:not(.nav-ico){display:none}.nav-ico{font-size:19px}.main-content{min-height:calc(100vh - 58px)}header.top{height:255px;padding:30px 24px!important;align-items:flex-end!important;background-position:65% center}.hero-copy h1{font-size:55px}.hero-sub{font-size:22px}.hero-copy p{font-size:13px;max-width:38ch}.hero-meta{right:22px;top:20px}.hero-date-label{font-size:9px}.hero-meta #hdrDate{font-size:12px}.page-panel{padding:16px 14px 50px}.dashboard-hero-note{display:block}.dashboard-primary{width:100%;margin-top:14px}.quick-actions{grid-template-columns:1fr 1fr}.dashboard-grid{grid-template-columns:1fr}.dashboard-side{display:flex}.storage-layout{grid-template-columns:1fr}}
+@media(max-width:440px){header.top{height:245px}.hero-quote{display:none}.hero-copy h1{font-size:48px}.hero-sub{font-size:20px}.hero-copy p{font-size:12px}.quick-card{min-height:105px;padding:13px}.dashboard-hero-note h2{font-size:21px}.weather-stats{grid-template-columns:repeat(2,1fr);row-gap:12px}}
+@media print{.sidebar{display:none!important}.app-shell{display:block!important}.main-content{width:100%!important}.tabs{display:none!important}.page-panel{max-width:none!important;padding:0!important}header.top{display:none!important}}
+
+.rwyCard{border:0!important;border-top:1px solid var(--premium-border)!important;border-radius:0!important;background:transparent!important;padding:12px 2px!important;margin:0!important;box-shadow:none!important}.rwyCard:first-child{border-top:0!important}.rwyCard .smallhint{font-size:11px!important;margin-top:4px}.rwyCard .btnrow{opacity:.0;max-height:0;overflow:hidden;transition:.18s}.rwyCard:hover .btnrow,.rwyCard:focus-within .btnrow{opacity:1;max-height:80px}.rwyCard .btnMini{font-size:10px!important;padding:6px 8px!important}.dashboard-card .rwyCard>div:first-child{font-size:13px!important;color:var(--premium-ink)}footer{max-width:1280px;margin:0 auto;padding:20px 32px 30px;text-align:center;color:#8a96a2;font-size:10px;line-height:1.6}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navigation principale">
+      <div class="side-brand"><div class="side-name">PréVol</div><div class="side-sub">Préparation de vol</div></div>
+      <div class="side-rule"></div>
+      <nav class="side-nav">
+        <button type="button" class="tab active" data-page="pageHome"><span class="nav-ico">⌂</span><span>Tableau de bord</span></button>
+        <button type="button" class="tab" data-page="pageFlight"><span class="nav-ico">⌁</span><span>Plan de vol</span></button>
+        <button type="button" class="tab" data-page="pageFlight" data-scroll="#sectionWeather"><span class="nav-ico">☁</span><span>Météo</span></button>
+        <button type="button" class="tab" data-page="pageFlight" data-scroll="#sectionWeather"><span class="nav-ico">▤</span><span>NOTAM</span></button>
+        <button type="button" class="tab" data-page="pageFlight" data-scroll="#sectionPerf"><span class="nav-ico">▥</span><span>Performances</span></button>
+        <button type="button" class="tab" data-page="pageFlight" data-scroll="#sectionMass"><span class="nav-ico">◇</span><span>Masse &amp; centrage</span></button>
+        <button type="button" class="tab" data-page="pageFlight" data-scroll="#sectionVol"><span class="nav-ico">◉</span><span>Navigation</span></button>
+        <button type="button" class="tab" data-page="pageFlight" data-scroll="#sectionDocs"><span class="nav-ico">□</span><span>Documents</span></button>
+        <button type="button" class="tab" data-page="pageFlight" data-scroll="#sectionDecision"><span class="nav-ico">⌕</span><span>Outils</span></button>
+      </nav>
+      <div class="side-spacer"></div>
+      <nav class="side-nav side-bottom">
+        <button type="button" class="tab" data-page="pageHome" data-scroll="#themeSelect"><span class="nav-ico">⚙</span><span>Paramètres</span></button>
+        <button type="button" class="tab" data-page="pageAirport"><span class="nav-ico">ⓘ</span><span>À propos</span></button>
+      </nav>
+      <div class="side-footer">Fly safe. Fly prepared.</div>
+    </aside>
+    <main class="main-content">
 
   <header class="top">
-    <div class="brand">
-      <div class="brand-title">
-        <h1>PréVol</h1>
-      </div>
-      <div class="sub">Préparation de vol</div>
+    <div class="hero-copy">
+      <div class="hero-kicker">PRÉPARATION DE VOL</div>
+      <h1>PréVol</h1>
+      <div class="hero-sub">Préparation de vol, simplement.</div>
+      <p>Tous les outils essentiels pour préparer vos vols en un seul endroit.</p>
     </div>
-    <div class="cartouche-droite">
-      <div class="cartouche-label">Date de prévol</div>
+    <div class="hero-meta">
+      <div class="hero-date-label">Date de prévol</div>
       <span id="hdrDate">—</span>
       <span class="status-strip"><span class="dot" id="netDot"></span><span id="netStatusLabel"></span></span>
     </div>
+    <div class="hero-quote">Good preparation<br>makes a safer flight.</div>
   </header>
 
-  <nav class="tabs">
+  <nav class="tabs" aria-hidden="true">
     <button type="button" class="tab active" data-page="pageHome">Accueil</button>
     <button type="button" class="tab" data-page="pageFlight">Créer un vol</button>
     <button type="button" class="tab" data-page="pageAircraft">Avions</button>
@@ -528,85 +586,60 @@
   </nav>
 
   <div class="page-panel active" id="pageHome">
+    <section class="dashboard-hero-note">
+      <div><span class="eyebrow">TABLEAU DE BORD</span><h2>Tout ce qu’il faut avant le départ.</h2><p>Préparez, vérifiez et conservez votre dossier de vol depuis un seul espace.</p></div>
+      <button type="button" class="dashboard-primary" id="homeNewFlight"><span class="action-icon">➤</span><span><b>Nouveau vol</b><small>Démarrer une préparation</small></span><span class="arrow">→</span></button>
+    </section>
 
-    <!-- Brouillon retrouvé après une fermeture inopinée de l'app -->
-    <div class="card" id="draftBanner" style="display:none;background:var(--readout-bg);box-shadow:inset 4px 0 0 var(--accent);">
-      <h2>Dossier en cours retrouvé</h2>
-      <div class="smallhint" id="draftBannerInfo" style="margin-bottom:10px;"></div>
-      <div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button type="button" class="btnMini primary" id="draftResume" style="flex:1 1 45%;">Reprendre</button>
-        <button type="button" class="btnMini danger" id="draftDiscard" style="flex:1 1 45%;">Abandonner</button>
-      </div>
-    </div>
+    <section class="quick-actions">
+      <button type="button" class="quick-card" id="homeLoad" onclick="document.getElementById('recentDossiers')?.scrollIntoView({behavior:'smooth'})"><span class="quick-icon">▱</span><b>Charger un vol</b><small>Ouvrir une préparation</small></button>
+      <button type="button" class="quick-card" id="homeRecent" onclick="document.getElementById('recentDossiers')?.scrollIntoView({behavior:'smooth'})"><span class="quick-icon">◷</span><b>Vol récent</b><small>Accéder à l’historique</small></button>
+      <button type="button" class="quick-card" id="homeAircraft"><span class="quick-icon">✧</span><b>Avions</b><small>Gérer vos appareils</small></button>
+      <button type="button" class="quick-card" id="homeAirport"><span class="quick-icon">☆</span><b>Aérodromes</b><small>Fiches et pistes</small></button>
+    </section>
 
-    <div class="card">
-      <h2>Que veux-tu faire&nbsp;?</h2>
-      <div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button type="button" class="btnMini primary" id="homeNewFlight" style="flex:1 1 100%;padding:14px;">✈︎ Nouveau dossier de vol</button>
-        <button type="button" class="btnMini" id="homeAircraft" style="flex:1 1 45%;">Ajouter / modifier un avion</button>
-        <button type="button" class="btnMini" id="homeAirport" style="flex:1 1 45%;">Ajouter / modifier un terrain</button>
+    <section class="dashboard-grid">
+      <div class="card dashboard-card recent-card" id="recentDossiers">
+        <div class="dash-head"><div><span class="eyebrow">HISTORIQUE</span><h2>Ma préparation</h2></div><button class="text-link" type="button" onclick="document.getElementById('recentDossiers')?.scrollIntoView({behavior:'smooth'})">Tout voir&nbsp; →</button></div>
+        <div class="rwyMsg" id="dossierMsg"></div>
+        <div id="dossierList"></div>
       </div>
-      <div class="smallhint" style="margin-top:10px;">
-        Un nouveau dossier repart d'un formulaire vierge : météo, cartes importées et
-        saisies du vol précédent sont remises à zéro.
-      </div>
-    </div>
 
-    <div class="card">
-      <h2>Dossiers enregistrés</h2>
-      <div class="rwyMsg" id="dossierMsg"></div>
-      <div id="dossierList"></div>
-    </div>
-
-    <div class="card">
-      <h2>Sauvegarde &amp; stockage</h2>
-      <div class="smallhint" style="margin-bottom:12px;">
-        Tes dossiers de vol n'existent que dans le stockage de cette icône, qui
-        n'est partagé avec rien d'autre. Une sauvegarde déposée dans Fichiers ou
-        iCloud est le seul moyen de les récupérer en cas de perte.
+      <div class="card dashboard-card quick-tools-card">
+        <div class="dash-head"><div><span class="eyebrow">OUTILS</span><h2>Accès rapides</h2></div></div>
+        <div class="tool-grid">
+          <button type="button" class="tool-tile" data-page="pageFlight" data-scroll="#sectionWeather"><span>☁</span><b>Météo</b><small>METAR, TAF, cartes</small></button>
+          <button type="button" class="tool-tile" data-page="pageFlight" data-scroll="#sectionWeather"><span>▤</span><b>NOTAM</b><small>Informations terrain</small></button>
+          <button type="button" class="tool-tile" data-page="pageFlight" data-scroll="#sectionPerf"><span>▥</span><b>Performances</b><small>Distances, montées, etc.</small></button>
+          <button type="button" class="tool-tile" data-page="pageFlight" data-scroll="#sectionMass"><span>◇</span><b>Masse &amp; centrage</b><small>Calculateur</small></button>
+          <button type="button" class="tool-tile" data-page="pageFlight" data-scroll="#sectionVol"><span>◉</span><b>Navigation</b><small>Cartes, points, routes</small></button>
+          <button type="button" class="tool-tile" data-page="pageFlight" data-scroll="#sectionDocs"><span>□</span><b>Documents</b><small>Checklist, export</small></button>
+        </div>
       </div>
-      <div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button type="button" class="btnMini primary" id="backupBtn" style="flex:1 1 100%;padding:13px;">Tout sauvegarder</button>
-        <label class="btnMini" for="restoreInput" style="cursor:pointer;flex:1 1 45%;text-align:center;">Restaurer</label>
-        <input type="file" id="restoreInput" accept="application/json,.json" style="display:none;">
-        <button type="button" class="btnMini" id="storageRefreshBtn" style="flex:1 1 45%;">Actualiser l'espace</button>
-      </div>
-      <label class="chk" style="margin-top:8px;">
-        <input type="checkbox" id="backupWithDocs" checked>
-        <span>Inclure les pièces jointes (cartes météo, PIB, annexes)</span>
-      </label>
-      <div class="rwyMsg" id="backupMsg"></div>
 
-      <div class="subhead">Espace occupé</div>
-      <div class="wizBar"><div class="wizBarFill" id="storageBarFill"></div></div>
-      <div class="smallhint" id="storageInfo">Mesure en cours…</div>
-      <div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
-        <button type="button" class="btnMini danger" id="purgeDocsBtn" style="flex:1 1 100%;">Alléger les dossiers de plus de 30 jours</button>
+      <div class="dashboard-side">
+        <div class="card advice-card"><div class="advice-title"><span>✦</span><b>Conseil du jour</b></div><p>“Un bon briefing aujourd’hui évite une mauvaise surprise demain.”</p></div>
+        <div class="card weather-preview"><div class="dash-head"><div><span class="eyebrow">APERÇU</span><h2>Météo</h2></div><button type="button" class="icon-link" data-page="pageFlight" data-scroll="#sectionWeather">↗</button></div><div class="weather-placeholder"><div class="weather-sun">☼</div><div><span>Conditions actuelles</span><strong id="homeWxState">—</strong></div></div><div class="weather-stats"><span>Vent<strong>—</strong></span><span>Visibilité<strong>—</strong></span><span>QNH<strong>—</strong></span><span>Temp.<strong>—</strong></span></div></div>
       </div>
-      <div class="smallhint">Retire les pièces jointes des dossiers anciens. Les saisies, les calculs et le bulletin restent intacts.</div>
-      <div class="rwyMsg" id="purgeMsg"></div>
-    </div>
+    </section>
 
-    <div class="card">
-      <h2>Affichage</h2>
-      <div class="field">
-        <label>Thème</label>
-        <select id="themeSelect">
-          <option value="auto">Automatique (réglage iOS)</option>
-          <option value="light">Jour — clair</option>
-          <option value="dark">Nuit — sombre</option>
-        </select>
-        <div class="smallhint">Le dossier de vol imprimé reste sur fond blanc quel que soit le thème.</div>
+    <section class="dashboard-banner"><div class="banner-quote">“Preparation turns uncertainty into confidence.”</div><span class="banner-line"></span><span class="banner-plane">✈</span></section>
+
+    <section class="card storage-card">
+      <div class="dash-head"><div><span class="eyebrow">DONNÉES LOCALES</span><h2>Sauvegarde &amp; stockage</h2></div></div>
+      <div class="storage-layout">
+        <div class="storage-copy"><p>Tes dossiers restent stockés localement sur cet appareil. Une sauvegarde permet de les récupérer en cas de perte.</p><div class="btnrow"><button type="button" class="btnMini primary" id="backupBtn">Tout sauvegarder</button><label class="btnMini" for="restoreInput" style="cursor:pointer;text-align:center;">Restaurer</label><input type="file" id="restoreInput" accept="application/json,.json" style="display:none;"><button type="button" class="btnMini" id="storageRefreshBtn">Actualiser</button></div><label class="chk"><input type="checkbox" id="backupWithDocs" checked><span>Inclure les pièces jointes</span></label><div class="rwyMsg" id="backupMsg"></div></div>
+        <div class="storage-meter"><div class="subhead">Espace occupé</div><div class="wizBar"><div class="wizBarFill" id="storageBarFill"></div></div><div class="smallhint" id="storageInfo">Mesure en cours…</div><button type="button" class="btnMini danger" id="purgeDocsBtn">Alléger les dossiers de plus de 30 jours</button><div class="rwyMsg" id="purgeMsg"></div></div>
       </div>
-    </div>
+    </section>
 
-    <div class="smallhint" id="appVersionLine" style="text-align:center;opacity:.7;margin-top:4px;"></div>
+    <section class="card settings-card"><div class="dash-head"><div><span class="eyebrow">PRÉFÉRENCES</span><h2>Affichage</h2></div></div><div class="field"><label>Thème</label><select id="themeSelect"><option value="auto">Automatique (réglage système)</option><option value="light">Jour — clair</option><option value="dark">Nuit — sombre</option></select></div><div class="smallhint" id="appVersionLine"></div></section>
   </div>
 
   <div class="page-panel" id="pageFlight">
 
   <!-- 1. GENERAL -->
-  <section class="card">
+  <section class="card" id="sectionVol">
     <h2><span class="idx">01</span> Vol</h2>
     <div class="grid g3">
       <div class="field"><label>Avion</label>
@@ -624,7 +657,7 @@
   </section>
 
   <!-- 3. MASSE -->
-  <section class="card">
+  <section class="card" id="sectionMass">
     <h2><span class="idx">02</span> Masses</h2>
     <div class="grid g3">
       <div class="field"><label>Poids pilote (kg)</label><input type="number" id="wPilot" placeholder="kg"></div>
@@ -646,7 +679,7 @@
   </section>
 
   <!-- 4. CARBURANT -->
-  <section class="card">
+  <section class="card" id="sectionPerf">
     <h2><span class="idx">03</span> Carburant</h2>
     <div class="grid g3">
       <div class="field"><label>Temps de vol prévu (min)</label><input type="number" id="flightTime" placeholder="min"></div>
@@ -800,7 +833,7 @@
   </section>
 
   <!-- 7. DOCUMENTS & PILOTE -->
-  <section class="card">
+  <section class="card" id="sectionDocs">
     <h2><span class="idx">06</span> Documents & Pilote</h2>
     <div class="subhead">Documents avion</div>
     <div class="checklist">
@@ -836,7 +869,7 @@
   </section>
 
   <!-- 8. METEO & NOTAM -->
-  <section class="card">
+  <section class="card" id="sectionWeather">
     <h2><span class="idx">07</span> Météo & NOTAM</h2>
     <div class="subhead">Éléments consultés</div>
     <div class="checklist">
@@ -955,7 +988,7 @@
   </section>
 
   <!-- 12. MENACES GENERALES & DECISION -->
-  <section class="card">
+  <section class="card" id="sectionDecision">
     <h2><span class="idx">10</span> Menaces générales & décision</h2>
     <div class="field"><label>Revue des menaces spécifiques du vol & mitigations</label><textarea id="genThreats"></textarea></div>
     <div class="grid g2">
@@ -1201,7 +1234,9 @@
     Calculateur à usage informatif uniquement — vérifier les valeurs sur le manuel de vol.<br>
     Vérifier systématiquement les résultats sur l'AFM avant tout vol.
   </footer>
-</div>
+    </main>
+  </div><!-- /app-shell -->
+</div>>
 
 
 
@@ -5735,6 +5770,35 @@ function renderDossierList(){
   // État initial propre, capturé après l'application de l'avion par défaut :
   // c'est lui que « Nouveau dossier » restaure.
   PRISTINE_FLIGHT = snapshotFlight();
+})();
+
+// Navigation premium : les tuiles du tableau de bord réutilisent le routeur existant.
+document.addEventListener('click', (e)=>{
+  const b=e.target.closest('[data-page]');
+  if(!b || b.closest('.tabs')) return;
+  const page=b.getAttribute('data-page');
+  if(page && typeof goToPage==='function') goToPage(page);
+  const target=b.getAttribute('data-scroll');
+  if(target){
+    setTimeout(()=>document.querySelector(target)?.scrollIntoView({behavior:'smooth', block:'start'}), 80);
+  }
+});
+
+// Tableau de bord : reflet léger des dernières données météo déjà chargées.
+(function(){
+  function refreshHomeWeather(){
+    const state=document.getElementById('homeWxState');
+    if(!state) return;
+    try{
+      if(typeof WX_BULLETIN!=='undefined' && WX_BULLETIN){
+        state.textContent='Bulletin disponible';
+      }else{
+        state.textContent='Aucune donnée';
+      }
+    }catch(e){ state.textContent='—'; }
+  }
+  document.addEventListener('DOMContentLoaded', refreshHomeWeather);
+  window.addEventListener('online', refreshHomeWeather);
 })();
 
 // ============ BROUILLON AUTOMATIQUE ============

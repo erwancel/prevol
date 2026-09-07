@@ -4,14 +4,15 @@
 // est disponible ; repli sur le cache en l'absence de réseau.
 // Augmente CACHE_VERSION si tu veux forcer un rafraîchissement complet
 // du cache (rarement nécessaire avec cette stratégie).
-const CACHE_VERSION = 'prevol-v6';
+const CACHE_VERSION = 'prevol-v7';
 
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './hero-wing.jpg'
 ];
 
 self.addEventListener('install', (event) => {
