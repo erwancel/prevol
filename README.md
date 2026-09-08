@@ -285,3 +285,10 @@ tableau seul.
 Les deux grilles à colonnes fixes (`.stats` sur 6 colonnes, `.filters-grid` sur
 6) passent de `1fr` à `minmax(0,1fr)` : sans cela chaque colonne conserve la
 largeur de son contenu et pousse la page, même en dehors de tout tableau.
+
+
+MODIFICATIONS DE CETTE VERSION
+- Logo Air One Aero converti en blanc avec fond transparent.
+- Logo conservé visible dans la sidebar déployée et repliée.
+- Carnet de vol trié du plus récent au plus ancien.
+- Le tri est réappliqué au chargement des données existantes et après les imports.

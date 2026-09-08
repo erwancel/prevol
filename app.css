@@ -1101,3 +1101,8 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
     display:none !important;
   }
 }
+
+/* Air One Aero — logo blanc sur la sidebar bleue */
+.side-brand-logo{
+  filter:none !important;
+}
