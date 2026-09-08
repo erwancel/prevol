@@ -1154,3 +1154,109 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
     text-overflow: ellipsis;
     line-height: 1.35;
 }
+
+
+/* =========================================================
+   MASSE & CENTRAGE — DIAGRAMME EN TEMPS RÉEL
+   ========================================================= */
+.live-mb-card{
+  margin-top:16px;
+  padding:18px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:var(--panel);
+  overflow:hidden;
+}
+.live-mb-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.live-mb-head h3{
+  margin:3px 0 0;
+  font-size:17px;
+}
+.live-mb-status{
+  display:inline-flex;
+  align-items:center;
+  min-height:30px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  color:var(--muted);
+  font-size:11px;
+  font-weight:700;
+}
+.live-mb-status.ok{
+  color:#17613b;
+  background:#eef9f2;
+  border-color:#bfe7cd;
+}
+.live-mb-status.bad{
+  color:#9b2e2e;
+  background:#fff1f1;
+  border-color:#efc5c5;
+}
+.live-mb-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 230px;
+  gap:18px;
+  align-items:center;
+}
+.live-mb-chart{
+  min-width:0;
+  overflow:auto;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+  padding:6px;
+}
+.live-mb-chart svg{
+  display:block;
+  max-width:100%;
+  height:auto;
+  margin:0 auto;
+}
+.live-mb-placeholder{
+  min-height:390px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:30px;
+  color:var(--muted);
+  text-align:center;
+}
+.live-mb-readout{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+}
+.live-mb-value{
+  padding:11px;
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:var(--panel2);
+}
+.live-mb-value span{
+  display:block;
+  color:var(--muted);
+  font:600 9px var(--code);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.live-mb-value strong{
+  display:block;
+  margin-top:5px;
+  font-size:16px;
+}
+.live-mb-readout .smallhint{
+  grid-column:1/-1;
+  margin-top:2px;
+}
+@media (max-width:900px){
+  .live-mb-layout{grid-template-columns:1fr}
+  .live-mb-chart{overflow-x:auto}
+}

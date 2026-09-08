@@ -310,3 +310,10 @@ MODIFICATIONS DE CETTE VERSION
 - Le navigateur ouvre l'aperçu d'impression : choisir « Enregistrer au format PDF » pour obtenir le PDF.
 
 ATTENTION : le rendu est une reproduction HTML imprimable du modèle fourni, pas une copie graphique pixel-perfect du PDF LogTen original.
+
+
+MODIFICATION — MASSE & CENTRAGE EN TEMPS RÉEL
+- Le diagramme de masse & centrage reste visible directement sous les données de masse.
+- L'enveloppe est affichée même avant toute saisie.
+- Les points décollage/atterrissage et les valeurs masse/CG sont recalculés automatiquement à chaque modification.
+- Aucun clic sur « Calculer » n'est nécessaire pour visualiser l'effet du chargement.

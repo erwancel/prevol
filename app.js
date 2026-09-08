@@ -515,6 +515,7 @@ function applyAircraft(key){
     const cap = document.getElementById('fuelCapacityHint');
     if(cap) cap.textContent = 'Choisis un avion pour charger ses paramètres.';
     if(typeof renderCartouche === 'function') renderCartouche();
+    if(typeof refreshLiveMassBalance === 'function') refreshLiveMassBalance();
     return;
   }
   AC = a;
@@ -536,6 +537,7 @@ function applyAircraft(key){
   if(cap) cap.textContent = `Capacité : ${a.fuelCapacityNote} — max ${a.fuelCapacity} L`;
   const fob = document.getElementById('fuelOnBoard');
   if(fob) fob.max = a.fuelCapacity;
+  if(typeof refreshLiveMassBalance === 'function') refreshLiveMassBalance();
 }
 
 function clamp(v,lo,hi){ return Math.min(Math.max(v,lo),hi); }
@@ -798,6 +800,96 @@ function svgEnvelope(mb, opts){
     <polygon points="${tri(W-padR+24,padT+62,6)}" fill="#0d3a5c"/>
     <text x="${W-padR+40}" y="${padT+66}" font-size="11" fill="#111">Atterrissage</text>
   </svg>`;
+}
+
+function liveMassBalanceData(){
+  const ew=num('emptyWeight'), ea=num('emptyArm'), af=num('armFront'),
+        ar=num('armRear'), ab=num('armBag'), afuel=num('armFuel');
+  const pilot=num('wPilot'), cop=num('wCopilot'), rear=num('wPaxRear'), bag=num('wBag');
+  const fuelL=num('fuelOnBoard'), density=num('fuelDensity') || (AC && AC.fuelDensity) || 0;
+  const fuelKg=fuelL*density;
+  const total=ew+pilot+cop+rear+bag+fuelKg;
+  const moment=ew*ea + (pilot+cop)*af + rear*ar + bag*ab + fuelKg*afuel;
+  const missing = [];
+  [['Masse à vide',ew],['Bras à vide',ea],['Bras avant',af],['Bras arrière',ar],['Bras bagages',ab],['Bras carburant',afuel]]
+    .forEach(([label,v])=>{ if(!Number.isFinite(v) || v===0) missing.push(label); });
+  const validBase = !!AC && total>0 && Number.isFinite(moment) && !missing.length;
+  let mb = null;
+  if(validBase){
+    const burn = Math.max(0, Math.min(fuelL, num('flightTime')>0 ? (num('flightTime')/60)*(num('consoTrip')||0) : 0));
+    const landingFuelKg=Math.max(fuelL-burn,0)*density;
+    const massLD=ew+pilot+cop+rear+bag+landingFuelKg;
+    const momentLD=ew*ea + (pilot+cop)*af + rear*ar + bag*ab + landingFuelKg*afuel;
+    mb={
+      emptyWeight:ew,emptyArm:ea,pilot,copilot:cop,paxRear:rear,bag,
+      fuelTakeoffKg:fuelKg,fuelLandingKg:landingFuelKg,
+      massTakeoff:total,cgTakeoff:moment/total*1000,
+      massLanding:massLD,cgLanding:momentLD/massLD*1000
+    };
+  }
+  return {mb,missing,hasAircraft:!!AC};
+}
+
+function refreshLiveMassBalance(){
+  const host=document.getElementById('liveMassBalanceChart');
+  if(!host) return;
+  const status=document.getElementById('liveMassBalanceStatus');
+  const hint=document.getElementById('liveMassBalanceHint');
+  const xTo=document.getElementById('liveMassTo'), xCgTo=document.getElementById('liveCgTo'),
+        xLd=document.getElementById('liveMassLd'), xCgLd=document.getElementById('liveCgLd');
+
+  const d=liveMassBalanceData();
+
+  // Always draw the envelope when an aircraft is selected, even with no loading values.
+  if(d.hasAircraft && ENV_AFT!=null && ENV_W_MAX!=null){
+    if(d.mb){
+      host.innerHTML=svgEnvelope({
+        ...d.mb,
+        statusTO: true,statusLD:true
+      }, {width:760,height:390});
+      const okTo = d.mb.cgTakeoff>=fwdLimitAt(d.mb.massTakeoff) && d.mb.cgTakeoff<=ENV_AFT
+        && d.mb.massTakeoff>=ENV_W_MIN && d.mb.massTakeoff<=ENV_W_MAX;
+      const okLd = d.mb.cgLanding>=fwdLimitAt(d.mb.massLanding) && d.mb.cgLanding<=ENV_AFT
+        && d.mb.massLanding>=ENV_W_MIN && d.mb.massLanding<=ENV_W_MAX;
+      const ok=okTo&&okLd;
+      status.textContent=ok?'Dans l’enveloppe':'Hors limites';
+      status.className='live-mb-status '+(ok?'ok':'bad');
+      xTo.textContent=fmt(d.mb.massTakeoff,0)+' kg';
+      xCgTo.textContent=fmt(d.mb.cgTakeoff,0)+' mm';
+      xLd.textContent=fmt(d.mb.massLanding,0)+' kg';
+      xCgLd.textContent=fmt(d.mb.cgLanding,0)+' mm';
+      hint.textContent=ok
+        ? 'Calcul mis à jour automatiquement à chaque modification des masses, du carburant ou des paramètres avion.'
+        : 'Le point sort de l’enveloppe : vérifie les masses et le centrage.';
+    }else{
+      // Draw envelope without pretending that a calculated point exists.
+      const empty={massTakeoff:ENV_W_MIN,cgTakeoff:ENV_FWD_LOW,massLanding:ENV_W_MIN,cgLanding:ENV_FWD_LOW};
+      host.innerHTML=svgEnvelope(empty,{width:760,height:390});
+      status.textContent='En attente de chargement';
+      status.className='live-mb-status';
+      xTo.textContent='—';xCgTo.textContent='—';xLd.textContent='—';xCgLd.textContent='—';
+      hint.textContent='L’enveloppe est affichée en permanence. Renseigne les masses du chargement : les points se placeront automatiquement sur le diagramme.';
+    }
+  }else{
+    host.innerHTML='<div class="live-mb-placeholder">Sélectionne un avion pour afficher son enveloppe de masse et centrage.</div>';
+    status.textContent='Avion non sélectionné';
+    status.className='live-mb-status';
+    xTo.textContent='—';xCgTo.textContent='—';xLd.textContent='—';xCgLd.textContent='—';
+    hint.textContent='L’enveloppe dépend des données de l’avion sélectionné.';
+  }
+}
+
+function initLiveMassBalance(){
+  const ids=['aircraftSelect','wPilot','wCopilot','wPaxRear','wBag','fuelOnBoard',
+    'flightTime','consoTrip','fuelDensity','emptyWeight','emptyArm','armFront','armRear','armBag','armFuel'];
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){
+      el.addEventListener('input',refreshLiveMassBalance);
+      el.addEventListener('change',refreshLiveMassBalance);
+    }
+  });
+  refreshLiveMassBalance();
 }
 
 function clampVal(v,lo,hi){ return Math.min(Math.max(v,lo),hi); }
@@ -1331,6 +1423,7 @@ on('rwyLdgTxt', 'blur', ()=>applyRunwayToFields('ldg'));
 });
 if(document.getElementById('pageFlight')) refreshWindHints();
 if(document.getElementById('pageFlight')) syncAllSurfaceLocks();
+if(document.getElementById('liveMassBalanceCard')) initLiveMassBalance();
 on('rwyDepTxt', 'blur', ()=>applyRunwayToFields('dep'));
 on('rwyArrTxt', 'blur', ()=>applyRunwayToFields('arr'));
 
