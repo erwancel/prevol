@@ -33,7 +33,59 @@ function renderStats(){
  // gonflerait artificiellement l'expérience déclarée.
  const vols=flights.filter(f=>!isSim(f));
  const sum=k=>vols.reduce((a,f)=>a+tmin(f.times?.[k]),0);$('statFlights').textContent=vols.length;$('statTotal').textContent=fmt(sum('total'));$('statPIC').textContent=fmt(sum('pic'));$('statSIC').textContent=fmt(sum('sic'));$('statIFR').textContent=fmt(sum('ifr'));$('statNight').textContent=fmt(sum('night'));const A=new Set(flights.map(f=>f.aircraftId).filter(Boolean)),P=new Set(),T=new Set();flights.forEach(f=>{f.from&&P.add(f.from);f.to&&P.add(f.to);f.aircraftType&&T.add(f.aircraftType)});$('sumRecords').textContent=flights.length;$('sumAircraft').textContent=A.size;$('sumAirports').textContent=P.size;$('sumTypes').textContent=T.size}
-function renderTable(){const data=filtered(),pages=Math.max(1,Math.ceil(data.length/PAGE_SIZE));currentPage=Math.min(currentPage,pages);const rows=data.slice((currentPage-1)*PAGE_SIZE,currentPage*PAGE_SIZE);$('flightTableBody').innerHTML=rows.map(f=>`<tr>${`<td><input type="checkbox" data-sel="${esc(f.id)}" ${selectedIds.has(f.id)?'checked':''}></td>`}<td class="mono">${esc(dateDisp(f.date))}</td><td class="mono">${esc(f.from)}</td><td class="mono">${esc(f.to)}</td><td class="mono">${isSim(f)?'<span class="badge">SIM</span>':esc(f.aircraftId)}</td><td>${esc(isSim(f)?(f.sim?.type||'Simulateur'):(f.aircraftType||f.entryType))}</td><td>${esc(f.engineClass||'—')}</td><td>${esc(f.pilotMode||'—')}</td><td class="mono">${isSim(f)?esc(simTotal(f)||'—')+' <span class="small">sess.</span>':esc(f.times?.total||'—')}</td><td class="mono">${esc(f.times?.pic||'—')}</td><td class="mono">${esc(f.times?.sic||'—')}</td><td class="mono">${esc(f.times?.night||'—')}</td><td class="mono">${esc(f.times?.ifr||'—')}</td><td>${esc(f.crew?.PIC||'—')}</td><td class="comment-cell" title="${esc(f.notes||'')}">${esc(f.notes||'—')}</td><td><div class="actions-cell"><button class="icon-btn" data-edit="${esc(f.id)}">✎</button><button class="icon-btn" data-dup="${esc(f.id)}">⧉</button><button class="icon-btn" data-del="${esc(f.id)}">×</button></div></td></tr>`).join('');$('emptyState').classList.toggle('hidden',rows.length>0);$('tableMeta').textContent=`${data.length} vol${data.length>1?'s':''}`;$('pageMeta').textContent=`Page ${currentPage} / ${pages}`;$('prevPage').disabled=currentPage<=1;$('nextPage').disabled=currentPage>=pages;$('selectAll').checked=rows.length>0&&rows.every(f=>selectedIds.has(f.id));$('selectionBadge').textContent=`${selectedIds.size} sélectionné${selectedIds.size>1?'s':''}`}
+
+// Une ligne du tableau. Le carnet mêle deux natures d'entrée : un vol remplit
+// les seize colonnes, une séance de simulateur n'en concerne que trois. Les
+// afficher côte à côte avec la même grille donnait une file de tirets illisible
+// et rendait la séance invisible. Elle reçoit donc sa propre ligne, où les
+// colonnes sans objet sont fusionnées en une mention explicite.
+function celluleActions(f){
+  return `<td><div class="actions-cell">`
+    + `<button class="icon-btn" data-edit="${esc(f.id)}" title="Modifier">✎</button>`
+    + `<button class="icon-btn" data-dup="${esc(f.id)}" title="Dupliquer">⧉</button>`
+    + `<button class="icon-btn" data-del="${esc(f.id)}" title="Supprimer">×</button>`
+    + `</div></td>`;
+}
+
+function ligneCarnet(f){
+  const coche = `<td><input type="checkbox" data-sel="${esc(f.id)}" ${selectedIds.has(f.id)?'checked':''}></td>`;
+
+  if(isSim(f)){
+    const type = f.sim?.type || 'Type non renseigné';
+    const duree = simTotal(f) || '—';
+    const note = f.sim?.remark || f.notes || '';
+    return `<tr class="sim-row">
+      ${coche}
+      <td class="mono">${esc(dateDisp(f.date)) || '—'}</td>
+      <td colspan="6" class="sim-label"><span class="badge">SIM</span> Séance simulateur — ${esc(type)}</td>
+      <td class="mono">${esc(duree)}</td>
+      <td colspan="5" class="small">Hors temps de vol</td>
+      <td class="comment-cell" title="${esc(note)}">${esc(note || '—')}</td>
+      ${celluleActions(f)}
+    </tr>`;
+  }
+
+  return `<tr>
+    ${coche}
+    <td class="mono">${esc(dateDisp(f.date))}</td>
+    <td class="mono">${esc(f.from)}</td>
+    <td class="mono">${esc(f.to)}</td>
+    <td class="mono">${esc(f.aircraftId)}</td>
+    <td>${esc(f.aircraftType||f.entryType)}</td>
+    <td>${esc(f.engineClass||'—')}</td>
+    <td>${esc(f.pilotMode||'—')}</td>
+    <td class="mono">${esc(f.times?.total||'—')}</td>
+    <td class="mono">${esc(f.times?.pic||'—')}</td>
+    <td class="mono">${esc(f.times?.sic||'—')}</td>
+    <td class="mono">${esc(f.times?.night||'—')}</td>
+    <td class="mono">${esc(f.times?.ifr||'—')}</td>
+    <td>${esc(f.crew?.PIC||'—')}</td>
+    <td class="comment-cell" title="${esc(f.notes||'')}">${esc(f.notes||'—')}</td>
+    ${celluleActions(f)}
+  </tr>`;
+}
+
+function renderTable(){const data=filtered(),pages=Math.max(1,Math.ceil(data.length/PAGE_SIZE));currentPage=Math.min(currentPage,pages);const rows=data.slice((currentPage-1)*PAGE_SIZE,currentPage*PAGE_SIZE);$('flightTableBody').innerHTML=rows.map(f=>ligneCarnet(f)).join('');$('emptyState').classList.toggle('hidden',rows.length>0);$('tableMeta').textContent=`${data.length} vol${data.length>1?'s':''}`;$('pageMeta').textContent=`Page ${currentPage} / ${pages}`;$('prevPage').disabled=currentPage<=1;$('nextPage').disabled=currentPage>=pages;$('selectAll').checked=rows.length>0&&rows.every(f=>selectedIds.has(f.id));$('selectionBadge').textContent=`${selectedIds.size} sélectionné${selectedIds.size>1?'s':''}`}
 function refresh(){refreshFilters();refreshDatalists();renderStats();renderTable()}
 function buildDynamic(){ $('crewRows').innerHTML=CREW_FIELDS.map(([k,l])=>`<tr><td style="padding:8px">${l}</td><td><input id="crew_${k}" list="peopleList" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:9px"></td></tr>`).join('');$('timeFields').innerHTML=TIME_FIELDS.map(([k,l])=>`<div class="field"><label>${l}</label><input id="t_${k}" placeholder="00:00"></div>`).join('');$('opsFields').innerHTML=OPS_FIELDS.map(([k,l])=>`<div class="field"><label>${l}</label><input id="ops_${k}" type="number" min="0" step="1"></div>`).join('');$('weatherFields').innerHTML=WX_FIELDS.map(([k,l])=>`<div class="field"><label>${l}</label><input id="wx_${k}"></div>`).join('');$('paxFields').innerHTML=PAX_FIELDS.map(([k,l])=>`<div class="field"><label>${l}</label><input id="pax_${k}" ${k==='count'||k==='business'?'type="number" min="0"':''}></div>`).join('')}
 function approaches(data){$('approachRows').innerHTML=Array.from({length:10},(_,i)=>{const a=data?.[i]||{};return`<tr><td style="padding:8px">${i+1}</td><td><input data-ap="${i}" data-f="type" value="${esc(a.type||'')}" style="width:100%;padding:7px"></td><td><input data-ap="${i}" data-f="category" value="${esc(a.category||'')}" style="width:100%;padding:7px"></td><td><input data-ap="${i}" data-f="mode" value="${esc(a.mode||'')}" style="width:100%;padding:7px"></td><td><input data-ap="${i}" data-f="airport" value="${esc(a.airport||'')}" style="width:100%;padding:7px"></td></tr>`}).join('')}

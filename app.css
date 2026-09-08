@@ -1272,3 +1272,13 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
    sur le contenu, ces mentions disparaissent dans la plupart des cas. */
     @page{size:A4;margin:0;}
   }
+
+/* ---- Carnet : ligne de séance simulateur ----
+   Elle fusionne les colonnes qui ne la concernent pas. Un fond légèrement
+   teinté la distingue au premier coup d'œil d'un vol sur aéronef. */
+.carnet-page .sim-row{background:color-mix(in srgb, var(--accent) 6%, transparent);}
+.carnet-page .sim-row .sim-label{font-weight:600;}
+.carnet-page .sim-row .badge{margin-right:8px;}
+@supports not (background: color-mix(in srgb, red 6%, transparent)){
+  .carnet-page .sim-row{background:rgba(31,78,121,.06);}
+}

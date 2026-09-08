@@ -489,3 +489,17 @@ Le carnet EASA ne demande que trois informations pour la colonne 11
   et 2 h plus une séance de 4 h donnent 03:30 de vol et 04:00 de simulateur.
 - **Tableau à l'écran.** Une séance affiche un badge SIM au lieu de
   l'immatriculation, et sa durée est marquée « sess. ».
+
+## v44.1 — Ligne du carnet pour une séance
+
+Les colonnes du tableau décrivent un vol : départ, arrivée, immatriculation,
+SE/ME, SP/MP, PIC, SIC, nuit, IFR. Une séance de simulateur n'en remplit
+aucune, elle affichait donc une file de tirets et passait inaperçue.
+
+Elle reçoit maintenant sa propre ligne : date, puis les six colonnes de vol
+fusionnées en « Séance simulateur — <type d'appareillage> », la durée dans la
+colonne Total, les cinq colonnes de fonction fusionnées en « Hors temps de
+vol », et la remarque. Fond légèrement teinté pour la distinguer d'un vol.
+
+Compte de colonnes vérifié dans les deux cas : 16 pour un vol comme pour une
+séance, cellules et `colspan` additionnés.
