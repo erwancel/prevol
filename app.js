@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v39 · 2026.09.08';
+const APP_VERSION = 'v40 · 2026.09.08';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -4714,6 +4714,11 @@ function renderDossierList(){
   const box = document.getElementById('dossierList');
   if(!box) return;
   listDossiers().then(list=>{
+    // La lecture d'IndexedDB est asynchrone : la page dossiers.html affiche
+    // « Chargement… » en attendant. Ce message doit disparaître une fois la
+    // réponse arrivée, sinon il resterait indéfiniment sous la liste.
+    const msg = document.getElementById('dossierMsg');
+    if(msg && /Chargement/.test(msg.textContent)) msg.textContent = '';
     if(!list.length){
       box.innerHTML = '<div class="smallhint">Aucun dossier enregistré pour l\'instant. Enregistre un vol depuis la page « Créer un vol ».</div>';
       return;

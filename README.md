@@ -322,3 +322,21 @@ MODIFICATION — MASSE & CENTRAGE EN TEMPS RÉEL
 MODIFICATION MENU
 - Le lien de la page navigation.html est affiché comme « Vol » dans le menu latéral de toutes les pages.
 - Le lien et le fonctionnement restent inchangés ; seul le libellé du menu est harmonisé.
+
+## v40 — Page « Charger un vol »
+
+`dossiers.html` avait été créée à partir de `notam.html` : sa liste de dossiers
+était bien en place, mais l'en-tête de la page était resté celui d'origine,
+« INFORMATIONS AÉRONAUTIQUES / NOTAM ». La page annonçait donc NOTAM au-dessus
+d'une liste vide, d'où l'impression d'être arrivé sur la mauvaise page.
+
+- En-tête corrigé : « MES DOSSIERS / Dossiers enregistrés ».
+- Aucune entrée du menu n'était marquée active sur cette page. C'est désormais
+  « Tableau de bord », d'où vient le bouton « Charger un vol ».
+- Ajout d'un « Chargement des dossiers… » pendant la lecture d'IndexedDB, qui
+  est asynchrone : la carte paraissait vide le temps de la réponse. Le message
+  est effacé par `renderDossierList` dès l'arrivée des données, et remplacé par
+  « Aucun dossier enregistré » s'il n'y en a pas.
+
+Vérifié : `carnet-de-vol.html`, créée depuis la même page, n'a pas ce défaut —
+elle n'a pas d'en-tête de site, son propre bandeau fait office de titre.
