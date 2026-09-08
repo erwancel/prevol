@@ -292,3 +292,9 @@ MODIFICATIONS DE CETTE VERSION
 - Logo conservé visible dans la sidebar déployée et repliée.
 - Carnet de vol trié du plus récent au plus ancien.
 - Le tri est réappliqué au chargement des données existantes et après les imports.
+
+
+MODIFICATIONS DE CETTE VERSION
+- Ajout de la colonne « Commentaire » dans la liste des vols.
+- La colonne reprend les remarques/commentaires du vol.
+- Boutons d'actions redimensionnés et icônes parfaitement centrées dans leurs cases.

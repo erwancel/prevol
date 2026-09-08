@@ -1106,3 +1106,51 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 .side-brand-logo{
   filter:none !important;
 }
+
+
+/* =========================================================
+   CARNET DE VOL — actions et commentaire
+   ========================================================= */
+
+/* Les boutons Actions sont de vraies cases carrées :
+   l'icône est centrée horizontalement et verticalement. */
+.carnet-page .actions-cell {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    min-height: 38px;
+}
+
+.carnet-page .actions-cell .icon-btn {
+    width: 40px !important;
+    height: 36px !important;
+    min-width: 40px !important;
+    min-height: 36px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    align-content: center !important;
+    line-height: 1 !important;
+    font-size: 17px !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    box-sizing: border-box !important;
+}
+
+.carnet-page .actions-cell .icon-btn::before,
+.carnet-page .actions-cell .icon-btn::after {
+    line-height: 1 !important;
+}
+
+/* Colonne Commentaire */
+.carnet-page .comment-cell {
+    min-width: 180px;
+    max-width: 300px;
+    white-space: normal !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.35;
+}
