@@ -1,14 +1,39 @@
 // PréVol — service worker
-// Stratégie : "réseau d'abord" pour la page principale, pour que la
-// dernière version en ligne soit toujours utilisée dès que le réseau
-// est disponible ; repli sur le cache en l'absence de réseau.
-// Augmente CACHE_VERSION si tu veux forcer un rafraîchissement complet
-// du cache (rarement nécessaire avec cette stratégie).
-const CACHE_VERSION = 'prevol-v24-performances-section';
+//
+// Réécrit le 07/09/2026 pour le site en douze pages.
+//
+// L'ancienne version mettait en cache la seule ./index.html et la servait en
+// secours pour TOUTES les navigations : hors ligne, meteo.html ou carburant.html
+// affichaient le tableau de bord. Chaque page est désormais mise en cache et
+// resservie individuellement.
+//
+// Les chemins sont relatifs à l'emplacement du service worker, pour rester
+// valables aussi bien à la racine d'un domaine que sous /nom-du-depot/ comme
+// le fait GitHub Pages.
+const CACHE_VERSION = 'prevol-v29-pages-partagees';
 
-const APP_SHELL = [
+const PAGES = [
   './',
   './index.html',
+  './dossier.html',
+  './navigation.html',
+  './masse-centrage.html',
+  './carburant.html',
+  './performances.html',
+  './documents.html',
+  './meteo.html',
+  './notam.html',
+  './outils.html',
+  './parametres.html',
+  './a-propos.html'
+];
+
+// Le script et la feuille de style partagés sont désormais des fichiers à
+// part : sans eux dans le cache, les pages s'ouvriraient nues hors ligne.
+const ASSETS = [
+  './app.js',
+  './app.css',
+  './page-carburant.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
@@ -17,7 +42,17 @@ const APP_SHELL = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_VERSION).then((cache) => cache.addAll(APP_SHELL))
+    caches.open(CACHE_VERSION).then((cache) =>
+      // addAll échoue en bloc si une seule ressource manque : on ajoute
+      // pièce par pièce pour qu'un fichier absent ne vide pas tout le cache.
+      Promise.all(
+        PAGES.concat(ASSETS).map((url) =>
+          cache.add(url).catch((err) => {
+            console.warn('[sw] non mis en cache :', url, err);
+          })
+        )
+      )
+    )
   );
   self.skipWaiting();
 });
@@ -35,32 +70,37 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
 
-  // Les appels météo (/api/…) doivent toujours partir sur le réseau et ne
-  // jamais être servis depuis le cache : une observation périmée servie
-  // silencieusement serait dangereuse en préparation de vol.
   const url = new URL(req.url);
+
+  // La météo passe désormais par l'API publique de l'Aviation Weather Center,
+  // donc par une autre origine. Le service worker ne doit toucher ni à ces
+  // appels, ni à l'ancien relais /api/ : une observation périmée servie
+  // silencieusement depuis un cache serait dangereuse en préparation de vol.
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith('/api/')) return;
+  if (url.pathname.includes('/api/')) return;
 
   const isNavigation = req.mode === 'navigate' ||
     (req.destination === '' && req.headers.get('accept')?.includes('text/html'));
 
   if (isNavigation) {
-    // Page principale : réseau d'abord, cache en secours (mode hors ligne).
+    // Réseau d'abord, pour qu'un commit soit pris en compte dès la
+    // réouverture ; repli sur la page elle-même, puis sur le tableau de bord.
     event.respondWith(
       fetch(req)
         .then((res) => {
           const copy = res.clone();
-          caches.open(CACHE_VERSION).then((cache) => cache.put('./index.html', copy));
+          caches.open(CACHE_VERSION).then((cache) => cache.put(req, copy));
           return res;
         })
-        .catch(() => caches.match('./index.html'))
+        .catch(() =>
+          caches.match(req).then((hit) => hit || caches.match('./index.html'))
+        )
     );
     return;
   }
 
-  // Autres ressources (icônes, polices, manifest…) : cache d'abord,
-  // puis réseau, avec mise à jour silencieuse du cache si en ligne.
+  // app.js et app.css sont servis depuis le cache pour un démarrage immédiat,
+  // et rafraîchis en arrière-plan pour la visite suivante.
   event.respondWith(
     caches.match(req).then((cached) => {
       const network = fetch(req)
