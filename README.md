@@ -129,3 +129,21 @@ page met en avant. Ils sont propres à chaque page. Ils pourraient devenir une
 règle unique pilotée par `body[data-view]` dans `app.css` — c'est possible
 maintenant que les identifiants de section sont stables et que le doublon
 index/dossier est levé.
+
+## Correctif v33.1 — pages Météo et NOTAM vides
+
+La normalisation avait pris `dossier.html` comme référence pour `#pageFlight`.
+Or les classes `wx-only` et `notam-only`, qui indiquent au filtre de chaque page
+quels blocs afficher, n'existaient que sur les huit pages « vue ». En posant le
+bloc de `dossier.html` partout, ces marqueurs ont disparu, et le filtre
+`#sectionWeather > *{display:none}` n'avait donc plus rien à révéler.
+
+Restaurés depuis la section Météo d'origine. Trois points corrigés en plus :
+
+- le titre de la section est désormais dans `.section-title-row`, c'est ce
+  conteneur, enfant direct, qui doit porter les marqueurs ;
+- le bloc de récupération METAR ayant été déplacé dans `#sectionEnvironment`,
+  la page Météo ne pouvait plus le voir : cette section lui est maintenant
+  ouverte, filtrée sur `.wx-only` ;
+- `wxFetchMsg` est marqué, sans quoi les messages d'erreur météo seraient
+  restés invisibles sur la page dédiée.

@@ -194,12 +194,12 @@
 <!-- 4. ENVIRONNEMENT & PISTES -->
 <section class="card view-environment" id="sectionEnvironment">
 <div class="section-title-row"><h2><span class="idx">04</span> Environnement &amp; pistes</h2><a class="section-open-link" href="performances.html">Ouvrir Performances ↗</a></div>
-<div class="subhead">Bulletin METAR / TAF</div>
-<div class="smallhint" style="margin-bottom:10px;">
+<div class="subhead wx-only">Bulletin METAR / TAF</div>
+<div class="smallhint wx-only" style="margin-bottom:10px;">
       Données Aviation Weather Center (NOAA), gratuites et sans compte.
       Nécessite du réseau ; le dernier bulletin reçu reste consultable hors ligne.
     </div>
-<div class="grid g3">
+<div class="grid g3 wx-only">
 <div class="field"><label>Rayon terrains alentour</label>
 <select id="wxRadius">
 <option value="0">Aucun (vol seul)</option>
@@ -218,9 +218,9 @@
 <button class="btnMini primary" id="wxFetchBtn" style="width:100%;" type="button">Récupérer le bulletin</button>
 </div>
 </div>
-<div class="rwyMsg" id="wxFetchMsg"></div>
-<div id="wxResults" style="margin-top:10px;"></div>
-<div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+<div class="rwyMsg wx-only" id="wxFetchMsg"></div>
+<div class="wx-only" id="wxResults" style="margin-top:10px;"></div>
+<div class="btnrow wx-only" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
 <button class="btnMini" id="wxClearBtn" style="display:none;" type="button">Effacer le bulletin</button>
 </div>
 
@@ -381,9 +381,9 @@
 </section>
 <!-- 8. METEO & NOTAM -->
 <section class="card view-weather" id="sectionWeather">
-<div class="section-title-row"><h2><span class="idx">07</span> Météo &amp; NOTAM</h2><a class="section-open-link" href="meteo.html">Ouvrir Météo ↗</a></div>
-<div class="subhead">Éléments consultés</div>
-<div class="checklist">
+<div class="section-title-row wx-only notam-only"><h2 class="wx-only notam-only"><span class="idx">07</span> Météo &amp; NOTAM</h2><a class="section-open-link" href="meteo.html">Ouvrir Météo ↗</a></div>
+<div class="subhead wx-only">Éléments consultés</div>
+<div class="checklist wx-only">
 <label class="chk"><input id="wxEuroc" type="checkbox"/><span>EUROC</span></label>
 <label class="chk"><input id="wxSigChart" type="checkbox"/><span>SIG WX Chart</span></label>
 <label class="chk"><input id="wxWintem" type="checkbox"/><span>WINTEM</span></label>
@@ -391,57 +391,57 @@
 <label class="chk"><input id="wxMinima" type="checkbox"/><span>Planning minima</span></label>
 <label class="chk"><input id="wxMaritime" type="checkbox"/><span>Survol maritime (vagues, T° eau)</span></label>
 </div>
-<div class="field" style="margin-top:12px;"><label>Minima de planification (T/O, dégagements, destination)</label><textarea id="wxMinimaText" placeholder="ICAO / RWY-APP / minima / météo / remarques"></textarea></div>
-<div class="smallhint">Le bulletin METAR / TAF se récupère directement dans la section <b>Environnement &amp; pistes</b>, au-dessus des champs de température, QNH et vent.</div>
+<div class="field wx-only" style="margin-top:12px;"><label>Minima de planification (T/O, dégagements, destination)</label><textarea id="wxMinimaText" placeholder="ICAO / RWY-APP / minima / météo / remarques"></textarea></div>
+<div class="smallhint">Le bulletin METAR / TAF se récupère directement dans la section où sont saisis la température, le QNH et le vent.</div>
 
-<div class="subhead">Cartes (TEMSI / WINTEM / SIGWX)</div>
-<div class="smallhint" style="margin-bottom:10px;">
+<div class="subhead wx-only">Cartes (TEMSI / WINTEM / SIGWX)</div>
+<div class="smallhint wx-only" style="margin-bottom:10px;">
       Les cartes Météo-France ne sont pas récupérables automatiquement (accès Aeroweb
       authentifié, images sous copyright). Télécharge ton dossier depuis Aeroweb, puis
       importe-le ici : ses pages seront jointes à la fin du document généré.
     </div>
-<div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
+<div class="btnrow wx-only" style="display:flex;gap:10px;flex-wrap:wrap;">
 <a class="btnMini" href="https://aviation.meteo.fr/login.php" rel="noopener" target="_blank">Ouvrir Aeroweb ↗</a>
 <label class="btnMini primary" for="wxDocInput" style="cursor:pointer;">Importer le dossier (PDF)</label>
 <input accept="application/pdf,image/*" id="wxDocInput" style="display:none;" type="file"/>
 <button class="btnMini" id="wxDocClear" style="display:none;" type="button">Retirer</button>
 </div>
-<div class="rwyMsg" id="wxDocMsg"></div>
-<div id="wxDocPreview"></div>
-<div class="subhead">NOTAMs</div>
-<div class="checklist">
+<div class="rwyMsg wx-only" id="wxDocMsg"></div>
+<div class="wx-only" id="wxDocPreview"></div>
+<div class="subhead notam-only">NOTAMs</div>
+<div class="checklist notam-only">
 <label class="chk"><input id="notamAirport" type="checkbox"/><span>NOTAMs aérodrome</span></label>
 <label class="chk"><input id="notamFir" type="checkbox"/><span>NOTAMs FIR</span></label>
 <label class="chk"><input id="notamAip" type="checkbox"/><span>AIP SUP / AIC</span></label>
 <label class="chk"><input id="notamRaim" type="checkbox"/><span>RAIM check</span></label>
 </div>
-<div class="smallhint" style="margin:10px 0;">
+<div class="smallhint notam-only" style="margin:10px 0;">
       Les NOTAM français (PIB Trajet) proviennent du SIA / Olivia, qui exige une
       authentification : ils ne peuvent pas être récupérés automatiquement.
       Génère ton PIB puis importe-le ici — ses pages seront jointes au dossier,
       juste après la page NOTAM.
     </div>
-<div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
+<div class="btnrow notam-only" style="display:flex;gap:10px;flex-wrap:wrap;">
 <a class="btnMini" href="https://sofia-briefing.aviation-civile.gouv.fr/" rel="noopener" target="_blank">Ouvrir SOFIA-Briefing ↗</a>
 <label class="btnMini primary" for="ntmDocInput" style="cursor:pointer;">Importer le PIB (PDF)</label>
 <input accept="application/pdf,image/*" id="ntmDocInput" style="display:none;" type="file"/>
 <button class="btnMini" id="ntmDocClear" style="display:none;" type="button">Retirer</button>
 </div>
-<div class="rwyMsg" id="ntmDocMsg"></div>
-<div id="ntmDocPreview"></div>
-<div class="subhead">Annexe libre</div>
-<div class="smallhint" style="margin-bottom:10px;">
+<div class="rwyMsg notam-only" id="ntmDocMsg"></div>
+<div class="notam-only" id="ntmDocPreview"></div>
+<div class="subhead wx-only">Annexe libre</div>
+<div class="smallhint wx-only" style="margin-bottom:10px;">
       Tout document ou photo à joindre au dossier (devis, autorisation, carte
       annotée, capture d'écran…) : les pages seront ajoutées à la toute fin
       du document imprimé.
     </div>
-<div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
+<div class="btnrow wx-only" style="display:flex;gap:10px;flex-wrap:wrap;">
 <label class="btnMini primary" for="freeDocInput" style="cursor:pointer;">Ajouter une pièce jointe (PDF/photo)</label>
 <input accept="application/pdf,image/*" id="freeDocInput" style="display:none;" type="file"/>
 <button class="btnMini" id="freeDocClear" style="display:none;" type="button">Retirer</button>
 </div>
-<div class="rwyMsg" id="freeDocMsg"></div>
-<div id="freeDocPreview"></div>
+<div class="rwyMsg wx-only" id="freeDocMsg"></div>
+<div class="wx-only" id="freeDocPreview"></div>
 </section>
 <!-- 11. EQUIPEMENTS SECURITE -->
 <section class="card view-decision" id="sectionSafety">
