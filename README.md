@@ -187,3 +187,30 @@ entrée dans le menu des autres pages, jeu de couleurs et polices distinct.
 
 Sa base de données est indépendante (`prevol.logbook.v2`) : aucune collision
 avec le brouillon de dossier ni les dossiers enregistrés.
+
+## v36
+
+- **Carnet reconstruit sur la coquille commune.** Il portait sa propre barre
+  latérale (`.nav-item`, icônes texte `⌂ ▤ ▥`) et n'avait pas de pied de page.
+  Il utilise maintenant exactement le même `<aside>` que les autres pages,
+  avec les icônes SVG et le pied. `carnet.css` a perdu ses règles de coquille,
+  désormais fournies par `app.css` : 8,5 → 7,0 Ko.
+- **`outils.html` supprimé**, entrée retirée du menu et du cache.
+- **Carnet de vol placé sous NOTAM** dans le menu.
+- **`dossiers.html`** : nouvelle page listant les dossiers enregistrés.
+  « Charger un vol » et « Tout voir » y mènent désormais, au lieu d'ouvrir un
+  formulaire vide.
+
+### Pourquoi un dossier enregistré semblait perdu
+
+Il ne l'était pas. `openDossier` restaurait bien les champs, puis appelait
+`goToPage('pageFlight')`. Or le tableau de bord masque `#pageFlight` par CSS
+(`prevol-page-scope`) : le panneau devenait « actif » mais restait invisible.
+Rien ne se passait à l'écran.
+
+Nouvelle fonction `allerAuFormulaire()` : elle teste la visibilité réelle du
+panneau, pas sa simple présence dans le DOM — il existe sur toutes les pages.
+Si le formulaire est affichable, on y bascule ; sinon on écrit le brouillon et
+on rejoint `dossier.html`, l'état étant partagé. Utilisée par `openDossier`,
+`newFlight` et le bandeau « Ouvrir le dossier », qui faisaient tous la même
+erreur.

@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v35 · 2026.09.08';
+const APP_VERSION = 'v36 · 2026.09.08';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -4584,7 +4584,22 @@ async function newFlight(){
   if(db) db.style.display = 'none';
 
   toggleArrivalRunway();
-  goToPage('pageFlight');
+  allerAuFormulaire();
+}
+
+// Le formulaire n'est pas affichable sur toutes les pages : le tableau de bord
+// et les pages dédiées masquent #pageFlight par CSS. Y basculer donnerait
+// l'illusion que rien ne s'est passé. On rejoint alors le dossier complet,
+// l'état étant partagé par le brouillon.
+function allerAuFormulaire(){
+  const panel = document.getElementById('pageFlight');
+  const affichable = panel && getComputedStyle(panel).display !== 'none';
+  if(affichable && typeof goToPage === 'function'){
+    goToPage('pageFlight');
+    return;
+  }
+  writeDraft();                       // ne rien perdre avant de changer de page
+  window.location.href = 'dossier.html';
 }
 
 function renderDossierList(){
@@ -4883,13 +4898,9 @@ function readDraft(){
   if(btnOuvrir){
     btnOuvrir.textContent = 'Ouvrir le dossier';
     btnOuvrir.addEventListener('click', ()=>{
-      // Sur une page qui affiche déjà le formulaire, on y descend ;
-      // depuis une page sans formulaire, on rejoint le dossier complet.
-      if(document.getElementById('pageFlight') && typeof goToPage === 'function'){
-        goToPage('pageFlight');
-      } else {
-        window.location.href = 'dossier.html';
-      }
+      // Le test portait sur la seule présence de #pageFlight, or il existe
+      // sur toutes les pages : seule sa visibilité réelle compte.
+      allerAuFormulaire();
     });
   }
 
