@@ -317,3 +317,8 @@ MODIFICATION — MASSE & CENTRAGE EN TEMPS RÉEL
 - L'enveloppe est affichée même avant toute saisie.
 - Les points décollage/atterrissage et les valeurs masse/CG sont recalculés automatiquement à chaque modification.
 - Aucun clic sur « Calculer » n'est nécessaire pour visualiser l'effet du chargement.
+
+
+MODIFICATION MENU
+- Le lien de la page navigation.html est affiché comme « Vol » dans le menu latéral de toutes les pages.
+- Le lien et le fonctionnement restent inchangés ; seul le libellé du menu est harmonisé.
