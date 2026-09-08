@@ -10,7 +10,7 @@
 // Les chemins sont relatifs à l'emplacement du service worker, pour rester
 // valables aussi bien à la racine d'un domaine que sous /nom-du-depot/ comme
 // le fait GitHub Pages.
-const CACHE_VERSION = 'prevol-v40-dossiers-entete';
+const CACHE_VERSION = 'prevol-v40-1-liste';
 
 const PAGES = [
   './',

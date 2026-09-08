@@ -340,3 +340,20 @@ d'une liste vide, d'où l'impression d'être arrivé sur la mauvaise page.
 
 Vérifié : `carnet-de-vol.html`, créée depuis la même page, n'a pas ce défaut —
 elle n'a pas d'en-tête de site, son propre bandeau fait office de titre.
+
+## v40.1 — La liste des dossiers restait vide
+
+Le tableau de bord affichait bien la préparation enregistrée, avec le même
+`#dossierList` et la même fonction `renderDossierList`. Le code et les données
+étaient donc corrects : seule la page `dossiers.html` ne montrait rien.
+
+Sa carte était placée dans `#pageHome`, dont l'affichage dépendait de trois
+mécanismes concurrents : la classe `.active` posée par `goToPage`, la règle
+`.page-panel{display:none}` d'`app.css`, et la feuille de portée de la page.
+Une chaîne fragile pour un contenu qui n'a rien à voir avec les panneaux.
+
+- La carte devient un enfant direct du `<main>`. La feuille de portée se réduit
+  à masquer les quatre panneaux, et l'affichage de la liste ne dépend plus de
+  rien d'autre.
+- `initPageDossiers` remplit explicitement la liste dès que la carte est
+  présente, sans passer par l'initialisation du tableau de bord.

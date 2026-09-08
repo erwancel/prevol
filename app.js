@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v40 · 2026.09.08';
+const APP_VERSION = 'v40.1 · 2026.09.08';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -5240,6 +5240,14 @@ async function purgeOldDocs(days){
     if(msg){ msg.className='rwyMsg bad'; msg.textContent = 'Allègement impossible : ' + ((e && e.message)||e); }
   }
 }
+
+// La page dossiers.html n'a ni formulaire ni tableau de bord : rien ne
+// garantissait que la liste soit rendue. On la remplit explicitement dès que
+// sa carte dédiée est présente, indépendamment de l'initialisation du reste.
+(function initPageDossiers(){
+  if(!document.getElementById('dossiersOnly')) return;
+  if(typeof renderDossierList === 'function') renderDossierList();
+})();
 
 (function initBackup(){
   const b = document.getElementById('backupBtn');

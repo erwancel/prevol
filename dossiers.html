@@ -50,12 +50,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="app.css">
 <style id="prevol-page-scope">
-/* Cette page ne montre que la liste des dossiers enregistrés : le
-   tableau de bord est affiché, mais réduit à cette seule carte. */
-#pageFlight,#pageAircraft,#pageAirport{display:none!important}
-#pageHome{display:block!important}
-#pageHome > *{display:none!important}
-#pageHome > #dossiersOnly{display:block!important}
+/* La carte des dossiers est un enfant direct du <main> : elle ne dépend
+   plus de l'affichage de #pageHome, qui était piloté à la fois par la
+   classe .active, par .page-panel{display:none} et par cette feuille.
+   Il ne reste qu'à masquer les quatre panneaux de l'application. */
+#pageHome,#pageFlight,#pageAircraft,#pageAirport{display:none!important}
 </style>
 </head>
 <body class="subpage" data-view="dossiers">
@@ -80,13 +79,14 @@
 <p>Retrouvez vos préparations et rouvrez-en une pour la reprendre ou la dupliquer.</p>
 </div>
 </header>
-<div class="page-panel" id="pageHome">
 <section class="card" id="dossiersOnly">
 <div class="section-title-row"><h2>Mes dossiers de vol</h2></div>
 <div class="smallhint" style="margin-bottom:12px;">Touche un dossier pour le rouvrir. Il sera chargé dans le formulaire et partagé avec toutes les pages du menu.</div>
 <div class="rwyMsg" id="dossierMsg">Chargement des dossiers…</div>
 <div id="dossierList"></div>
 </section>
+<div class="page-panel" id="pageHome">
+
 </div>
 
 <div class="page-panel active" id="pageFlight">
