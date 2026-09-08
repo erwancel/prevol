@@ -120,3 +120,29 @@
 
 /* Seul le tableau défile horizontalement */
 .carnet-page .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
+
+/* ============================================================
+   CONFINEMENT DE LA LARGEUR
+   ------------------------------------------------------------
+   Après recensement, la seule largeur minimale dure de toute
+   l'application est table{min-width:1250px}. Elle vit dans
+   .table-wrap, qui a overflow:auto — cela devrait suffire à
+   l'isoler, mais visiblement non.
+
+   contain:inline-size le garantit explicitement : la propriété
+   interdit à la taille des descendants d'influencer la largeur de
+   l'élément. C'est exactement le mécanisme prévu pour ce cas, là où
+   min-width:0 et overflow ne font que le suggérer.
+   ============================================================ */
+.carnet-page .main-content,
+.carnet-page .container,
+.carnet-page .table-card,
+.carnet-page .table-wrap{contain:inline-size;}
+
+/* Repli pour les navigateurs sans contain:inline-size : on borne à
+   la largeur du parent, ce qui produit le même effet visible. */
+@supports not (contain: inline-size){
+  .carnet-page .container,
+  .carnet-page .table-card,
+  .carnet-page .table-wrap{max-width:100%;overflow-x:auto;}
+}

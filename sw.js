@@ -10,7 +10,7 @@
 // Les chemins sont relatifs à l'emplacement du service worker, pour rester
 // valables aussi bien à la racine d'un domaine que sous /nom-du-depot/ comme
 // le fait GitHub Pages.
-const CACHE_VERSION = 'prevol-v37-2-carnet-borne';
+const CACHE_VERSION = 'prevol-v38-css-reseau';
 
 const PAGES = [
   './',
@@ -102,8 +102,31 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // app.js et app.css sont servis depuis le cache pour un démarrage immédiat,
-  // et rafraîchis en arrière-plan pour la visite suivante.
+  // Les feuilles de style et les scripts passent en RÉSEAU D'ABORD.
+  //
+  // Ils étaient servis depuis le cache, avec rafraîchissement en arrière-plan
+  // pour la visite suivante. Conséquence : après un commit, le premier
+  // rechargement affichait encore l'ancien CSS. Une correction de mise en page
+  // semblait donc sans effet, et il fallait recharger deux fois sans le savoir.
+  // Le cache reste le filet hors ligne, plus la source par défaut.
+  const codeSource = /\.(css|js)$/i.test(url.pathname);
+  if (codeSource) {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res && res.status === 200) {
+            const copy = res.clone();
+            caches.open(CACHE_VERSION).then((cache) => cache.put(req, copy));
+          }
+          return res;
+        })
+        .catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // Le reste (images, icônes, manifeste) change rarement : cache d'abord,
+  // rafraîchi en arrière-plan.
   event.respondWith(
     caches.match(req).then((cached) => {
       const network = fetch(req)
