@@ -688,16 +688,20 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
    et le footer se place naturellement en bas des pages courtes. */
 @media (min-width: 761px){
   .app-shell{display:block!important;min-height:100vh!important;}
-  .sidebar{position:fixed!important;left:0!important;top:0!important;bottom:0!important;width:234px!important;height:100vh!important;box-sizing:border-box!important;}
-  .main-content{margin-left:234px!important;min-height:100vh!important;display:flex!important;flex-direction:column!important;}
+  /* width retirée : la largeur est désormais gérée par le rail rétractable,
+   plus bas dans ce fichier. La forcer ici bloquait le dépliage au survol. */
+.sidebar{position:fixed!important;left:0!important;top:0!important;bottom:0!important;height:100vh!important;box-sizing:border-box!important;}
+  /* Le décalage suit désormais la largeur du rail fermé (72 px). Le menu se
+   déplie par-dessus le contenu, donc cette marge ne bouge jamais. */
+.main-content,.app-shell > main{margin-left:72px!important;min-height:100vh!important;display:flex!important;flex-direction:column!important;}
   .main-content > header.top{flex:0 0 auto;}
   .main-content > .tabs{flex:0 0 auto;}
   .main-content > .page-panel{flex:0 0 auto;}
   .main-content > footer.premium-footer{margin-top:auto!important;flex:0 0 auto;}
 }
 @media (min-width:761px) and (max-width:1050px){
-  .sidebar{width:78px!important;}
-  .main-content{margin-left:78px!important;}
+  /* largeur retirée pour la même raison */
+  .main-content,.app-shell > main{margin-left:72px!important;}
 }
 @media (max-width:760px){
   .main-content{min-height:calc(100vh - 58px)!important;display:flex!important;flex-direction:column!important;}
@@ -794,3 +798,68 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 .section-clear{flex:0 0 auto;opacity:.75;font-size:13px;padding:5px 11px;}
 .section-clear:hover,.section-clear:active{opacity:1;border-color:var(--red);color:var(--red);}
 #clearAllBtn{flex:0 0 auto;}
+
+/* ============================================================
+   MENU LATÉRAL RÉTRACTABLE
+   ------------------------------------------------------------
+   Le menu occupait 234 px en permanence, ce qui écrasait le contenu
+   des pages larges — le carnet de vol notamment, dont le tableau
+   compte seize colonnes.
+
+   Il devient un rail d'icônes de 72 px, qui se déplie au survol pour
+   révéler les libellés. Le rail est en position fixe et le dépliage
+   passe PAR-DESSUS le contenu : sans cela, chaque survol
+   redistribuerait la largeur et ferait sauter toute la page.
+   La colonne de 72 px de la grille sert de réserve d'espace.
+
+   Au clavier, :focus-within déplie aussi le menu, sinon la
+   navigation à la tabulation se ferait sur des libellés invisibles.
+   ============================================================ */
+@media(min-width:761px){
+  .app-shell{grid-template-columns:72px minmax(0,1fr);}
+
+  .sidebar{
+    position:fixed; top:0; left:0; height:100vh; width:72px;
+    padding:22px 8px 18px; overflow:hidden; z-index:40;
+    transition:width .18s ease, box-shadow .18s ease;
+  }
+  .sidebar:hover, .sidebar:focus-within{
+    width:250px; box-shadow:6px 0 26px rgba(8,16,26,.34);
+  }
+
+  /* Les libellés restent dans le flux — display:none empêcherait
+     toute transition et retirerait les liens du parcours clavier. */
+  .side-nav .tab span:not(.nav-ico){
+    opacity:0; white-space:nowrap;
+    transition:opacity .13s ease;
+  }
+  .sidebar:hover .side-nav .tab span:not(.nav-ico),
+  .sidebar:focus-within .side-nav .tab span:not(.nav-ico){opacity:1;}
+
+  .side-nav .tab{
+    padding:12px 13px; gap:15px; border-radius:12px;
+  }
+
+  /* Marque et pied : masqués tant que le rail est fermé */
+  .side-brand, .side-rule, .side-footer{
+    opacity:0; transition:opacity .13s ease; white-space:nowrap;
+  }
+  .sidebar:hover .side-brand, .sidebar:focus-within .side-brand,
+  .sidebar:hover .side-rule,  .sidebar:focus-within .side-rule,
+  .sidebar:hover .side-footer,.sidebar:focus-within .side-footer{opacity:1;}
+  .side-brand{padding:0 8px;}
+  .side-footer{margin:0 8px;}
+
+  /* Le contenu prend toute la largeur restante et ne déborde plus
+     sous le menu : sans min-width:0, un tableau large force la
+     colonne de grille à s'élargir au-delà de l'écran. */
+  .main-content, .app-shell > main{min-width:0; overflow-x:hidden;}
+}
+
+/* La règle des écrans moyens masquait purement les libellés, ce qui
+   empêchait le dépliage au survol. Le rail s'en charge désormais. */
+@media(min-width:761px) and (max-width:1050px){
+  .side-brand, .side-rule, .side-footer{display:block;}
+  .side-nav .tab span:not(.nav-ico){display:inline;}
+  .side-nav .tab{justify-content:flex-start;}
+}

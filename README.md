@@ -239,3 +239,30 @@ formulaire), l'autre répondant à tout (page complète). Aucune erreur.
 
 Règle pour la suite : dans `app.js`, utiliser `on(...)` plutôt que
 `document.getElementById(...).addEventListener(...)`.
+
+## v37 — Menu rétractable
+
+Le menu occupait 234 px en permanence. Sur le carnet de vol, dont le tableau
+compte seize colonnes, le contenu passait sous le menu.
+
+Deux causes distinctes :
+
+1. La grille `.app-shell` était déjà neutralisée par un `display:block
+   !important` hérité d'un ancien correctif ; le décalage venait en réalité
+   d'un `margin-left:234px !important` sur `.main-content`. Or le `<main>` du
+   carnet ne porte pas cette classe : aucun décalage, d'où le chevauchement.
+2. Deux règles forçaient la largeur du menu en `!important` (234 px, puis
+   78 px sous 1050 px), ce qui aurait bloqué tout dépliage.
+
+Le menu est maintenant un rail de 72 px qui se déplie à 250 px au survol. Il
+est en position fixe et se déplie **par-dessus** le contenu : une expansion qui
+repousserait la page ferait sauter la mise en page à chaque passage de souris.
+La marge du contenu reste donc constante à 72 px.
+
+`:focus-within` déplie aussi le menu, sinon la navigation au clavier se ferait
+sur des libellés invisibles. Les libellés gardent `opacity` plutôt que
+`display:none`, qui interdirait la transition et sortirait les liens du
+parcours de tabulation.
+
+Sous 761 px, rien ne change : le menu reste une barre horizontale, le survol
+n'existant pas au doigt.
