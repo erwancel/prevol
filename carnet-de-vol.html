@@ -147,6 +147,7 @@
 <div class="modal-backdrop" id="importModal"><div class="modal"><div class="modal-head"><div><h3>Importer un carnet LogTen</h3><div class="small">Analyse et prévisualisation avant import.</div></div><button class="icon-btn" id="closeImportBtn">×</button></div><div class="modal-body"><div class="import-box"><h4>Fichier LogTen</h4><p class="small">CSV/TSV accepté. Les colonnes non utilisées sont conservées dans les données brutes.</p><button class="btn primary" id="chooseImportFile">Choisir le fichier</button><div id="importInfo" class="small" style="margin-top:10px"></div><div id="importPreviewWrap" class="hidden"><div class="import-summary"><div class="summary-card"><strong id="importCount">0</strong><span>lignes</span></div><div class="summary-card"><strong id="importCols">0</strong><span>colonnes</span></div><div class="summary-card"><strong id="importAircraftCount">0</strong><span>appareils</span></div><div class="summary-card"><strong id="importWarnings">0</strong><span>avertissements</span></div></div><div class="import-preview"><table id="importPreviewTable"></table></div></div></div></div><div class="modal-actions"><button class="btn" id="cancelImportBtn">Annuler</button><button class="btn primary" id="confirmImportBtn" disabled>Importer</button></div></div></div>
 
 
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 </div><!-- /app-shell -->
 </div>
 <script src="app.js"></script>
