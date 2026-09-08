@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v31 · 2026.09.08';
+const APP_VERSION = 'v32 · 2026.09.08';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -924,16 +924,45 @@ function toggleAlternateFuel(){
   if(!show){
     const f = document.getElementById('altReserveL');
     if(f) f.value = '';           // pas de dégagement -> pas de réserve dégagement
+    sec.classList.remove('vient-de-souvrir');
   } else {
+    const icao = (str('altn1')||'').trim().toUpperCase();
     const lbl = document.getElementById('altReserveIcao');
-    if(lbl) lbl.textContent = (str('altn1')||'').trim().toUpperCase();
+    if(lbl) lbl.textContent = icao;
+    // Le champ apparaît loin du dégagement qu'on vient de saisir, souvent
+    // hors écran : un liseré passager signale qu'il s'est débloqué.
+    if(!sec.classList.contains('vient-de-souvrir')){
+      sec.classList.add('vient-de-souvrir');
+      setTimeout(()=>sec.classList.remove('vient-de-souvrir'), 2600);
+    }
   }
+}
+
+// Liste de choix du terrain de dégagement, alimentée par la base aérodromes.
+// Un datalist laisse la saisie libre pour un terrain non enregistré tout en
+// proposant ceux qu'on connaît déjà.
+function refreshAlternateList(){
+  const dl = document.getElementById('apKnownList');
+  if(!dl || typeof allAirports !== 'function') return;
+  const aps = allAirports();
+  const dep = normIcao(str('depIcao')), arr = normIcao(str('arrIcao'));
+  dl.innerHTML = Object.keys(aps).sort()
+    .filter(k => k !== dep && k !== arr)      // un dégagement n'est ni le départ ni l'arrivée
+    .map(k => `<option value="${k}">${(aps[k].name || '').replace(/"/g,'')}</option>`)
+    .join('');
 }
 
 ['depIcao','arrIcao','flightTime','altn1'].forEach(id=>{
   const el = document.getElementById(id);
   if(el) el.addEventListener('input', toggleArrivalRunway);
 });
+
+// La liste des dégagements possibles dépend du départ et de l'arrivée saisis
+['depIcao','arrIcao'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('input', refreshAlternateList);
+});
+refreshAlternateList();
 
 // ---- Initialisation : remplit le menu avion puis charge le premier ----
 (function initAircraft(){
@@ -4796,6 +4825,8 @@ function readDraft(){
     restoreFlight(d.fields);          // idem après le report des pistes
     if(typeof syncAllSurfaceLocks === 'function') syncAllSurfaceLocks();
     if(typeof refreshWindHints === 'function') refreshWindHints();
+    if(typeof refreshAlternateList === 'function') refreshAlternateList();
+    if(typeof toggleAlternateFuel === 'function') toggleAlternateFuel();
   }catch(e){
     console.warn('[brouillon] remise en cohérence partielle :', e);
   }

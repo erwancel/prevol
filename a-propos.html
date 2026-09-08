@@ -258,6 +258,8 @@
 <div class="field"><label>Équipage</label><input id="crew" min="1" type="number" value="1"/></div>
 <div class="field opt"><label>Pax total</label><input id="paxTotal" min="0" placeholder="0" type="number"/></div>
 <div class="field"><label>Immatriculation</label><input id="registration" readonly="" type="text"/></div>
+<div class="field opt"><label>Dégagement (ICAO)</label><input id="altn1" list="apKnownList" maxlength="4" oninput="this.value=this.value.toUpperCase()" placeholder="OACI" style="text-transform:uppercase" type="text"/><div class="smallhint">Facultatif. Une fois renseigné, la réserve de dégagement se débloque dans la section Carburant.</div></div>
+<datalist id="apKnownList"></datalist>
 </div>
 </section>
 <!-- 3. MASSE -->
@@ -309,6 +311,36 @@
 <!-- ENVIRONNEMENT & PISTES -->
 <section class="card">
 <h2><span class="idx">04</span> Environnement &amp; pistes</h2>
+<div class="subhead">Bulletin METAR / TAF</div>
+<div class="smallhint" style="margin-bottom:10px;">
+      Données Aviation Weather Center (NOAA), gratuites et sans compte.
+      Nécessite du réseau ; le dernier bulletin reçu reste consultable hors ligne.
+    </div>
+<div class="grid g3">
+<div class="field"><label>Rayon terrains alentour</label>
+<select id="wxRadius">
+<option value="0">Aucun (vol seul)</option>
+<option value="50">50 km</option>
+<option selected="" value="100">100 km</option>
+<option value="150">150 km</option>
+</select>
+</div>
+<div class="field"><label>Contenu</label>
+<select id="wxContent">
+<option selected="" value="both">METAR + TAF</option>
+<option value="metar">METAR seul</option>
+</select>
+</div>
+<div class="field"><label> </label>
+<button class="btnMini primary" id="wxFetchBtn" style="width:100%;" type="button">Récupérer le bulletin</button>
+</div>
+</div>
+<div class="rwyMsg" id="wxFetchMsg"></div>
+<div id="wxResults" style="margin-top:10px;"></div>
+<div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+<button class="btnMini" id="wxClearBtn" style="display:none;" type="button">Effacer le bulletin</button>
+</div>
+
 <div class="subhead" id="depEnvHead" style="margin-top:0;">Départ</div>
 <div class="grid g3">
 <div class="field"><label>Altitude terrain (ft)</label><input id="terrainAlt" placeholder="ft" type="number"/></div>
@@ -424,7 +456,6 @@
 <div class="field opt"><label>MEL</label><input id="mel" placeholder="RAS" type="text"/></div>
 <div class="field opt"><label>PPR</label><input id="ppr" placeholder="N/A" type="text"/></div>
 <div class="field opt"><label>EOBT (UTC)</label><input id="eobt" type="time"/></div>
-<div class="field opt"><label>Dégagement</label><input id="altn1" maxlength="4" oninput="this.value=this.value.toUpperCase()" placeholder="OACI" style="text-transform:uppercase" type="text"/></div>
 </div>
 </section>
 <!-- 7. DOCUMENTS & PILOTE -->
@@ -475,35 +506,8 @@
 <label class="chk"><input id="wxMaritime" type="checkbox"/><span>Survol maritime (vagues, T° eau)</span></label>
 </div>
 <div class="field" style="margin-top:12px;"><label>Minima de planification (T/O, dégagements, destination)</label><textarea id="wxMinimaText" placeholder="ICAO / RWY-APP / minima / météo / remarques"></textarea></div>
-<div class="subhead">Bulletin METAR / TAF</div>
-<div class="smallhint" style="margin-bottom:10px;">
-      Données Aviation Weather Center (NOAA), gratuites et sans compte.
-      Nécessite du réseau ; le dernier bulletin reçu reste consultable hors ligne.
-    </div>
-<div class="grid g3">
-<div class="field"><label>Rayon terrains alentour</label>
-<select id="wxRadius">
-<option value="0">Aucun (vol seul)</option>
-<option value="50">50 km</option>
-<option selected="" value="100">100 km</option>
-<option value="150">150 km</option>
-</select>
-</div>
-<div class="field"><label>Contenu</label>
-<select id="wxContent">
-<option selected="" value="both">METAR + TAF</option>
-<option value="metar">METAR seul</option>
-</select>
-</div>
-<div class="field"><label> </label>
-<button class="btnMini primary" id="wxFetchBtn" style="width:100%;" type="button">Récupérer le bulletin</button>
-</div>
-</div>
-<div class="rwyMsg" id="wxFetchMsg"></div>
-<div id="wxResults" style="margin-top:10px;"></div>
-<div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
-<button class="btnMini" id="wxClearBtn" style="display:none;" type="button">Effacer le bulletin</button>
-</div>
+<div class="smallhint">Le bulletin METAR / TAF se récupère directement dans la section où sont saisis la température, le QNH et le vent.</div>
+
 <div class="subhead">Cartes (TEMSI / WINTEM / SIGWX)</div>
 <div class="smallhint" style="margin-bottom:10px;">
       Les cartes Météo-France ne sont pas récupérables automatiquement (accès Aeroweb

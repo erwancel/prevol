@@ -621,3 +621,18 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 .side-footer .net-status .dot{width:7px;height:7px;border-radius:50%;
   background:var(--muted);display:inline-block;flex:0 0 auto;}
 #appVersionLine{opacity:.65;font-variant-numeric:tabular-nums;}
+
+/* Le champ « réserve dégagement » se débloque dans la section Carburant,
+   souvent hors écran au moment où le dégagement est saisi en section 01.
+   Un liseré passager signale l'apparition. */
+#altFuelField.vient-de-souvrir, #altFuelSection.vient-de-souvrir{
+  animation: souvre 2.6s ease-out;
+}
+@keyframes souvre{
+  0%   { box-shadow:0 0 0 2px var(--accent); }
+  70%  { box-shadow:0 0 0 2px var(--accent); }
+  100% { box-shadow:0 0 0 2px transparent; }
+}
+@media (prefers-reduced-motion: reduce){
+  #altFuelField.vient-de-souvrir, #altFuelSection.vient-de-souvrir{animation:none;}
+}
