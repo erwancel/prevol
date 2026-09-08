@@ -892,3 +892,157 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
     padding-left:72px!important;
   }
 }
+
+/* ============================================================
+   CARNET DE VOL — STYLES SPÉCIFIQUES
+   Unique feuille CSS : aucune feuille carnet séparée.
+   Toutes les règles sont préfixées par .carnet-page pour conserver
+   le vocabulaire visuel global de PréVol sans casser les autres pages.
+   ============================================================ */
+
+/* ============================================================
+   CARNET DE VOL — STYLES SPÉCIFIQUES
+   Unique feuille CSS : aucune feuille carnet séparée.
+   Toutes les règles sont préfixées par .carnet-page pour conserver
+   le vocabulaire visuel global de PréVol sans casser les autres pages.
+   ============================================================ */
+
+.carnet-page #pageHome,
+.carnet-page #pageFlight,
+.carnet-page #pageAircraft,
+.carnet-page #pageAirport{display:none!important;}
+
+.carnet-page .main-content,
+.carnet-page .app-shell > main{
+  min-width:0!important;
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:hidden!important;
+}
+.carnet-page .main-content > .container{
+  width:100%!important;
+  max-width:1280px!important;
+  min-width:0!important;
+  margin:0 auto!important;
+  padding:18px 22px 40px!important;
+}
+.carnet-page .hero{
+  position:relative;overflow:hidden;min-height:205px;border-radius:var(--r-lg);
+  box-shadow:var(--shadow-card);margin-bottom:18px;
+  background:
+    linear-gradient(90deg,rgba(9,24,37,.90) 0%,rgba(9,24,37,.68) 50%,rgba(9,24,37,.24) 100%),
+    url('./hero-wing.jpg') center/cover no-repeat;
+  color:#fff;display:flex;align-items:flex-end;
+}
+.carnet-page .hero-inner{padding:30px;width:100%;}
+.carnet-page .hero-kicker{font-size:11px;line-height:1;font-weight:700;letter-spacing:.17em;color:#d8e4ef;margin-bottom:9px;}
+.carnet-page .hero h2{margin:0;font-family:var(--disp);font-size:36px;line-height:1.02;letter-spacing:-.03em;font-weight:700;color:#fff;}
+.carnet-page .hero p{margin:10px 0 0;color:#e1e8ef;max-width:760px;font-size:15px;line-height:1.45;}
+
+.carnet-page .toolbar{
+  width:100%;display:flex;gap:10px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;
+  margin:0 0 16px;padding:0 0 4px;scrollbar-width:thin;
+}
+.carnet-page .toolbar .btn{
+  flex:0 0 auto;white-space:nowrap;border:1px solid var(--line);background:var(--panel);
+  color:var(--text);padding:10px 15px;border-radius:var(--r-sm);font-weight:650;
+  box-shadow:var(--shadow-card);min-height:42px;
+}
+.carnet-page .toolbar .btn:hover{border-color:var(--accent);}
+.carnet-page .toolbar .btn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent);}
+.carnet-page .toolbar .btn.danger{color:var(--warn);border-color:rgba(224,121,109,.4);background:var(--panel);}
+.carnet-page .toolbar .btn.ghost{background:transparent;box-shadow:none;}
+
+.carnet-page .stats{
+  width:100%;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:16px;
+}
+.carnet-page .stat{min-width:0;padding:16px;overflow:hidden;}
+.carnet-page .stat-label{font-family:var(--code);font-size:10px;line-height:1.2;font-weight:700;color:var(--muted);letter-spacing:.10em;text-transform:uppercase;}
+.carnet-page .stat-value{margin-top:7px;font-family:var(--disp);font-size:27px;line-height:1;font-weight:700;letter-spacing:-.02em;}
+.carnet-page .stat-sub{margin-top:5px;color:var(--muted);font-size:11px;}
+
+.carnet-page .filters{padding:14px;margin-bottom:16px;}
+.carnet-page .filters-grid{
+  width:100%;min-width:0;display:grid;
+  grid-template-columns:1.2fr .8fr .8fr .8fr .8fr .9fr;gap:10px;
+}
+.carnet-page .field{min-width:0;display:flex;flex-direction:column;gap:6px;}
+.carnet-page .field label{font-family:var(--code);font-size:10px;line-height:1;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+.carnet-page .field input,
+.carnet-page .field select,
+.carnet-page .field textarea{
+  width:100%;min-width:0;border:1px solid var(--line);background:var(--input-bg);color:var(--text);
+  border-radius:var(--r-sm);padding:10px 11px;outline:none;
+}
+.carnet-page .field input:focus,
+.carnet-page .field select:focus,
+.carnet-page .field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 18%,transparent);}
+.carnet-page .filters-actions{display:flex;align-items:flex-end;gap:8px;min-width:0;}
+
+.carnet-page .table-card{width:100%;min-width:0;overflow:hidden;margin-bottom:16px;}
+.carnet-page .table-top{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);}
+.carnet-page .table-title{font-family:var(--disp);font-size:17px;font-weight:700;}
+.carnet-page .table-meta{color:var(--muted);font-size:12px;}
+.carnet-page .table-wrap{width:100%;max-width:100%;min-width:0;overflow-x:auto;overflow-y:auto;max-height:62vh;-webkit-overflow-scrolling:touch;}
+.carnet-page table{width:100%;min-width:1250px;border-collapse:collapse;}
+.carnet-page thead{position:sticky;top:0;z-index:2;background:color-mix(in srgb,var(--panel) 94%,var(--accent) 6%);}
+.carnet-page th,.carnet-page td{border-bottom:1px solid var(--line);padding:10px;font-size:12px;white-space:nowrap;text-align:left;}
+.carnet-page th{font-family:var(--code);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.carnet-page tbody tr:hover{background:var(--chip-bg);}
+.carnet-page .actions-cell{display:flex;gap:6px;}
+.carnet-page .icon-btn{width:30px;height:30px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel);color:var(--text);display:grid;place-items:center;}
+.carnet-page .icon-btn:hover{border-color:var(--accent);}
+.carnet-page .icon-btn svg{width:16px;height:16px;}
+.carnet-page .badge{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:5px 8px;font-family:var(--code);font-size:10px;font-weight:700;background:var(--chip-bg);color:var(--text);}
+.carnet-page .empty{padding:38px;text-align:center;color:var(--muted);}
+.carnet-page .pagination{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.carnet-page .pagination-controls{display:flex;gap:6px;}
+
+.carnet-page .modal-backdrop{position:fixed;inset:0;background:rgba(7,18,28,.60);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
+.carnet-page .modal-backdrop.open{display:flex;}
+.carnet-page .modal{width:min(1200px,100%);max-width:100%;max-height:92vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-pop);}
+.carnet-page .modal-head{position:sticky;top:0;z-index:5;background:var(--panel);display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--line);}
+.carnet-page .modal-head h3{margin:0;font-family:var(--disp);font-size:21px;font-weight:700;}
+.carnet-page .modal-body{padding:18px;}
+.carnet-page .modal-actions{position:sticky;bottom:0;background:color-mix(in srgb,var(--panel) 96%,transparent);border-top:1px solid var(--line);padding:12px 18px;display:flex;justify-content:flex-end;gap:8px;}
+.carnet-page .section{margin-bottom:18px;}
+.carnet-page .section-title{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.carnet-page .section-title .num{width:25px;height:25px;border-radius:var(--r-sm);background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-family:var(--code);font-size:11px;font-weight:700;}
+.carnet-page .section-title h4{margin:0;font-family:var(--disp);font-size:16px;font-weight:700;}
+.carnet-page .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.carnet-page .grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+.carnet-page .grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
+.carnet-page .grid-5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;}
+.carnet-page .small{font-size:11px;color:var(--muted);}
+.carnet-page .import-box{border:1px dashed color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:var(--r-md);background:var(--panel2);padding:16px;}
+.carnet-page .import-preview{margin-top:12px;border:1px solid var(--line);border-radius:var(--r-md);overflow:auto;max-height:300px;background:var(--panel);}
+.carnet-page .hidden{display:none!important;}
+.carnet-page .import-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px;}
+.carnet-page .summary-card{border:1px solid var(--line);border-radius:var(--r-sm);padding:11px;background:var(--panel);}
+.carnet-page .summary-card strong{display:block;font-family:var(--disp);font-size:21px;font-weight:700;}
+.carnet-page .summary-card span{color:var(--muted);font-size:11px;}
+.carnet-page .toast{position:fixed;right:20px;bottom:20px;z-index:200;background:var(--premium-navy);color:#fff;padding:11px 14px;border-radius:var(--r-sm);box-shadow:var(--shadow-pop);display:none;}
+.carnet-page .toast.show{display:block;}
+
+@media(max-width:1200px){
+  .carnet-page .stats{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .carnet-page .filters-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+}
+@media(max-width:850px){
+  .carnet-page .main-content > .container{max-width:100%!important;padding:14px 14px 34px!important;}
+  .carnet-page .stats{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .carnet-page .filters-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .carnet-page .grid-5{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .carnet-page .grid-4{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .carnet-page .grid-3{grid-template-columns:1fr;}
+}
+@media(max-width:560px){
+  .carnet-page .main-content > .container{padding:10px 10px 28px!important;}
+  .carnet-page .hero{min-height:190px;}
+  .carnet-page .hero-inner{padding:24px;}
+  .carnet-page .hero h2{font-size:32px;}
+  .carnet-page .hero p{font-size:13px;}
+  .carnet-page .stats,.carnet-page .filters-grid,.carnet-page .grid-2,.carnet-page .grid-3,.carnet-page .grid-4,.carnet-page .grid-5,.carnet-page .import-summary{grid-template-columns:1fr;}
+  .carnet-page .modal-backdrop{padding:8px;}
+  .carnet-page .modal-body{padding:12px;}
+}
