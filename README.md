@@ -382,3 +382,26 @@ d'origine. Comportement vérifié dans les trois cas :
 
 L'écriture du brouillon avant navigation est indispensable : c'est elle qui
 transporte le dossier restauré vers la page suivante.
+
+## v41.1 — « Ouvrir » restait inerte
+
+`openDossier` est asynchrone et son résultat n'était écouté nulle part :
+`b.addEventListener('click', ()=>openDossier(id))`. Toute erreur dans la chaîne
+rejetait une promesse sans destinataire — aucun message, aucune trace visible,
+le bouton semblait simplement ne rien faire.
+
+Trois points bloquaient potentiellement l'exécution avant la navigation :
+
+1. **Les pièces jointes.** Trois `await` sur IndexedDB restauraient les cartes
+   météo, le PIB et l'annexe. Un échec ou une écriture qui ne se résout pas
+   arrêtait la fonction avant `allerAuFormulaire()`. Elles sont désormais dans
+   un `try/catch` : leur échec est signalé en console sans interrompre.
+2. **L'écriture du brouillon.** `writeDraft()` précède la navigation, et une
+   exception l'empêchait. Protégée : mieux vaut arriver sur un formulaire
+   incomplet que rester bloqué sans explication. Vérifié par simulation — avec
+   un `writeDraft` qui lève, la navigation a bien lieu.
+3. **Le silence.** Les deux boutons signalent maintenant leur échec dans
+   `#dossierMsg`, et « Ouvrir » affiche « Ouverture… » pendant le traitement.
+
+Si le problème persiste, le message d'erreur affiché sous la liste dira
+précisément ce qui échoue.

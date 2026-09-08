@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v41 · 2026.09.08';
+const APP_VERSION = 'v41.1 · 2026.09.08';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -4598,17 +4598,25 @@ async function openDossier(id){
   setCurrentDossier(d.id);   // « Enregistrer » mettra à jour cette fiche
   restoreFlight(d.fields || {});
 
-  WXDOC = d.wxdoc || null;
-  if(WXDOC) await wxdocSave(WXDOC); else await wxdocClear();
-  renderWxDoc();
+  // Les pièces jointes passent par IndexedDB. Un échec ou une écriture qui
+  // ne se résout pas bloquait tout le reste de la fonction, y compris le
+  // passage au formulaire : le bouton « Ouvrir » semblait alors inerte.
+  // Elles ne sont plus bloquantes, et leur échec est signalé sans interrompre.
+  try{
+    WXDOC = d.wxdoc || null;
+    if(WXDOC) await wxdocSave(WXDOC); else await wxdocClear();
+    renderWxDoc();
 
-  NTMDOC = d.ntmdoc || null;
-  if(NTMDOC) await wxdocSave(NTMDOC, NTMDOC_KEY); else await wxdocClear(NTMDOC_KEY);
-  renderNtmDoc();
+    NTMDOC = d.ntmdoc || null;
+    if(NTMDOC) await wxdocSave(NTMDOC, NTMDOC_KEY); else await wxdocClear(NTMDOC_KEY);
+    renderNtmDoc();
 
-  FREEDOC = d.freedoc || null;
-  if(FREEDOC) await wxdocSave(FREEDOC, FREEDOC_KEY); else await wxdocClear(FREEDOC_KEY);
-  renderFreeDoc();
+    FREEDOC = d.freedoc || null;
+    if(FREEDOC) await wxdocSave(FREEDOC, FREEDOC_KEY); else await wxdocClear(FREEDOC_KEY);
+    renderFreeDoc();
+  }catch(e){
+    console.warn('[dossier] pièces jointes non restaurées :', e);
+  }
 
   WX_BULLETIN = d.wxBulletin || null;
   saveWxBulletin();
@@ -4706,7 +4714,10 @@ function allerAuFormulaire(){
     goToPage('pageFlight');
     return;
   }
-  writeDraft();                       // ne rien perdre avant de changer de page
+  // L'écriture du brouillon transporte le dossier vers la page suivante,
+  // mais un échec ici ne doit pas empêcher la navigation : mieux vaut
+  // arriver sur un formulaire incomplet que de rester bloqué sans rien voir.
+  try{ writeDraft(); }catch(e){ console.warn('[dossier] brouillon non écrit :', e); }
   window.location.href = 'dossier.html';
 }
 
@@ -4742,11 +4753,26 @@ function renderDossierList(){
         </div>`;
     }).join('');
 
+    // openDossier et duplicateDossier sont asynchrones : sans ce catch, la
+    // moindre erreur rejetait une promesse que personne n'écoutait, et le
+    // bouton paraissait simplement ne rien faire.
+    const signaler = (e)=>{
+      console.error('[dossier]', e);
+      const m = document.getElementById('dossierMsg');
+      if(m){ m.className='rwyMsg bad'; m.textContent = 'Ouverture impossible : ' + ((e && e.message) || e); }
+    };
     box.querySelectorAll('[data-open]').forEach(b=>{
-      b.addEventListener('click', ()=>openDossier(b.dataset.open));
+      b.addEventListener('click', ()=>{
+        b.disabled = true; b.textContent = 'Ouverture…';
+        Promise.resolve(openDossier(b.dataset.open))
+          .catch(signaler)
+          .finally(()=>{ b.disabled = false; b.textContent = 'Ouvrir'; });
+      });
     });
     box.querySelectorAll('[data-dup]').forEach(b=>{
-      b.addEventListener('click', ()=>duplicateDossier(b.dataset.dup));
+      b.addEventListener('click', ()=>{
+        Promise.resolve(duplicateDossier(b.dataset.dup)).catch(signaler);
+      });
     });
     box.querySelectorAll('[data-fav]').forEach(b=>{
       b.addEventListener('click', async ()=>{
