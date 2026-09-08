@@ -10,12 +10,13 @@
 // Les chemins sont relatifs à l'emplacement du service worker, pour rester
 // valables aussi bien à la racine d'un domaine que sous /nom-du-depot/ comme
 // le fait GitHub Pages.
-const CACHE_VERSION = 'prevol-v33-1-filtres';
+const CACHE_VERSION = 'prevol-v35-carnet';
 
 const PAGES = [
   './',
   './index.html',
   './dossier.html',
+  './carnet-de-vol.html',
   './navigation.html',
   './masse-centrage.html',
   './carburant.html',
@@ -34,6 +35,8 @@ const ASSETS = [
   './app.js',
   './app.css',
   './page-carburant.js',
+  './carnet.css',
+  './carnet.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',

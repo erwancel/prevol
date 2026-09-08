@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PréVol — Carnet de vol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+// ---- Thème : résolu AVANT le premier affichage ----
+// La préférence (auto/light/dark) est en localStorage ; l'attribut
+// data-theme sur <html> porte le thème effectivement appliqué. Ce script
+// est délibérément placé dans le <head> et exécuté en synchrone : le
+// mettre en bas de page ferait apparaître l'interface sombre une fraction
+// de seconde avant de basculer en clair.
+(function(){
+  window.THEME_KEY = 'prevol_theme_v1';
+  window.readThemePref = function(){
+    try{ return localStorage.getItem(window.THEME_KEY) || 'light'; }catch(e){ return 'auto'; }
+  };
+  window.applyTheme = function(pref){
+    var p = pref || window.readThemePref();
+    var dark = true;
+    if(p === 'light') dark = false;
+    else if(p === 'auto' && window.matchMedia){
+      dark = !window.matchMedia('(prefers-color-scheme: light)').matches;
+    }
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    var m = document.querySelector('meta[name="theme-color"]');
+    if(m) m.setAttribute('content', dark ? '#0a141f' : '#eef1f5');
+  };
+  window.applyTheme();
+  // Suit le réglage iOS en direct quand la préférence est « auto »
+  if(window.matchMedia){
+    var mq = window.matchMedia('(prefers-color-scheme: light)');
+    var onChange = function(){ if(window.readThemePref() === 'auto') window.applyTheme('auto'); };
+    if(mq.addEventListener) mq.addEventListener('change', onChange);
+    else if(mq.addListener) mq.addListener(onChange);
+  }
+})();
+</script>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="carnet.css">
+</head>
+<body data-view="carnet">
+<div class="app">
+<aside class="sidebar">
+<div class="sidebar-brand"><div class="eyebrow">GESTION AÉRONAUTIQUE</div><h1>PréVol</h1><div class="sub">Carnet de vol</div></div>
+<div class="nav-scroll">
+<div class="nav-group">Navigation</div>
+<button class="nav-item" onclick="location.href='./index.html'"><span class="nav-icon">⌂</span><span class="nav-label">Tableau de bord</span></button>
+<button class="nav-item" onclick="location.href='./dossier.html'"><span class="nav-icon">▤</span><span class="nav-label">Dossier</span></button>
+<button class="nav-item active"><span class="nav-icon">▥</span><span class="nav-label">Carnet de vol</span></button>
+<button class="nav-item" onclick="location.href='./navigation.html'"><span class="nav-icon">◎</span><span class="nav-label">Navigation</span></button>
+<button class="nav-item" onclick="location.href='./masse-centrage.html'"><span class="nav-icon">⚖</span><span class="nav-label">Masse & centrage</span></button>
+<button class="nav-item" onclick="location.href='./carburant.html'"><span class="nav-icon">▱</span><span class="nav-label">Carburant</span></button>
+<button class="nav-item" onclick="location.href='./performances.html'"><span class="nav-icon">⌁</span><span class="nav-label">Performances</span></button>
+<button class="nav-item" onclick="location.href='./documents.html'"><span class="nav-icon">▤</span><span class="nav-label">Documents</span></button>
+<button class="nav-item" onclick="location.href='./meteo.html'"><span class="nav-icon">☁</span><span class="nav-label">Météo</span></button>
+<button class="nav-item" onclick="location.href='./notam.html'"><span class="nav-icon">!</span><span class="nav-label">NOTAM</span></button>
+<div class="nav-group">Gestion</div>
+<button class="nav-item" onclick="location.href='./index.html#avions'"><span class="nav-icon">✈</span><span class="nav-label">Avions</span></button>
+<button class="nav-item" onclick="location.href='./index.html#aerodromes'"><span class="nav-icon">▥</span><span class="nav-label">Aérodromes</span></button>
+<button class="nav-item" onclick="location.href='./outils.html'"><span class="nav-icon">⌘</span><span class="nav-label">Outils</span></button>
+<button class="nav-item" onclick="location.href='./parametres.html'"><span class="nav-icon">☷</span><span class="nav-label">Paramètres</span></button>
+<button class="nav-item" onclick="location.href='./a-propos.html'"><span class="nav-icon">ⓘ</span><span class="nav-label">À propos</span></button>
+</div>
+<div class="sidebar-footer">Carnet personnel · données stockées localement</div>
+</aside>
+
+<main class="main"><div class="container">
+<section class="hero"><div class="hero-inner"><div class="hero-kicker">GESTION AÉRONAUTIQUE</div><h2>Carnet de vol</h2><p>Ton logbook complet : vols, équipage, temps, décollages, atterrissages, approches, IFR, simulateur, duty, carburant et export EASA.</p></div></section>
+
+<div class="toolbar">
+<button class="btn primary" id="addFlightBtn">+ Ajouter un vol</button>
+<button class="btn" id="importBtn">Importer LogTen</button>
+<button class="btn" id="exportCsvBtn">Exporter CSV</button>
+<button class="btn" id="exportJsonBtn">Sauvegarder</button>
+<button class="btn" id="importJsonBtn">Restaurer</button>
+<button class="btn" id="easaBtn">Exporter EASA</button>
+<input id="csvInput" type="file" accept=".csv,.txt,.tsv" class="hidden">
+<input id="jsonInput" type="file" accept=".json" class="hidden">
+</div>
+
+<section class="stats">
+<div class="card stat"><div class="stat-label">Vols</div><div class="stat-value" id="statFlights">0</div><div class="stat-sub">entrées</div></div>
+<div class="card stat"><div class="stat-label">Total</div><div class="stat-value" id="statTotal">00:00</div><div class="stat-sub">temps total</div></div>
+<div class="card stat"><div class="stat-label">PIC</div><div class="stat-value" id="statPIC">00:00</div><div class="stat-sub">pilot-in-command</div></div>
+<div class="card stat"><div class="stat-label">SIC</div><div class="stat-value" id="statSIC">00:00</div><div class="stat-sub">co-pilot</div></div>
+<div class="card stat"><div class="stat-label">IFR</div><div class="stat-value" id="statIFR">00:00</div><div class="stat-sub">instrument</div></div>
+<div class="card stat"><div class="stat-label">Nuit</div><div class="stat-value" id="statNight">00:00</div><div class="stat-sub">night</div></div>
+</section>
+
+<section class="card filters">
+<div class="filters-grid">
+<div class="field"><label>Recherche</label><input id="searchInput" type="search" placeholder="Vol, avion, terrain, personne…"></div>
+<div class="field"><label>Avion</label><select id="filterAircraft"><option value="">Tous</option></select></div>
+<div class="field"><label>Type</label><select id="filterType"><option value="">Tous</option></select></div>
+<div class="field"><label>Année</label><select id="filterYear"><option value="">Toutes</option></select></div>
+<div class="field"><label>Fonction</label><select id="filterRole"><option value="">Toutes</option><option value="PIC">PIC</option><option value="SIC">SIC</option><option value="P1US">P1 u/s</option><option value="DUAL">Dual</option><option value="SOLO">Solo</option><option value="SIM">Simulateur</option></select></div>
+<div class="filters-actions"><button class="btn ghost" id="resetFiltersBtn">Réinitialiser</button></div>
+</div>
+</section>
+
+<section class="card table-card">
+<div class="table-top"><div><div class="table-title">Mes vols</div><div class="table-meta" id="tableMeta">0 vol</div></div><span class="badge" id="selectionBadge">0 sélectionné</span></div>
+<div class="table-wrap">
+<table><thead><tr>
+<th><input type="checkbox" id="selectAll"></th><th>Date</th><th>Départ</th><th>Arrivée</th><th>Avion</th><th>Type</th><th>SE/ME</th><th>SP/MP</th><th>Total</th><th>PIC</th><th>SIC</th><th>Night</th><th>IFR</th><th>PIC name</th><th>Actions</th>
+</tr></thead><tbody id="flightTableBody"></tbody></table>
+</div>
+<div id="emptyState" class="empty hidden">Aucun vol correspondant aux filtres.</div>
+<div class="pagination"><div class="table-meta" id="pageMeta"></div><div class="pagination-controls"><button class="btn" id="prevPage">←</button><button class="btn" id="nextPage">→</button></div></div>
+</section>
+
+<section class="card" style="padding:16px;margin-bottom:20px"><div style="display:flex;justify-content:space-between;align-items:center"><div><div class="table-title">Import / export</div><div class="small">Les données restent stockées localement dans le navigateur.</div></div><span class="badge">Local</span></div>
+<div class="import-summary">
+<div class="summary-card"><strong id="sumRecords">0</strong><span>entrées</span></div>
+<div class="summary-card"><strong id="sumAircraft">0</strong><span>avions / devices</span></div>
+<div class="summary-card"><strong id="sumAirports">0</strong><span>aérodromes</span></div>
+<div class="summary-card"><strong id="sumTypes">0</strong><span>types</span></div>
+</div></section>
+</div></main></div>
+
+<div class="modal-backdrop" id="flightModal"><div class="modal">
+<div class="modal-head"><div><h3 id="modalTitle">Ajouter un vol</h3><div class="small">Nouvelle entrée du carnet</div></div><button class="icon-btn" id="closeModalBtn">×</button></div>
+<div class="modal-body">
+
+<section class="section"><div class="section-title"><div class="num">01</div><h4>Vol</h4></div><div class="grid-5">
+<div class="field"><label>Date</label><input id="f_date" type="date"></div><div class="field"><label>Type de vol</label><select id="f_entryType"><option>Flight</option><option>Simulator</option><option>Training</option><option>Positioning</option><option>Commercial</option><option>Other</option></select></div><div class="field"><label>Numéro de vol</label><input id="f_flightNumber"></div><div class="field"><label>Départ ICAO</label><input id="f_from" maxlength="4"></div><div class="field"><label>Arrivée ICAO</label><input id="f_to" maxlength="4"></div></div>
+<div class="grid-4" style="margin-top:10px"><div class="field"><label>Départ réel</label><input id="f_actualDeparture" type="time"></div><div class="field"><label>Arrivée réelle</label><input id="f_actualArrival" type="time"></div><div class="field"><label>Distance NM</label><input id="f_distance" type="number" step=".1"></div><div class="field"><label>Route</label><input id="f_route"></div></div></section>
+
+<section class="section"><div class="section-title"><div class="num">02</div><h4>Avion</h4></div><div class="grid-4">
+<div class="field"><label>Immatriculation / Device</label><input id="f_aircraftId" list="aircraftList"></div><div class="field"><label>Type / modèle</label><input id="f_aircraftType"></div><div class="field"><label>SE / ME</label><select id="f_engineClass"><option value="">—</option><option>SE</option><option>ME</option></select></div><div class="field"><label>Single / Multi-pilot</label><select id="f_pilotMode"><option value="">—</option><option>Single-Pilot</option><option>Multi-Pilot</option></select></div></div><datalist id="aircraftList"></datalist></section>
+
+<section class="section"><div class="section-title"><div class="num">03</div><h4>Équipage</h4></div>
+<table style="width:100%;border-collapse:collapse">
+<thead><tr><th>Fonction</th><th>Personne</th></tr></thead><tbody id="crewRows"></tbody></table><datalist id="peopleList"></datalist></section>
+
+<section class="section"><div class="section-title"><div class="num">04</div><h4>Temps de vol</h4></div><div class="grid-5" id="timeFields"></div></section>
+<section class="section"><div class="section-title"><div class="num">05</div><h4>Décollages & atterrissages</h4></div><div class="grid-4" id="opsFields"></div></section>
+<section class="section"><div class="section-title"><div class="num">06</div><h4>Approches</h4></div><table style="width:100%;border-collapse:collapse"><thead><tr><th>N°</th><th>Type</th><th>Catégorie</th><th>Mode</th><th>Aérodrome</th></tr></thead><tbody id="approachRows"></tbody></table></section>
+<section class="section"><div class="section-title"><div class="num">07</div><h4>Duty / FDP</h4></div><div class="grid-4">
+<div class="field"><label>On Duty</label><input id="duty_on" type="datetime-local"></div><div class="field"><label>Off Duty</label><input id="duty_off" type="datetime-local"></div><div class="field"><label>Total Duty</label><input id="duty_total"></div><div class="field"><label>Rest</label><input id="duty_rest"></div><div class="field"><label>FDP Start</label><input id="duty_fdpStart" type="datetime-local"></div><div class="field"><label>FDP End</label><input id="duty_fdpEnd" type="datetime-local"></div><div class="field"><label>Total FDP</label><input id="duty_fdpTotal"></div></div></section>
+
+<section class="section"><div class="section-title"><div class="num">08</div><h4>Carburant</h4></div><div class="grid-5">
+<div class="field"><label>Fuel Added</label><input id="fuel_added" type="number" step=".1"></div><div class="field"><label>Fuel Burned</label><input id="fuel_burned" type="number" step=".1"></div><div class="field"><label>Min. Diversion</label><input id="fuel_diversion" type="number" step=".1"></div><div class="field"><label>Fuel Aboard</label><input id="fuel_aboard" type="number" step=".1"></div><div class="field"><label>Fuel Uplift</label><input id="fuel_uplift" type="number" step=".1"></div></div></section>
+
+<section class="section"><div class="section-title"><div class="num">09</div><h4>Conditions</h4></div><div class="grid-4" id="weatherFields"></div></section>
+<section class="section"><div class="section-title"><div class="num">10</div><h4>Passagers</h4></div><div class="grid-4" id="paxFields"></div></section>
+<section class="section"><div class="section-title"><div class="num">11</div><h4>Notes & remarques</h4></div><div class="field"><label>Remarks</label><textarea id="notes_remarks" rows="5"></textarea></div></section>
+<section class="section"><div class="section-title"><div class="num">12</div><h4>Données LogTen d'origine</h4></div><div class="field"><label>Données brutes</label><textarea id="rawLogTen" rows="7"></textarea></div></section>
+
+</div><div class="modal-actions"><button class="btn danger" id="deleteFlightBtn">Supprimer</button><button class="btn" id="cancelFlightBtn">Annuler</button><button class="btn primary" id="saveFlightBtn">Enregistrer</button></div>
+</div></div>
+
+<div class="modal-backdrop" id="importModal"><div class="modal"><div class="modal-head"><div><h3>Importer un carnet LogTen</h3><div class="small">Analyse et prévisualisation avant import.</div></div><button class="icon-btn" id="closeImportBtn">×</button></div><div class="modal-body"><div class="import-box"><h4>Fichier LogTen</h4><p class="small">CSV/TSV accepté. Les colonnes non utilisées sont conservées dans les données brutes.</p><button class="btn primary" id="chooseImportFile">Choisir le fichier</button><div id="importInfo" class="small" style="margin-top:10px"></div><div id="importPreviewWrap" class="hidden"><div class="import-summary"><div class="summary-card"><strong id="importCount">0</strong><span>lignes</span></div><div class="summary-card"><strong id="importCols">0</strong><span>colonnes</span></div><div class="summary-card"><strong id="importAircraftCount">0</strong><span>appareils</span></div><div class="summary-card"><strong id="importWarnings">0</strong><span>avertissements</span></div></div><div class="import-preview"><table id="importPreviewTable"></table></div></div></div></div><div class="modal-actions"><button class="btn" id="cancelImportBtn">Annuler</button><button class="btn primary" id="confirmImportBtn" disabled>Importer</button></div></div></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="carnet.js"></script>
+</body>
+</html>

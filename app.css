@@ -785,3 +785,12 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
     white-space:normal;
   }
 }
+
+/* ---- Bouton d'effacement de section ----
+   Discret par défaut : il ne doit pas rivaliser avec les actions de saisie,
+   mais rester atteignable au pouce. Il vire au rouge au contact. */
+.section-title-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+.section-title-row h2{flex:1 1 auto;margin-bottom:0;}
+.section-clear{flex:0 0 auto;opacity:.75;font-size:13px;padding:5px 11px;}
+.section-clear:hover,.section-clear:active{opacity:1;border-color:var(--red);color:var(--red);}
+#clearAllBtn{flex:0 0 auto;}

@@ -147,3 +147,43 @@ Restaurés depuis la section Météo d'origine. Trois points corrigés en plus :
   ouverte, filtrée sur `.wx-only` ;
 - `wxFetchMsg` est marqué, sans quoi les messages d'erreur météo seraient
   restés invisibles sur la page dédiée.
+
+## v34
+
+- **Effacement.** Chaque section du dossier reçoit un bouton « Effacer », et la
+  barre d'actions du dossier complet un bouton « Effacer le dossier ». Les
+  boutons sont injectés par `app.js`, pas écrits dans les douze pages : toute
+  section ajoutée plus tard en hérite. Trois protections : les champs en
+  lecture seule (paramètres de l'avion) sont épargnés, les champs de commodité
+  `.noSave` aussi, et seuls les champs **visibles** sont vidés — sans quoi le
+  bouton de la page NOTAM effacerait les champs météo du même bloc.
+- **Aucun avion présélectionné.** L'initialisation le faisait déjà, mais
+  `refreshAircraftSelect` reconstruisait la liste sans l'option « Choisir » et
+  resélectionnait le premier appareil. Corrigé. Le calcul refuse désormais de
+  s'exécuter sans avion avec un message explicite, au lieu d'échouer sur des
+  champs vides.
+- **Titres par page.** La section « 07 Météo & NOTAM » regroupe deux sujets
+  dans le dossier complet. Sur les pages dédiées, elle s'intitule simplement
+  « Météo » ou « NOTAM », sans numéro d'étape. Même principe pour les autres
+  pages, via la table `TITRES_PAR_VUE`.
+- Mention « Facultatif. Une fois renseigné… » retirée sous le champ dégagement.
+
+## v35 — Carnet de vol intégré
+
+`carnet-de-vol.html` était une page autonome : style et script inline, aucune
+entrée dans le menu des autres pages, jeu de couleurs et polices distinct.
+
+- Entrée « Carnet de vol » ajoutée au menu des douze pages, après « Dossier ».
+  La liaison inverse existait déjà.
+- Style et script sortis dans `carnet.css` et `carnet.js` : la page passe de
+  45 Ko à 16 Ko et suit la même structure que les autres.
+- Jetons visuels alignés sur `app.css` — même bleu, mêmes familles Barlow,
+  mêmes angles — et script de thème ajouté, donc le carnet suit maintenant le
+  réglage clair / sombre / automatique. Ses classes (`.app`, `.sidebar`,
+  `.nav-item`) lui restent propres : elles ne portent pas les mêmes noms que
+  celles des autres pages, et les fusionner demanderait une refonte du
+  balisage.
+- Ajouté au cache du service worker, donc consultable hors ligne.
+
+Sa base de données est indépendante (`prevol.logbook.v2`) : aucune collision
+avec le brouillon de dossier ni les dossiers enregistrés.

@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v33.1 · 2026.09.08';
+const APP_VERSION = 'v35 · 2026.09.08';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -504,7 +504,19 @@ let ENV_FWD_LOW, ENV_FWD_HIGH, ENV_BREAK_W, ENV_AFT, ENV_W_MIN, ENV_W_MAX, ENV_W
 
 function applyAircraft(key){
   const a = getAircraft(key);
-  if(!a) return;
+  if(!a){
+    // Aucun avion : on vide les paramètres plutôt que de laisser en place ceux
+    // du dernier appareil, qui seraient pris pour ceux du vol en préparation.
+    AC = null;
+    ['registration','emptyWeight','emptyArm','armFront','armRear','armBag',
+     'armFuel','consoTrip','consoAppr','fuelDensity'].forEach(id=>{
+      const el = document.getElementById(id); if(el) el.value = '';
+    });
+    const cap = document.getElementById('fuelCapacityHint');
+    if(cap) cap.textContent = 'Choisis un avion pour charger ses paramètres.';
+    if(typeof renderCartouche === 'function') renderCartouche();
+    return;
+  }
   AC = a;
   PA_LEVELS = a.paLevels; MASS_LEVELS = a.massLevels;
   TO_TABLE = a.toTable;   LD_TABLE = a.ldTable;
@@ -968,8 +980,13 @@ refreshAlternateList();
   loadUserAircraft();
   sel.addEventListener('change', ()=>applyAircraft(sel.value));
   const keys = Object.keys(allAircraft()).sort();
-  sel.innerHTML = keys.map(k=>`<option value="${k}">${allAircraft()[k].label||k}</option>`).join('');
-  applyAircraft(keys[0]);
+  // Aucun avion présélectionné : présenter par défaut le premier de la liste
+  // laisserait croire qu'il a été choisi, et un dossier pourrait partir avec
+  // les masses et les tables d'un autre appareil que celui réellement volé.
+  sel.innerHTML = '<option value="">— Choisir un avion —</option>'
+    + keys.map(k=>`<option value="${k}">${allAircraft()[k].label||k}</option>`).join('');
+  sel.value = '';
+  applyAircraft('');
 })();
 
 toggleArrivalRunway();
@@ -1677,8 +1694,12 @@ function refreshAircraftSelect(preferred){
   if(!sel) return;
   const cur = preferred || sel.value;
   const db = allAircraft(); const keys = Object.keys(db).sort();
-  sel.innerHTML = keys.map(k=>`<option value="${k}">${db[k].label||k}</option>`).join('');
-  if(keys.includes(cur)) sel.value = cur;
+  // Le choix « aucun » doit survivre au rafraîchissement : sans cette option,
+  // toute reconstruction de la liste sélectionnait d'office le premier avion
+  // et annulait l'absence de choix voulue au démarrage.
+  sel.innerHTML = '<option value="">— Choisir un avion —</option>'
+    + keys.map(k=>`<option value="${k}">${db[k].label||k}</option>`).join('');
+  sel.value = keys.includes(cur) ? cur : '';
   applyAircraft(sel.value);
 }
 
@@ -2919,6 +2940,14 @@ function clearCalcError(){
 function runCompute(scroll){
   try{
     clearCalcError();
+    if(!AC){
+      throw new Error("Aucun avion sélectionné. Choisis un appareil dans la section « Vol » "
+        + "avant de lancer le calcul : les masses, les tables de performances et "
+        + "l'enveloppe de centrage en dépendent.");
+    }
+    if(!AC) throw new Error("Aucun avion sélectionné : choisis-le en section 01 "
+      + "avant de calculer. Sans lui, ni les tables de performances ni "
+      + "l'enveloppe de centrage ne sont chargées.");
     const fuel = computeFuel();
     const mb = computeMB(fuel);
     const perf = computePerf(mb);
@@ -5101,6 +5130,134 @@ async function purgeOldDocs(days){
   if(s) s.addEventListener('click', refreshStorageInfo);
   const p = document.getElementById('purgeDocsBtn');
   if(p) p.addEventListener('click', ()=>purgeOldDocs(30));
+})();
+
+
+// ============ EFFACEMENT DES CHAMPS ============
+// Les boutons sont injectés par le script plutôt qu'écrits dans les douze
+// pages : une seule définition, et toute section ajoutée plus tard en hérite
+// automatiquement.
+
+// Titres propres à chaque page du menu. La section « Météo & NOTAM » regroupe
+// deux sujets dans le dossier complet, mais chaque page dédiée n'en montre
+// qu'un : lui laisser le titre commun, numéro compris, n'a aucun sens.
+const TITRES_PAR_VUE = {
+  meteo:        {sectionWeather: 'Météo'},
+  notam:        {sectionWeather: 'NOTAM'},
+  documents:    {sectionDocs: 'Documents & Pilote'},
+  masse:        {sectionMass: 'Masse & centrage'},
+  fuel:         {sectionFuel: 'Carburant'},
+  performances: {sectionEnvironment: 'Performances'},
+  navigation:   {sectionVol: 'Navigation'}
+};
+
+function retitreSections(){
+  const vue = document.body && document.body.dataset ? document.body.dataset.view : '';
+  const map = TITRES_PAR_VUE[vue];
+  if(!map) return;
+  Object.keys(map).forEach(id=>{
+    const sec = document.getElementById(id);
+    if(!sec) return;
+    const h2 = sec.querySelector('h2');
+    if(!h2) return;
+    // Sur une page dédiée, le numéro d'étape du dossier n'a plus de sens
+    h2.innerHTML = map[id];
+  });
+}
+
+// Remet à zéro les champs d'une section, sans toucher aux paramètres avion
+// (lecture seule, ils viennent de la fiche de l'appareil).
+function effacerSection(sec){
+  if(!sec) return 0;
+  let n = 0;
+  sec.querySelectorAll('input, select, textarea').forEach(el=>{
+    if(el.readOnly || el.disabled || el.type === 'file') return;
+    if(el.classList.contains('noSave')) return;
+    // N'effacer que ce que la page montre. Les sections Météo et NOTAM
+    // partagent le même bloc du dossier : sans ce garde-fou, le bouton de la
+    // page NOTAM viderait aussi les champs météo, invisibles pour le pilote.
+    if(!el.offsetParent && el.type !== 'hidden' && getComputedStyle(el).position !== 'fixed') return;
+    if(el.type === 'checkbox' || el.type === 'radio'){
+      if(el.checked){ el.checked = false; n++; }
+    } else if(el.tagName === 'SELECT'){
+      if(el.value !== (el.options[0] ? el.options[0].value : '')){
+        el.selectedIndex = 0; n++;
+      }
+    } else if(el.value !== ''){
+      el.value = ''; n++;
+    }
+  });
+  return n;
+}
+
+// Remise en cohérence après un effacement, quel qu'en soit le périmètre
+function apresEffacement(){
+  WX_MANUAL.clear();
+  if(typeof toggleArrivalRunway === 'function') toggleArrivalRunway();
+  if(typeof toggleAlternateFuel === 'function') toggleAlternateFuel();
+  if(typeof syncAllSurfaceLocks === 'function') syncAllSurfaceLocks();
+  if(typeof refreshWindHints === 'function') refreshWindHints();
+  if(typeof refreshAlternateList === 'function') refreshAlternateList();
+  if(typeof renderCartouche === 'function') renderCartouche();
+  scheduleDraft();
+}
+
+function effacerToutLeDossier(){
+  if(!confirm('Effacer tous les champs du dossier ?\n\n'
+    + 'Le vol en cours est partagé entre toutes les pages : il sera vidé partout. '
+    + 'Les dossiers déjà enregistrés ne sont pas touchés.')) return;
+  document.querySelectorAll('#pageFlight > section').forEach(effacerSection);
+  clearDraft();
+  setCurrentDossier(null);
+  LM_REF = null;
+  apresEffacement();
+  const res = document.getElementById('results');
+  if(res) res.classList.remove('show');
+  const wrap = document.getElementById('printReportWrap');
+  if(wrap) wrap.classList.remove('show');
+  if(typeof clearCalcError === 'function') clearCalcError();
+}
+
+(function injecterBoutonsEffacer(){
+  const panel = document.getElementById('pageFlight');
+  if(!panel) return;
+
+  panel.querySelectorAll(':scope > section[id]').forEach(sec=>{
+    const h2 = sec.querySelector('h2');
+    if(!h2 || sec.querySelector(':scope > .section-clear')) return;
+    // Chaque section porte son propre bouton : sur une page dédiée, c'est le
+    // seul visible, et il efface exactement ce que la page affiche.
+    let rangee = h2.closest('.section-title-row');
+    if(!rangee){
+      rangee = document.createElement('div');
+      rangee.className = 'section-title-row';
+      h2.parentNode.insertBefore(rangee, h2);
+      rangee.appendChild(h2);
+    }
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'btnMini section-clear';
+    b.textContent = 'Effacer';
+    b.addEventListener('click', ()=>{
+      const titre = (h2.textContent || '').trim();
+      if(!confirm('Effacer les champs de « ' + titre + ' » ?')) return;
+      effacerSection(sec);
+      apresEffacement();
+    });
+    rangee.appendChild(b);
+  });
+
+  // Bouton global, dans la barre d'actions du dossier complet
+  const runbar = panel.querySelector('.runbar');
+  if(runbar && !document.getElementById('clearAllBtn')){
+    const b = document.createElement('button');
+    b.type = 'button'; b.id = 'clearAllBtn'; b.className = 'danger';
+    b.textContent = 'Effacer le dossier';
+    b.addEventListener('click', effacerToutLeDossier);
+    runbar.appendChild(b);
+  }
+
+  retitreSections();
 })();
 
 // Affichage de la version (contrôle visuel après une mise à jour GitHub)
