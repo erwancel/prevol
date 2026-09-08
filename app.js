@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v40.1 · 2026.09.08';
+const APP_VERSION = 'v41 · 2026.09.08';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -4566,7 +4566,7 @@ async function duplicateDossier(id){
   clearCalcError();
 
   toggleArrivalRunway();
-  goToPage('pageFlight');
+  allerAuFormulaire();
 
   const msg = document.getElementById('wxFetchMsg');
   if(msg){
@@ -4616,7 +4616,7 @@ async function openDossier(id){
   if(!purgeStaleBulletin()) renderWxResults();
 
   toggleArrivalRunway();
-  goToPage('pageFlight');
+  allerAuFormulaire();
 }
 
 // Remise à zéro pour un nouveau vol.

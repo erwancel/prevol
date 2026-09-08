@@ -357,3 +357,28 @@ Une chaîne fragile pour un contenu qui n'a rien à voir avec les panneaux.
   rien d'autre.
 - `initPageDossiers` remplit explicitement la liste dès que la carte est
   présente, sans passer par l'initialisation du tableau de bord.
+
+## v41 — « Ouvrir » ne faisait rien
+
+`openDossier` et `duplicateDossier` se terminaient encore par
+`goToPage('pageFlight')`. Or le tableau de bord et `dossiers.html` masquent ce
+panneau par CSS : la fonction le marquait « actif » sans qu'il devienne
+visible. Le dossier était donc bien chargé — champs restaurés, pièces jointes
+remises en place, bulletin rétabli — mais rien ne se voyait à l'écran.
+
+La correction avait été faite en v36 puis perdue lors d'une régénération de
+`app.js`. Les deux fonctions appellent désormais `allerAuFormulaire()`, comme
+le bandeau de brouillon et `newFlight`.
+
+`allerAuFormulaire()` teste la visibilité RÉELLE du panneau, pas sa présence
+dans le DOM — il existe sur toutes les pages, c'est ce qui trompait le code
+d'origine. Comportement vérifié dans les trois cas :
+
+| situation | effet |
+|---|---|
+| formulaire masqué (tableau de bord, dossiers) | brouillon écrit, navigation vers `dossier.html` |
+| formulaire visible (`dossier.html`) | bascule interne, pas de navigation |
+| panneau absent | brouillon écrit, navigation |
+
+L'écriture du brouillon avant navigation est indispensable : c'est elle qui
+transporte le dossier restauré vers la page suivante.
