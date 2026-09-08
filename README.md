@@ -266,3 +266,22 @@ parcours de tabulation.
 
 Sous 761 px, rien ne change : le menu reste une barre horizontale, le survol
 n'existant pas au doigt.
+
+## v37.1 — Débordement du carnet
+
+Le tableau du carnet porte `min-width:1250px` et vit dans `.table-wrap`, qui a
+`overflow:auto`. Cela aurait dû suffire.
+
+Le maillon fautif était `.container`. `.main-content` est en `display:flex`
+(colonne), donc `.container` en est un élément flex — et un élément flex a
+`min-width:auto` par défaut : il refuse de descendre sous la largeur de son
+contenu. La contrainte de 1250 px remontait donc jusqu'à la page entière au
+lieu d'être absorbée par le défilement du tableau.
+
+`min-width:0` posé sur chaque maillon de la chaîne
+(`main-content → container → table-card → table-wrap`) confine le défilement au
+tableau seul.
+
+Les deux grilles à colonnes fixes (`.stats` sur 6 colonnes, `.filters-grid` sur
+6) passent de `1fr` à `minmax(0,1fr)` : sans cela chaque colonne conserve la
+largeur de son contenu et pousse la page, même en dehors de tout tableau.
