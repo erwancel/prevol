@@ -298,3 +298,15 @@ MODIFICATIONS DE CETTE VERSION
 - Ajout de la colonne « Commentaire » dans la liste des vols.
 - La colonne reprend les remarques/commentaires du vol.
 - Boutons d'actions redimensionnés et icônes parfaitement centrées dans leurs cases.
+
+
+MODIFICATIONS DE CETTE VERSION
+- Bouton « Exporter EASA » réellement fonctionnel.
+- Génération d'un rapport imprimable A4 paysage directement depuis les données du carnet.
+- Rapport structuré en pages A/B avec 27 lignes par page, inspiré du modèle EASA-FCL fourni.
+- Page de couverture avec période et totaux.
+- Tri chronologique croissant pour le rapport EASA, tout en conservant l'affichage du carnet du plus récent au plus ancien.
+- Les totaux sont recalculés à partir des données actuellement présentes dans le carnet.
+- Le navigateur ouvre l'aperçu d'impression : choisir « Enregistrer au format PDF » pour obtenir le PDF.
+
+ATTENTION : le rendu est une reproduction HTML imprimable du modèle fourni, pas une copie graphique pixel-perfect du PDF LogTen original.

@@ -43,7 +43,195 @@ $('exportCsvBtn').onclick=()=>{const headers=['Date','Entry Type','Flight Number
 $('exportJsonBtn').onclick=()=>download(JSON.stringify({schema:'prevol-logbook-v2',exportedAt:new Date().toISOString(),flights},null,2),'prevol-carnet-backup.json','application/json');
 $('importJsonBtn').onclick=()=>$('jsonInput').click();$('jsonInput').onchange=async e=>{const file=e.target.files?.[0];if(!file)return;try{const j=JSON.parse(await file.text());if(!Array.isArray(j.flights))throw Error('Sauvegarde invalide');const keys=new Set(flights.map(dupKey));let a=0;for(const f of j.flights)if(!keys.has(dupKey(f))){flights.push(f);keys.add(dupKey(f));a++}flights.sort(sortF);save();refresh();toast(`${a} vol(s) restauré(s)`)}catch(err){toast(err.message)}e.target.value=''};
 function download(content,name,type){const u=URL.createObjectURL(new Blob([content],{type})),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)}
-$('easaBtn').onclick=()=>{alert('L’export EASA détaillé sera généré à partir du modèle réglementaire validé dans la prochaine version. Les données du carnet sont prêtes pour ce moteur d’export.')};
+function easaDate(v){
+  if(!v)return'';
+  const s=String(v).slice(0,10);
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
+    const[a,b,c]=s.split('-');return`${c}/${b}/${a.slice(-2)}`;
+  }
+  return dateDisp(v);
+}
+function escAttr(v){return esc(v).replace(/`/g,'&#096;')}
+function safeText(v){return v==null?'':String(v)}
+function addMinutes(a,b){return a+b}
+function easaRows(){
+  // The on-screen carnet is newest-first; the EASA report follows
+  // chronological order, matching the supplied LogTen/EASA reference.
+  return [...flights].sort((a,b)=>
+    String(a.date).localeCompare(String(b.date)) ||
+    String(a.actualDeparture).localeCompare(String(b.actualDeparture))
+  );
+}
+function easaCell(v,cls=''){return`<td class="${cls}">${esc(safeText(v)||'')}</td>`}
+function easaFlightA(f){
+  const total=f.times?.total||'';
+  const sp=f.pilotMode==='Single-Pilot'?total:'';
+  const mp=f.pilotMode==='Multi-Pilot'?total:'';
+  const se=f.engineClass==='SE'?total:'';
+  const me=f.engineClass==='ME'?total:'';
+  return `<tr>
+    ${easaCell(easaDate(f.date),'date')}
+    <td class="route"><div>${esc(f.from||'')}</div><span>${esc(f.actualDeparture||'')}</span></td>
+    <td class="route"><div>${esc(f.to||'')}</div><span>${esc(f.actualArrival||'')}</span></td>
+    <td class="aircraft"><div>${esc(f.aircraftType||'')}</div><span>${esc(f.aircraftId||'')}</span></td>
+    <td class="tiny">${esc(se)}</td><td class="tiny">${esc(me)}</td>
+    <td class="tiny">${esc(sp)}</td><td class="tiny">${esc(mp)}</td>
+    <td class="time">${esc(total)}</td>
+    <td class="name">${esc(f.crew?.PIC||'')}</td>
+    <td class="count">${esc(f.operations?.dayTakeoffs||'')}</td>
+    <td class="count">${esc(f.operations?.nightTakeoffs||'')}</td>
+    <td class="count">${esc(f.operations?.dayLandings||'')}</td>
+    <td class="count">${esc(f.operations?.nightLandings||'')}</td>
+  </tr>`;
+}
+function easaFlightB(f){
+  const isSim = String(f.entryType||'').toLowerCase()==='simulator' || tmin(f.times?.simulator)>0;
+  const funcPIC=tmin(f.times?.pic)>0;
+  const funcSIC=tmin(f.times?.sic)>0;
+  const dual=f.times?.dualReceived||'';
+  const instr=f.crew?.Instructor||'';
+  const p1us=f.times?.p1us||'';
+  const remark=f.notes||'';
+  return `<tr>
+    <td>${esc(f.times?.night||'')}</td>
+    <td>${esc(f.times?.ifr||'')}</td>
+    <td>${funcPIC?esc(f.times?.pic||f.times?.total||''):''}</td>
+    <td>${funcSIC?esc(f.times?.sic||''):''}</td>
+    <td>${esc(dual)}</td>
+    <td>${esc(instr)}</td>
+    <td>${esc(easaDate(f.date))}</td>
+    <td>${esc(isSim?(f.aircraftType||f.entryType||''):f.route||'')}</td>
+    <td>${esc(f.times?.simulator|| (isSim?f.times?.total:'') || '')}</td>
+    <td>${esc(tmin(f.times?.pic)>0?(f.times?.pic||''):'')}</td>
+    <td>${esc(p1us)}</td>
+    <td class="remark">${esc(remark)}</td>
+  </tr>`;
+}
+function easaTotalTime(rows,key){
+  return fmt(rows.reduce((s,f)=>s+tmin(f.times?.[key]),0));
+}
+function easaPagePair(rows,pageNo,totalPrevious){
+  const a=rows.map(easaFlightA).join('');
+  const b=rows.map(easaFlightB).join('');
+  const pageTotal=easaTotalTime(rows,'total');
+  const pagePIC=easaTotalTime(rows,'pic');
+  const pageSIC=easaTotalTime(rows,'sic');
+  const pageNight=easaTotalTime(rows,'night');
+  const pageIFR=easaTotalTime(rows,'ifr');
+  const pageDual=easaTotalTime(rows,'dualReceived');
+  const prevTotal=totalPrevious?.total||'---';
+  const grandTotal=fmt(tmin(totalPrevious?.minutes||0)+rows.reduce((s,f)=>s+tmin(f.times?.total),0));
+  return `
+  <section class="easa-sheet">
+    <div class="sheet-head">PAGE ${pageNo}A <span>REPORT: ${esc(easaDate(rows[0]?.date)||'')} - ${esc(easaDate(rows[rows.length-1]?.date)||'')}</span></div>
+    <table class="sheet-table table-a">
+      <thead><tr>
+        <th>DATE<br><small>(dd/mm/yy)</small></th>
+        <th colspan="2">DEPARTURE / ARRIVAL<br><small>PLACE &nbsp;&nbsp;&nbsp; TIME</small></th>
+        <th colspan="4">AIRCRAFT<br><small>MAKE, MODEL, VARIANT / REGISTRATION / SE / ME</small></th>
+        <th colspan="2">SINGLE-PILOT / MULTI-PILOT</th>
+        <th>TIME<br>OF FLIGHT</th>
+        <th>NAME PIC</th>
+        <th colspan="4">TAKEOFFS / LANDINGS<br><small>DAY / NIGHT</small></th>
+      </tr></thead>
+      <tbody>${a}</tbody>
+      <tfoot><tr class="totals"><td colspan="8">TOTAL THIS PAGE</td><td>${esc(pageTotal)}</td><td>---</td><td colspan="4">${esc(pageTotal)}</td></tr>
+      <tr class="totals"><td colspan="8">TOTAL FROM PREVIOUS PAGES</td><td>${esc(prevTotal)}</td><td>---</td><td colspan="4">---</td></tr>
+      <tr class="totals grand"><td colspan="8">TOTAL TIME</td><td>${esc(grandTotal)}</td><td>---</td><td colspan="4">---</td></tr></tfoot>
+    </table>
+  </section>
+
+  <section class="easa-sheet">
+    <div class="sheet-head">PAGE ${pageNo}B <span>REPORT: ${esc(easaDate(rows[0]?.date)||'')} - ${esc(easaDate(rows[rows.length-1]?.date)||'')}</span></div>
+    <table class="sheet-table table-b">
+      <thead><tr>
+        <th colspan="2">OPERATIONAL CONDITION TIME<br><small>NIGHT / IFR</small></th>
+        <th colspan="4">PILOT FUNCTION TIME<br><small>PILOT-IN-COMMAND / CO-PILOT / DUAL / INSTRUCTOR</small></th>
+        <th colspan="3">SYNTHETIC TRAINING DEVICES<br><small>DATE / TYPE / TOTAL TIME OF SESSION</small></th>
+        <th>P1</th><th>P1 u/s</th><th>REMARKS AND ENDORSEMENTS</th>
+      </tr></thead>
+      <tbody>${b}</tbody>
+      <tfoot><tr class="totals"><td colspan="2">${esc(pageNight)} / ${esc(pageIFR)}</td><td>${esc(pagePIC)}</td><td>${esc(pageSIC)}</td><td>${esc(pageDual)}</td><td>---</td><td colspan="3">---</td><td>---</td><td>---</td><td class="remark">I certify that the entries in this log are true.<br><br>______________________________<br>PILOT'S SIGNATURE</td></tr>
+      <tr class="totals grand"><td colspan="2">${esc(easaTotalTime(easaRows(),'night'))} / ${esc(easaTotalTime(easaRows(),'ifr'))}</td><td>${esc(easaTotalTime(easaRows(),'pic'))}</td><td>${esc(easaTotalTime(easaRows(),'sic'))}</td><td>${esc(easaTotalTime(easaRows(),'dualReceived'))}</td><td>---</td><td colspan="3">${esc(easaTotalTime(easaRows(),'simulator'))}</td><td>---</td><td>---</td><td></td></tr></tfoot>
+    </table>
+  </section>`;
+}
+function exportEASA(){
+  const rows=easaRows();
+  if(!rows.length){toast('Aucun vol à exporter.');return}
+  const chunkSize=27, chunks=[];
+  for(let i=0;i<rows.length;i+=chunkSize)chunks.push(rows.slice(i,i+chunkSize));
+  const from=easaDate(rows[0].date),to=easaDate(rows[rows.length-1].date);
+  const total=easaTotalTime(rows,'total');
+  const pic=easaTotalTime(rows,'pic');
+  const sic=easaTotalTime(rows,'sic');
+  const night=easaTotalTime(rows,'night');
+  const ifr=easaTotalTime(rows,'ifr');
+  const dual=easaTotalTime(rows,'dualReceived');
+  const sim=easaTotalTime(rows,'simulator');
+  let sheets='';
+  let cumulativeMinutes=0;
+  chunks.forEach((chunk,i)=>{
+    sheets+=easaPagePair(chunk,i+1,{total:fmt(cumulativeMinutes),minutes:cumulativeMinutes});
+    cumulativeMinutes+=chunk.reduce((s,f)=>s+tmin(f.times?.total),0);
+  });
+  const cover=`<section class="cover">
+    <div class="cover-logo">PréVol</div>
+    <div class="cover-title">PROFESSIONAL PILOT<br>LOGBOOK</div>
+    <div class="cover-sub">EASA-FCL COMPLIANT REPORT</div>
+    <div class="cover-range">Entries from: <strong>${esc(from)}</strong> Through: <strong>${esc(to)}</strong></div>
+    <div class="cover-stats">
+      <div><b>${esc(total)}</b><span>TOTAL TIME</span></div>
+      <div><b>${esc(pic)}</b><span>PILOT-IN-COMMAND</span></div>
+      <div><b>${esc(sic)}</b><span>CO-PILOT</span></div>
+      <div><b>${esc(night)}</b><span>NIGHT</span></div>
+      <div><b>${esc(ifr)}</b><span>IFR</span></div>
+      <div><b>${esc(sim)}</b><span>SIMULATOR</span></div>
+    </div>
+  </section>`;
+  const w=window.open('','_blank','noopener,noreferrer,width=1400,height=1000');
+  if(!w){toast('Le navigateur a bloqué la fenêtre d’export. Autorise les pop-ups pour PréVol.');return}
+  w.document.open();
+  w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>PréVol - EASA-FCL Professional Pilot Logbook</title>
+  <style>
+  @page{size:A4 landscape;margin:7mm}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif}
+  body{font-size:7px}
+  .cover{page-break-after:always;height:180mm;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .cover-logo{font-size:40px;font-weight:800;letter-spacing:-2px;margin-bottom:20mm}
+  .cover-title{font-size:21px;font-weight:700;line-height:1.15;letter-spacing:1px}
+  .cover-sub{font-size:10px;margin-top:5mm;letter-spacing:1.5px}
+  .cover-range{margin-top:12mm;font-size:9px}
+  .cover-stats{display:grid;grid-template-columns:repeat(6,1fr);width:90%;gap:3mm;margin-top:15mm}
+  .cover-stats div{border:1px solid #222;padding:4mm 2mm}
+  .cover-stats b{display:block;font-size:15px}.cover-stats span{display:block;margin-top:1mm;font-size:7px}
+  .easa-sheet{page-break-after:always;break-after:page;position:relative}
+  .sheet-head{font-size:6px;color:#555;margin:0 0 2mm 1mm;text-transform:uppercase}
+  .sheet-head span{float:right}
+  table{border-collapse:collapse;width:100%;table-layout:fixed}
+  .sheet-table{border:1px solid #111}
+  th,td{border:1px solid #111;padding:1.1mm .9mm;vertical-align:middle;text-align:center;height:6.4mm;line-height:1.05}
+  th{font-size:6px;font-weight:700;background:#f7f7f7}
+  th small{font-size:4.5px;font-weight:400}
+  td{font-size:6.5px}
+  .table-a th:nth-child(1){width:7%}.table-a th:nth-child(2),.table-a th:nth-child(3){width:9%}
+  .table-a th:nth-child(4){width:14%}.table-a th:nth-child(5),.table-a th:nth-child(6),.table-a th:nth-child(7),.table-a th:nth-child(8){width:4%}
+  .table-a th:nth-child(9){width:5%}.table-a th:nth-child(10){width:10%}
+  .table-a th:nth-child(11),.table-a th:nth-child(12),.table-a th:nth-child(13),.table-a th:nth-child(14){width:3.5%}
+  .route span,.aircraft span{display:block;font-size:5px;color:#444}
+  .name{text-align:left;padding-left:1.4mm}.remark{text-align:left;padding-left:1.4mm}
+  .count,.tiny{font-variant-numeric:tabular-nums}
+  tfoot .totals td{font-weight:700;background:#f4f4f4}
+  tfoot .grand td{font-weight:800}
+  .table-b th{height:10mm}
+  .table-b td{height:6.4mm}
+  .table-b tfoot td{height:10mm}
+  @media print{.easa-sheet{break-inside:avoid}}
+  </style></head><body>${cover}${sheets}<script>window.onload=()=>setTimeout(()=>window.print(),350);<\/script></body></html>`);
+  w.document.close();
+}
+$('easaBtn').onclick=exportEASA;;
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('flightModal').classList.contains('open'))closeFlight();if($('importModal').classList.contains('open'))$('importModal').classList.remove('open')}});
 
 load();buildDynamic();refresh();
