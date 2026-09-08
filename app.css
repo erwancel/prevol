@@ -432,34 +432,7 @@
   #printReport .freebox{border:1px solid #000;min-height:150px;padding:6px 8px;margin-bottom:8px;
     white-space:pre-wrap;background:#fff;}
 
-  @media print{
-    html,body{background:#fff !important;background-image:none !important;}
-    /* La bande de barre d'état est un artifice d'écran : jamais imprimée */
-    body::before{display:none !important;}
-    /* Le dossier à imprimer est imbriqué : .wrap > #pageFlight > #printReportWrap.
-       Il faut donc dégager les frères à CHAQUE niveau. Masquer seulement les
-       enfants directs de .wrap emporterait #pageFlight avec eux, et un
-       display:block sur un descendant ne ressuscite pas un ancêtre masqué :
-       la page sortait entièrement blanche.
-       Forcer #pageFlight visible permet aussi d'imprimer depuis n'importe
-       quel onglet (partage Safari → Imprimer alors qu'on est sur l'Accueil). */
-    .wrap > *{display:none !important;}
-    #pageFlight{display:block !important;}
-    #pageFlight > *:not(#printReportWrap){display:none !important;}
-    .wrap{max-width:none !important;padding:0 !important;margin:0 !important;background:#fff !important;}
-    #printReportWrap{display:block !important;background:#fff !important;}
-    #printReportWrap .hint, #printReportWrap .btnrow{display:none !important;}
-    #printReport{position:static !important;max-width:none !important;width:auto !important;margin:0 !important;
-      transform:none !important;}
-    #printScaler{overflow:visible !important;height:auto !important;}
-    #printReport .page{box-shadow:none !important;border:none !important;border-radius:0 !important;margin-bottom:0 !important;
-      padding:0 !important;width:auto !important;min-height:0 !important;overflow:visible !important;
-      page-break-after:always !important;break-after:page !important;}
-    #printReport .page:last-child{page-break-after:auto !important;break-after:auto !important;}
-    #printReport th,#printReport td,#printReport .fplTitle.boxed,#printReport .noteBox,#printReport .summaryTable td{
-      -webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
-    @page{margin:12mm;background:#fff;}
-  }
+  
 
 /* ================= PREMIUM DASHBOARD ================= */
 :root{--premium-navy:#101b2b;--premium-navy-2:#17253a;--premium-blue:#8fb0cf;--premium-ink:#132033;--premium-paper:#f5f5f2;--premium-border:rgba(20,35,52,.10);--premium-shadow:0 12px 30px rgba(23,37,58,.08)}
@@ -492,7 +465,8 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 @media(max-width:1050px){.app-shell{grid-template-columns:78px minmax(0,1fr)}.side-brand,.side-rule,.side-nav .tab span:not(.nav-ico),.side-footer{display:none}.sidebar{padding:24px 8px}.side-nav .tab{justify-content:center;padding:13px 8px;border-radius:12px}.nav-ico{font-size:22px}.dashboard-grid{grid-template-columns:1fr 1fr}.dashboard-side{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}.hero-quote{display:none}}
 @media(max-width:760px){.app-shell{display:block}.sidebar{position:sticky;top:0;height:auto;padding:8px 10px;background:#101b2b;display:block}.side-brand,.side-rule,.side-spacer,.side-bottom,.side-footer{display:none}.side-nav{display:flex;flex-direction:row;overflow:auto;gap:4px}.side-nav .tab{flex:0 0 auto;justify-content:center;border-radius:10px;padding:9px 12px}.side-nav .tab span:not(.nav-ico){display:none}.nav-ico{font-size:19px}.main-content{min-height:calc(100vh - 58px)}header.top{height:255px;padding:30px 24px!important;align-items:flex-end!important;background-position:65% center}.hero-copy h1{font-size:55px}.hero-sub{font-size:22px}.hero-copy p{font-size:13px;max-width:38ch}.hero-date{font-size:14px;margin-bottom:24px}.page-panel{padding:16px 14px 50px}.dashboard-hero-note{display:block}.dashboard-primary{width:100%;margin-top:14px}.quick-actions{grid-template-columns:1fr 1fr}.dashboard-grid{grid-template-columns:1fr}.dashboard-side{display:flex}.storage-layout{grid-template-columns:1fr}}
 @media(max-width:440px){header.top{height:245px}.hero-quote{display:none}.hero-copy h1{font-size:48px}.hero-sub{font-size:20px}.hero-copy p{font-size:12px}.quick-card{min-height:105px;padding:13px}.dashboard-hero-note h2{font-size:21px}.weather-stats{grid-template-columns:repeat(2,1fr);row-gap:12px}}
-@media print{.sidebar{display:none!important}.app-shell{display:block!important}.main-content{width:100%!important}.tabs{display:none!important}.page-panel{max-width:none!important;padding:0!important}header.top{display:none!important}}
+/* bloc print hérité supprimé : il réaffichait .app-shell que les règles
+   d'impression venaient de masquer, et faisait imprimer toute l'application */
 
 .rwyCard{border:0!important;border-top:1px solid var(--premium-border)!important;border-radius:0!important;background:transparent!important;padding:12px 2px!important;margin:0!important;box-shadow:none!important}.rwyCard:first-child{border-top:0!important}.rwyCard .smallhint{font-size:11px!important;margin-top:4px}.rwyCard .btnrow{opacity:.0;max-height:0;overflow:hidden;transition:.18s}.rwyCard:hover .btnrow,.rwyCard:focus-within .btnrow{opacity:1;max-height:80px}.rwyCard .btnMini{font-size:10px!important;padding:6px 8px!important}.dashboard-card .rwyCard>div:first-child{font-size:13px!important;color:var(--premium-ink)}footer{max-width:1280px;margin:0 auto;padding:20px 32px 30px;text-align:center;color:#8a96a2;font-size:10px;line-height:1.6}
 
@@ -1260,3 +1234,41 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
   .live-mb-layout{grid-template-columns:1fr}
   .live-mb-chart{overflow-x:auto}
 }
+
+
+/* Les règles d'impression closent le fichier : elles doivent l'emporter
+   sur toutes les couches de correctifs ajoutées au fil du temps. */
+@media print{
+    html,body{background:#fff !important;background-image:none !important;}
+    /* La bande de barre d'état est un artifice d'écran : jamais imprimée */
+    body::before{display:none !important;}
+    /* Structure actuelle : body > .wrap > .app-shell > (aside + main) >
+       (header + panneaux) > #printReportWrap. Masquer « .wrap > * » revenait
+       à masquer .app-shell, donc le dossier avec. On dégage donc les frères
+       à chaque niveau, en laissant passer la seule chaîne utile. */
+    .sidebar, header.top, .tabs, footer, .premium-footer,
+    #pageHome, #pageAircraft, #pageAirport,
+    .runbar, #results, #lastMinuteCard, #loadFixCard{display:none !important;}
+    .wrap, .app-shell, .main-content, .app-shell > main{
+      display:block !important; margin:0 !important; padding:0 !important;
+      max-width:none !important; width:auto !important; min-height:0 !important;
+      background:#fff !important; box-shadow:none !important;}
+    #pageFlight{display:block !important; max-width:none !important; padding:0 !important;}
+    #pageFlight > *:not(#printReportWrap){display:none !important;}
+    #printReportWrap{display:block !important;background:#fff !important;}
+    #printReportWrap .hint, #printReportWrap .btnrow{display:none !important;}
+    #printReport{position:static !important;max-width:none !important;width:auto !important;margin:0 !important;
+      transform:none !important;}
+    #printScaler{overflow:visible !important;height:auto !important;}
+    #printReport .page{box-shadow:none !important;border:none !important;border-radius:0 !important;margin-bottom:0 !important;
+      padding:12mm !important;box-sizing:border-box !important;width:auto !important;min-height:0 !important;overflow:visible !important;
+      page-break-after:always !important;break-after:page !important;}
+    #printReport .page:last-child{page-break-after:auto !important;break-after:auto !important;}
+    #printReport th,#printReport td,#printReport .fplTitle.boxed,#printReport .noteBox,#printReport .summaryTable td{
+      -webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+    /* Marge nulle ici : avec des marges de page non nulles, Chrome et Firefox
+   impriment leur propre en-tête (titre du document) et leur pied de page
+   (URL, date, pagination). En la mettant à zéro et en reportant la marge
+   sur le contenu, ces mentions disparaissent dans la plupart des cas. */
+    @page{size:A4;margin:0;}
+  }

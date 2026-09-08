@@ -429,3 +429,36 @@ indépendante des dossiers.
 Deux clés distinctes en IndexedDB : `pilotlib` pour la bibliothèque permanente,
 `pilotdoc` pour ce qui est joint au dossier en cours. Effacer le dossier ne
 touche pas à la bibliothèque.
+
+## v43 — Impression du dossier
+
+À l'écran l'aperçu était correct, mais l'impression sortait l'application
+entière : menu latéral, bandeau, formulaire de saisie.
+
+**Deux blocs `@media print` se contredisaient.** Le premier masquait
+`.wrap > *`, le second — hérité d'une couche de correctifs — contenait
+`.app-shell{display:block!important}` et réaffichait donc tout ce que le
+premier venait de masquer. À spécificité égale, c'est le dernier qui gagne.
+
+Le premier bloc était de toute façon périmé : il visait la structure
+`.wrap > #pageFlight`, alors qu'elle est devenue
+`.wrap > .app-shell > main > #pageFlight`. Masquer `.wrap > *` revenait à
+masquer `.app-shell`, donc le dossier avec.
+
+- Bloc hérité supprimé.
+- Sélecteurs refaits pour la structure actuelle : les frères sont dégagés à
+  chaque niveau, seule la chaîne menant au dossier reste visible. Sont
+  explicitement masqués le menu, l'en-tête, le pied, les trois autres
+  panneaux, la barre d'actions, les résultats et les cartes « dernière
+  minute » et « correction de chargement ».
+- Le bloc d'impression est désormais **en fin de fichier**, pour l'emporter
+  sur toutes les couches de correctifs accumulées.
+
+### En-tête et pied de page du navigateur
+
+`@page` passe de `margin:12mm` à `margin:0`, la marge étant reportée en
+`padding:12mm` sur chaque page du dossier. Chrome et Firefox n'ajoutent leur
+titre de document et leur URL que lorsque la marge de page n'est pas nulle :
+dans la plupart des cas ces mentions disparaissent. Si elles persistent, c'est
+un réglage du navigateur, hors de portée du code — dans le dialogue
+d'impression, décocher « En-têtes et pieds de page ».
