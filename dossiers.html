@@ -85,6 +85,16 @@
 <div class="rwyMsg" id="dossierMsg">Chargement des dossiers…</div>
 <div id="dossierList"></div>
 </section>
+<section class="card" id="pilotLibCard">
+<div class="section-title-row"><h2>Mes documents pilote</h2></div>
+<div class="smallhint" style="margin-bottom:12px;">Licence, certificat médical, SEP, radiotéléphonie… Ces pièces ne changent pas d'un vol à l'autre : elles sont conservées ici une fois pour toutes, et se joignent au dossier en un bouton depuis la section Documents. Elles restent dans ce navigateur, rien n'est envoyé.</div>
+<div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;">
+<label class="btnMini primary" for="pilotLibInput" style="cursor:pointer;flex:1 1 100%;text-align:center;padding:12px;">Ajouter un document (PDF ou photo)</label>
+<input accept="application/pdf,image/*" id="pilotLibInput" style="display:none" type="file"/>
+</div>
+<div class="rwyMsg" id="pilotLibMsg"></div>
+<div id="pilotLibList" style="margin-top:12px;"></div>
+</section>
 <div class="page-panel" id="pageHome">
 
 </div>
@@ -312,6 +322,15 @@
 <!-- 7. DOCUMENTS & PILOTE -->
 <section class="card view-docs" id="sectionDocs">
 <div class="section-title-row"><h2><span class="idx">06</span> Documents &amp; Pilote</h2><a class="section-open-link" href="documents.html">Ouvrir Documents ↗</a></div>
+<div class="subhead">Documents pilote</div>
+<div class="smallhint">Joint au dossier les pièces de ta bibliothèque : licence, médical, SEP… Elles se gèrent depuis la page « Dossiers enregistrés ».</div>
+<div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+<button class="btnMini primary" id="pilotDocAdd" type="button" style="flex:1 1 60%;">Ajouter les documents pilote</button>
+<button class="btnMini danger" id="pilotDocClear" style="display:none;flex:1 1 30%;" type="button">Retirer</button>
+</div>
+<div class="rwyMsg" id="pilotDocMsg"></div>
+<div id="pilotDocPreview"></div>
+
 <div class="subhead">Documents avion</div>
 <div class="checklist">
 <label class="chk"><input id="docAFM" type="checkbox"/><span>Manuel de vol (AFM)</span></label>

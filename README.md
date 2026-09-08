@@ -405,3 +405,27 @@ Trois points bloquaient potentiellement l'exécution avant la navigation :
 
 Si le problème persiste, le message d'erreur affiché sous la liste dira
 précisément ce qui échoue.
+
+## v42 — Bibliothèque de documents pilote
+
+Licence, certificat médical, SEP, radiotéléphonie : ces pièces ne changent pas
+d'un vol à l'autre. Les rattacher à un dossier obligerait à les réimporter à
+chaque préparation. Elles vivent donc dans une bibliothèque permanente,
+indépendante des dossiers.
+
+- **Page « Dossiers enregistrés »** : carte « Mes documents pilote ». Import de
+  PDF ou de photo, aperçu, renommage, suppression. Une case à cocher par
+  document permet de choisir ceux qu'on joint.
+- **Section Documents du dossier** : bouton « Ajouter les documents pilote ».
+  Il prend les pièces cochées — toutes, si aucune sélection n'est faite depuis
+  une autre page — et les joint au dossier en cours. La bibliothèque n'est pas
+  modifiée : le dossier en reçoit une copie.
+- **PDF imprimé** : les pages sont insérées avant l'annexe libre, sous
+  l'intitulé « DOCUMENTS PILOTE ».
+- **Sauvegarde** : la bibliothèque est incluse dans « Tout sauvegarder » et
+  restaurée de façon additive, les documents déjà présents n'étant pas
+  dupliqués. Sans cela elle aurait été la seule donnée non récupérable.
+
+Deux clés distinctes en IndexedDB : `pilotlib` pour la bibliothèque permanente,
+`pilotdoc` pour ce qui est joint au dossier en cours. Effacer le dossier ne
+touche pas à la bibliothèque.

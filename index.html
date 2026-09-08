@@ -361,6 +361,15 @@
 <!-- 7. DOCUMENTS & PILOTE -->
 <section class="card view-docs" id="sectionDocs">
 <div class="section-title-row"><h2><span class="idx">06</span> Documents &amp; Pilote</h2><a class="section-open-link" href="documents.html">Ouvrir Documents ↗</a></div>
+<div class="subhead">Documents pilote</div>
+<div class="smallhint">Joint au dossier les pièces de ta bibliothèque : licence, médical, SEP… Elles se gèrent depuis la page « Dossiers enregistrés ».</div>
+<div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+<button class="btnMini primary" id="pilotDocAdd" type="button" style="flex:1 1 60%;">Ajouter les documents pilote</button>
+<button class="btnMini danger" id="pilotDocClear" style="display:none;flex:1 1 30%;" type="button">Retirer</button>
+</div>
+<div class="rwyMsg" id="pilotDocMsg"></div>
+<div id="pilotDocPreview"></div>
+
 <div class="subhead">Documents avion</div>
 <div class="checklist">
 <label class="chk"><input id="docAFM" type="checkbox"/><span>Manuel de vol (AFM)</span></label>

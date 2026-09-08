@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v41.1 · 2026.09.08';
+const APP_VERSION = 'v42 · 2026.09.08';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -3478,7 +3478,7 @@ function buildPrintReport(fuel, mb, perf){
       </table>
     </div>`;
 
-  return page1+page2+page3+wxDocPages()+page4+ntmDocPages()+page5+page6+page7+page8+page9+page10+freeDocPages();
+  return page1+page2+page3+wxDocPages()+page4+ntmDocPages()+page5+page6+page7+page8+page9+page10+pilotDocPages()+freeDocPages();
 }
 
 on('pdfBtn', 'click', ()=>{
@@ -4316,6 +4316,213 @@ function freeDocPages(){
     </div>`).join('');
 }
 
+
+// ============ BIBLIOTHÈQUE DE DOCUMENTS PILOTE ============
+// Licence, SEP, certificat médical, radiotéléphonie… : ces pièces ne changent
+// pas d'un vol à l'autre. Les rattacher à un dossier obligerait à les
+// réimporter à chaque préparation. Elles vivent donc dans une bibliothèque
+// permanente, indépendante des dossiers, et sont jointes au PDF à la demande.
+//
+// Stockage : même base IndexedDB que les autres pièces, sous une clé propre.
+// Rien n'est envoyé nulle part.
+
+const PILOTLIB_KEY = 'pilotlib';     // la bibliothèque permanente
+const PILOTDOC_KEY = 'pilotdoc';     // ce qui est joint au dossier en cours
+let PILOTLIB = null;                 // {items:[{id,name,importedAt,images:[]}]}
+let PILOTDOC = null;                 // {name, importedAt, images:[]}
+
+function pilotLibItems(){
+  return (PILOTLIB && Array.isArray(PILOTLIB.items)) ? PILOTLIB.items : [];
+}
+
+async function pilotLibSave(){
+  PILOTLIB = {items: pilotLibItems(), savedAt: new Date().toISOString()};
+  await wxdocSave(PILOTLIB, PILOTLIB_KEY);
+}
+
+// Conversion d'un fichier en pages images, PDF ou photo.
+// Même traitement que les autres imports, extrait pour être réutilisable.
+async function fichierEnPages(file, setMsg){
+  if(file.type.startsWith('image/')){
+    setMsg('Lecture de l\u2019image…');
+    const dataURL = await new Promise((res,rej)=>{
+      const r = new FileReader();
+      r.onload = ()=>res(r.result);
+      r.onerror = ()=>rej(new Error('lecture impossible'));
+      r.readAsDataURL(file);
+    });
+    return [dataURL];
+  }
+  if(file.type === 'application/pdf'){
+    setMsg('Préparation du lecteur PDF…');
+    const pdfjsLib = await loadPdfJs();
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({data: buf}).promise;
+    const out = [];
+    for(let i = 1; i <= pdf.numPages; i++){
+      setMsg('Conversion page ' + i + ' / ' + pdf.numPages + '…');
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({scale: 1.6});
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width; canvas.height = viewport.height;
+      await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
+      out.push(canvas.toDataURL('image/jpeg', 0.75));
+    }
+    return out;
+  }
+  throw new Error('format non reconnu — choisis un PDF ou une image');
+}
+
+async function importPilotDoc(file){
+  const msg = document.getElementById('pilotLibMsg');
+  const setMsg = (txt, cls)=>{ if(msg){ msg.className = 'rwyMsg' + (cls?' '+cls:''); msg.textContent = txt; } };
+  if(!file) return;
+  try{
+    const images = await fichierEnPages(file, setMsg);
+    const items = pilotLibItems();
+    items.push({
+      id: 'p_' + Date.now(),
+      name: file.name.replace(/\.(pdf|jpe?g|png|heic)$/i,''),
+      importedAt: new Date().toISOString(),
+      images
+    });
+    PILOTLIB = {items};
+    await pilotLibSave();
+    renderPilotLib();
+    setMsg(images.length + ' page(s) ajoutée(s) à ta bibliothèque.', 'ok');
+  }catch(e){
+    setMsg('Import impossible : ' + (e.message || e) + '.', 'bad');
+  }
+}
+
+function renderPilotLib(){
+  const box = document.getElementById('pilotLibList');
+  if(!box) return;
+  const items = pilotLibItems();
+  if(!items.length){
+    box.innerHTML = '<div class="smallhint">Aucun document pour l\u2019instant. '
+      + 'Ajoute ta licence, ton certificat médical, ta SEP… ils resteront '
+      + 'disponibles pour tous tes vols.</div>';
+    return;
+  }
+  const esc = t => String(t||'').replace(/[<>&]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+  box.innerHTML = items.map(it=>{
+    const when = new Date(it.importedAt);
+    const stamp = isNaN(when) ? '' : when.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'2-digit'});
+    return `
+      <div class="rwyCard" style="margin-bottom:10px;">
+        <label class="chk" style="cursor:pointer;">
+          <input type="checkbox" class="pilotPick" data-pick="${it.id}" checked>
+          <span style="font-weight:600;">${esc(it.name)}</span>
+        </label>
+        <div class="smallhint">${it.images.length} page(s) · ajouté le ${stamp}</div>
+        <div style="display:flex;gap:8px;overflow-x:auto;padding:8px 0;">
+          ${it.images.slice(0,4).map((src,i)=>`<img src="${src}" alt="page ${i+1}" style="height:70px;border:1px solid var(--line);border-radius:4px;background:#fff;">`).join('')}
+        </div>
+        <div class="btnrow" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="btnMini" data-rename="${it.id}">Renommer</button>
+          <button type="button" class="btnMini danger" data-delpilot="${it.id}">Supprimer</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  box.querySelectorAll('[data-rename]').forEach(b=>{
+    b.addEventListener('click', async ()=>{
+      const it = pilotLibItems().find(x=>x.id === b.dataset.rename);
+      if(!it) return;
+      const nom = prompt('Nom du document :', it.name);
+      if(nom == null) return;
+      it.name = nom.trim() || it.name;
+      await pilotLibSave(); renderPilotLib();
+    });
+  });
+  box.querySelectorAll('[data-delpilot]').forEach(b=>{
+    b.addEventListener('click', async ()=>{
+      const it = pilotLibItems().find(x=>x.id === b.dataset.delpilot);
+      if(!it) return;
+      if(!confirm('Supprimer « ' + it.name + ' » de ta bibliothèque ?\n\nCette action est définitive.')) return;
+      PILOTLIB = {items: pilotLibItems().filter(x=>x.id !== it.id)};
+      await pilotLibSave(); renderPilotLib();
+    });
+  });
+}
+
+// ---- Rattachement au dossier en cours ----
+// Le bouton de la section Documents prend les pièces cochées et les joint au
+// PDF. La bibliothèque n'est pas modifiée : on en fait une copie.
+async function attacherDocsPilote(){
+  const msg = document.getElementById('pilotDocMsg');
+  const setMsg = (txt, cls)=>{ if(msg){ msg.className = 'rwyMsg' + (cls?' '+cls:''); msg.textContent = txt; } };
+  const items = pilotLibItems();
+  if(!items.length){
+    setMsg('Ta bibliothèque est vide. Ajoute tes documents depuis la page « Dossiers enregistrés ».', 'bad');
+    return;
+  }
+  const picks = [...document.querySelectorAll('.pilotPick')].filter(c=>c.checked).map(c=>c.dataset.pick);
+  const retenus = picks.length ? items.filter(it=>picks.includes(it.id)) : items;
+  const images = retenus.reduce((acc,it)=>acc.concat(it.images), []);
+  PILOTDOC = {
+    name: retenus.map(it=>it.name).join(', '),
+    importedAt: new Date().toISOString(),
+    images
+  };
+  await wxdocSave(PILOTDOC, PILOTDOC_KEY);
+  renderPilotDoc();
+  setMsg(images.length + ' page(s) jointe(s) au dossier — ' + retenus.length + ' document(s).', 'ok');
+}
+
+function renderPilotDoc(){
+  const box = document.getElementById('pilotDocPreview');
+  const clr = document.getElementById('pilotDocClear');
+  if(!box) return;
+  if(!PILOTDOC || !PILOTDOC.images || !PILOTDOC.images.length){
+    box.innerHTML = ''; if(clr) clr.style.display = 'none'; return;
+  }
+  if(clr) clr.style.display = '';
+  const esc = t => String(t||'').replace(/[<>&]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+  box.innerHTML =
+    `<div class="smallhint">${PILOTDOC.images.length} page(s) jointe(s) — ${esc(PILOTDOC.name)}</div>
+     <div style="display:flex;gap:8px;overflow-x:auto;padding:8px 0;">
+       ${PILOTDOC.images.map((src,i)=>`<img src="${src}" alt="document ${i+1}" style="height:80px;border:1px solid var(--line);border-radius:4px;background:#fff;">`).join('')}
+     </div>`;
+}
+
+function pilotDocPages(){
+  if(!PILOTDOC || !PILOTDOC.images || !PILOTDOC.images.length) return '';
+  return PILOTDOC.images.map((src,i)=>`
+    <div class="page" style="padding:8mm;">
+      <div style="font-size:8pt;margin-bottom:4mm;">DOCUMENTS PILOTE — page ${i+1} / ${PILOTDOC.images.length}${PILOTDOC.name?' — '+PILOTDOC.name.replace(/[<>&]/g,''):''}</div>
+      <img src="${src}" style="width:100%;height:auto;display:block;">
+    </div>`).join('');
+}
+
+(function initPilotDocs(){
+  const input = document.getElementById('pilotLibInput');
+  if(input) input.addEventListener('change', e=>{
+    const f = e.target.files && e.target.files[0];
+    importPilotDoc(f);
+    e.target.value = '';
+  });
+  const add = document.getElementById('pilotDocAdd');
+  if(add) add.addEventListener('click', ()=>{
+    add.disabled = true;
+    Promise.resolve(attacherDocsPilote())
+      .catch(e=>console.error('[docs pilote]', e))
+      .finally(()=>{ add.disabled = false; });
+  });
+  const clr = document.getElementById('pilotDocClear');
+  if(clr) clr.addEventListener('click', async ()=>{
+    PILOTDOC = null;
+    await wxdocClear(PILOTDOC_KEY);
+    renderPilotDoc();
+    const msg = document.getElementById('pilotDocMsg');
+    if(msg){ msg.className='rwyMsg'; msg.textContent=''; }
+  });
+
+  wxdocLoad(PILOTLIB_KEY).then(lib=>{ PILOTLIB = lib; renderPilotLib(); });
+  wxdocLoad(PILOTDOC_KEY).then(doc=>{ PILOTDOC = doc; renderPilotDoc(); });
+})();
+
 (function initFreeDoc(){
   const input = document.getElementById('freeDocInput');
   if(input) input.addEventListener('change', e=>{
@@ -5088,6 +5295,9 @@ async function buildBackup(withDocs){
     withDocs: !!withDocs,
     aircraft: AIRCRAFT_USER,
     airports: AIRPORT_USER,
+    // La bibliothèque de documents pilote n'appartient à aucun dossier :
+    // sans elle, la sauvegarde laisserait de côté licence et médical.
+    pilotLibrary: withDocs ? (PILOTLIB || null) : null,
     dossiers
   };
 }
@@ -5160,6 +5370,14 @@ async function doRestore(file){
     saveUserAircraft();
     Object.assign(AIRPORT_USER, data.airports || {});
     saveUserAirports();
+
+    if(data.pilotLibrary && Array.isArray(data.pilotLibrary.items)){
+      const connus = new Set(pilotLibItems().map(x=>x.id));
+      const ajout = data.pilotLibrary.items.filter(x=>x && !connus.has(x.id));
+      PILOTLIB = {items: pilotLibItems().concat(ajout)};
+      await pilotLibSave();
+      renderPilotLib();
+    }
 
     let done = 0;
     if(nD){
