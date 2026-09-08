@@ -88,3 +88,44 @@ automatique. Il indique le vol en cours et permet de repartir de zéro.
 Attention : `restoreFlight` est appelé trois fois de suite dans la remise en
 cohérence. C'est voulu — `applyAircraft` et `applyRunwayToFields` réécrivent
 certains champs, il faut reposer les valeurs du pilote après chacun.
+
+## Normalisation de la structure (v33)
+
+Le balisage avait divergé page par page. État avant / après :
+
+| | avant | après |
+|---|---|---|
+| variantes de `#pageFlight` | 6 | 1 (+2 pages volontairement enrichies) |
+| variantes de `#pageHome` | 5 | 5 (non traité) |
+| blocs `<style>` par page | 7 à 9 | 1 à 4 |
+| numérotation des sections | deux « 04 », jusqu'à 08 ou 10 selon la page | 01 à 09 partout |
+
+### Identifiants corrigés
+
+- `sectionPerf` portait en réalité la section **Carburant** → `sectionFuel`
+- `dossierEnvironmentLegacy` → `sectionEnvironment`, présent sur toutes les pages
+- sections sans identifiant nommées : `sectionCartouche`, `sectionSafety`
+- `altFuelSection` supprimé : le carburant de dégagement est un champ de la
+  section 03 (`altFuelField`), plus une section 08 séparée
+
+### Corrections de fond
+
+- `index.html` déclarait `data-view="dossier"`, comme `dossier.html`, alors que
+  leurs règles d'affichage sont opposées : l'un montre le tableau de bord,
+  l'autre le formulaire. Devenu `data-view="dashboard"`.
+- La barre d'onglets d'origine (`nav.tabs`, `aria-hidden="true"`) subsistait sur
+  les douze pages, masquée par une règle CSS. Supprimée, ainsi que les blocs de
+  style qui ne servaient qu'à la cacher.
+- Six blocs de correctifs CSS identiques (`sidebar-scroll-fix`,
+  `layout-footer-fix`, `button-layout-fix`, `premium-svg-icons`,
+  `empty-placeholder-fix`, `multi-page-navigation`) étaient recopiés dans
+  chaque page : remontés dans `app.css`, 69 blocs supprimés.
+- Chaque section du dossier porte un lien vers sa page dédiée.
+
+### Ce qui reste inline, volontairement
+
+`prevol-page-scope` et les `page-filter-*` définissent quelle section chaque
+page met en avant. Ils sont propres à chaque page. Ils pourraient devenir une
+règle unique pilotée par `body[data-view]` dans `app.css` — c'est possible
+maintenant que les identifiants de section sont stables et que le doublon
+index/dossier est levé.

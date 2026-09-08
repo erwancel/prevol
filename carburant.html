@@ -49,137 +49,11 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="app.css">
-<style id="dossier-page">.dossier-page .tabs{display:none!important;} .pageHome.active,.pageFlight.active{display:block!important;} #pageHome{display:none!important;} </style><style id="prevol-page-scope">
+<style id="prevol-page-scope">
         #pageHome,#pageAircraft,#pageAirport{display:none!important}
         #pageFlight{display:block!important}
         #pageFlight > .runbar,#pageFlight > #results,#pageFlight > .printReportWrap{display:block}
         </style>
-<style id="sidebar-scroll-fix">
-/* Navigation latérale défilante — tous les items restent accessibles */
-@media (min-width: 761px){
-  .sidebar{
-    overflow-y:auto!important;
-    overflow-x:hidden!important;
-    overscroll-behavior:contain;
-    scrollbar-width:thin;
-    scrollbar-color:rgba(183,209,232,.45) transparent;
-  }
-  .sidebar::-webkit-scrollbar{width:7px;}
-  .sidebar::-webkit-scrollbar-track{background:transparent;}
-  .sidebar::-webkit-scrollbar-thumb{background:rgba(183,209,232,.35);border-radius:10px;}
-  .sidebar::-webkit-scrollbar-thumb:hover{background:rgba(183,209,232,.55);}
-  .side-nav{flex-shrink:0;}
-  .side-spacer{flex:1 1 auto;min-height:12px;}
-}
-</style>
-<style id="layout-footer-fix">
-/* Layout global : la barre latérale occupe toute la hauteur du viewport
-   et le footer se place naturellement en bas des pages courtes. */
-@media (min-width: 761px){
-  .app-shell{display:block!important;min-height:100vh!important;}
-  .sidebar{position:fixed!important;left:0!important;top:0!important;bottom:0!important;width:234px!important;height:100vh!important;box-sizing:border-box!important;}
-  .main-content{margin-left:234px!important;min-height:100vh!important;display:flex!important;flex-direction:column!important;}
-  .main-content > header.top{flex:0 0 auto;}
-  .main-content > .tabs{flex:0 0 auto;}
-  .main-content > .page-panel{flex:0 0 auto;}
-  .main-content > footer.premium-footer{margin-top:auto!important;flex:0 0 auto;}
-}
-@media (min-width:761px) and (max-width:1050px){
-  .sidebar{width:78px!important;}
-  .main-content{margin-left:78px!important;}
-}
-@media (max-width:760px){
-  .main-content{min-height:calc(100vh - 58px)!important;display:flex!important;flex-direction:column!important;}
-  .main-content > footer.premium-footer{margin-top:auto!important;}
-}
-</style>
-
-<style id="premium-svg-icons">
-.nav-ico svg,.quick-icon svg,.tool-tile > span svg{width:24px;height:24px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
-.nav-ico{width:24px;height:24px;display:grid;place-items:center;font-size:0;flex:0 0 24px;}
-.quick-icon{display:grid;place-items:center;}
-.quick-icon svg{width:30px;height:30px;stroke-width:1.9;}
-.tool-tile > span{display:grid;place-items:center;}
-.tool-tile > span svg{width:26px;height:26px;}
-</style>
-
-<style id="empty-placeholder-fix">
-/* Supprime les conteneurs visuels lorsqu'ils n'ont encore aucun contenu.
-   Ils réapparaissent automatiquement dès que le JavaScript les remplit. */
-.rwyMsg:empty,
-.smallhint:empty,
-.imsafe-status:empty,
-.wx-only:empty,
-.notam-only:empty,
-.verdict:empty,
-.feuille:empty,
-#loadFixBody:empty,
-#dossierList:empty,
-#wxResults:empty,
-#wxDocPreview:empty,
-#ntmDocPreview:empty,
-#freeDocPreview:empty,
-#vacPreview:empty,
-#acList:empty,
-#apList:empty,
-#apfRunwayRows:empty,
-#wizBody:empty,
-#rwyDepSel:empty,
-#rwyArrSel:empty,
-#rwyLdgSel:empty {
-  display:none !important;
-}
-
-/* Les blocs de résultat vides ne doivent jamais créer une bande colorée. */
-.results:not(.show),
-.results.show:has(.verdict:empty):has(.feuille:empty) {
-  display:none !important;
-}
-
-/* Évite qu'un message météo automatique vide conserve une hauteur de ligne. */
-#wxAutoDep:empty,
-#wxAutoLdg:empty,
-#wxAutoArr:empty,
-#windDepHint:empty,
-#windLdgHint:empty,
-#windArrHint:empty,
-#pisteTypeNote:empty,
-#pisteTypeLdgNote:empty,
-#pisteTypeArrNote:empty,
-#fuelCapacityHint:empty,
-#apStatusHint:empty {
-  display:none !important;
-}
-</style>
-
-<style id="button-layout-fix">
-/* Corrige les groupes de boutons : aucun bouton ne doit s'étirer ou se superposer. */
-.btnrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-.btnrow > .btnMini,
-.btnrow > a.btnMini,
-.btnrow > label.btnMini{
-  flex:0 0 auto !important;
-  width:auto !important;
-  max-width:100%;
-  display:inline-flex !important;
-  align-items:center;
-  justify-content:center;
-  vertical-align:middle;
-  position:relative;
-  box-sizing:border-box;
-}
-/* Les boutons d'action restent compacts même sur les écrans étroits. */
-@media(max-width:520px){
-  .btnrow > .btnMini,
-  .btnrow > a.btnMini,
-  .btnrow > label.btnMini{
-    flex:0 1 auto !important;
-    white-space:normal;
-  }
-}
-</style>
-
-
 <style id="fuel-page-link-style">
 .section-title-row{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px;}
 .section-title-row h2{margin:0!important;}
@@ -197,11 +71,11 @@
 #pageFlight > *{display:none!important;}
 #pageFlight > .fuel-back,
 #pageFlight > #fuelContextCard,
-#pageFlight > #sectionPerf,
+#pageFlight > #sectionFuel,
 #pageFlight > #fuelResults,
 #pageFlight > #fuelActions{display:block!important;}
-#sectionPerf{margin-top:0;}
-#sectionPerf > .grid{margin-bottom:0;}
+#sectionFuel{margin-top:0;}
+#sectionFuel > .grid{margin-bottom:0;}
 .fuel-page .page-panel{padding-top:16px;}
 .fuel-context{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:end;}
 .fuel-context .field{margin:0;}
@@ -240,7 +114,6 @@
 <p>Calculez le carburant nécessaire, l’autonomie et la marge disponible.</p>
 </div>
 </header>
-<nav aria-hidden="true" class="tabs"><a class="tab active" href="index.html">Dossier</a><a class="tab" href="meteo.html">Météo</a><a class="tab" href="notam.html">NOTAM</a><a class="tab" href="performances.html">Performances</a><a class="tab" href="masse-centrage.html">Masse &amp; centrage</a><a class="tab" href="navigation.html">Navigation</a><a class="tab" href="documents.html">Documents</a><a class="tab" href="outils.html">Outils</a></nav>
 <div class="page-panel" id="pageHome">
 <section class="card" id="draftBanner" style="display:none;border-color:var(--accent);">
 <h2>Dossier en cours retrouvé</h2>
@@ -271,7 +144,7 @@
 <div class="tool-grid">
 <button class="tool-tile" data-page="pageFlight" data-scroll="#sectionWeather" type="button"><span>☁</span><b>Météo</b><small>METAR, TAF, cartes</small></button>
 <button class="tool-tile" data-page="pageFlight" data-scroll="#sectionWeather" type="button"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5h14v17H5z"/><path d="M12 7.2v5.2M12 15.8h.01"/></svg></span><b>NOTAM</b><small>Informations terrain</small></button>
-<button class="tool-tile" data-page="pageFlight" data-scroll="#sectionPerf" type="button"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5V5.5M4 19.5h16"/><path d="m6.5 16 4-4 3 2 4-6"/><path d="M14.8 8H17.5v2.7"/></svg></span><b>Performances</b><small>Distances, montées, etc.</small></button>
+<button class="tool-tile" data-page="pageFlight" data-scroll="#sectionFuel" type="button"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5V5.5M4 19.5h16"/><path d="m6.5 16 4-4 3 2 4-6"/><path d="M14.8 8H17.5v2.7"/></svg></span><b>Performances</b><small>Distances, montées, etc.</small></button>
 <button class="tool-tile" data-page="pageFlight" data-scroll="#sectionMass" type="button"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l-2.2 11H8.2z"/><path d="M9 8a3 3 0 0 1 6 0"/><path d="M4 21h16"/></svg></span><b>Masse &amp; centrage</b><small>Calculateur</small></button>
 <button class="tool-tile" data-page="pageFlight" data-scroll="#sectionVol" type="button"><span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m15.8 8.2-2.2 5.4-5.4 2.2 2.2-5.4z"/><path d="M12 3.5v2M20.5 12h-2M12 20.5v-2M3.5 12h2"/></svg></span><b>Navigation</b><small>Cartes, points, routes</small></button>
 <button class="tool-tile" data-page="pageFlight" data-scroll="#sectionDocs" type="button"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h9l4 4V20.5H7z"/><path d="M16 3.5v4h4"/><path d="M4 6.5v14h11"/></svg></span><b>Documents</b><small>Checklist, export</small></button>
@@ -292,7 +165,7 @@
 </div>
 <div class="page-panel active" id="pageFlight">
 <!-- 1. GENERAL -->
-<section class="card" id="sectionVol">
+<section class="card view-vol" id="sectionVol">
 <h2><span class="idx">01</span> Vol</h2>
 <div class="grid g3">
 <div class="field"><label>Avion</label>
@@ -311,8 +184,8 @@
 </div>
 </section>
 <!-- 3. MASSE -->
-<section class="card" id="sectionMass">
-<h2><span class="idx">02</span> Masses</h2>
+<section class="card view-mass" id="sectionMass">
+<div class="section-title-row"><h2><span class="idx">02</span> Masses</h2><a class="section-open-link" href="masse-centrage.html">Ouvrir Masse & centrage ↗</a></div>
 <div class="grid g3">
 <div class="field"><label>Poids pilote (kg)</label><input id="wPilot" placeholder="kg" type="number"/></div>
 <div class="field opt"><label>Poids copilote (kg)</label><input id="wCopilot" placeholder="kg" type="number"/></div>
@@ -331,6 +204,7 @@
 </div>
 </details>
 </section>
+<!-- 4. CARBURANT -->
 <a class="fuel-back" href="dossier.html">← Retour au dossier</a>
 <section class="card" id="fuelContextCard">
   <div class="dash-head"><div><span class="eyebrow">PARAMÈTRES</span><h2>Avion sélectionné</h2></div></div>
@@ -339,9 +213,9 @@
     <div class="smallhint" id="fuelAircraftInfo" style="margin:0 0 10px 0;"></div>
   </div>
 </section>
-<!-- 4. CARBURANT -->
-<section class="card" id="sectionPerf">
-<div class="section-title-row"><h2><span class="idx">03</span> Carburant</h2></div>
+
+<section class="card view-fuel" id="sectionFuel">
+<div class="section-title-row"><h2><span class="idx">03</span> Carburant</h2><a class="section-open-link" href="carburant.html">Ouvrir Carburant ↗</a></div>
 <div class="grid g4">
 <div class="field"><label>Temps de vol prévu (min)</label><input id="flightTime" placeholder="min" type="number"/></div>
 <div class="field"><label>Réserve finale</label>
@@ -375,12 +249,9 @@
   </div>
   <div class="fuel-status" id="fuelStatus">Renseignez le temps de vol et le fuel embarqué puis lancez le calcul.</div>
 </section>
-<div id="fuelActions">
-  <button class="btnMini primary" id="fuelCalculateBtn" type="button">Calculer</button>
-</div>
-<!-- ENVIRONNEMENT & PISTES -->
-<section class="card">
-<h2><span class="idx">04</span> Environnement &amp; pistes</h2>
+<!-- 4. ENVIRONNEMENT & PISTES -->
+<section class="card view-environment" id="sectionEnvironment">
+<div class="section-title-row"><h2><span class="idx">04</span> Environnement &amp; pistes</h2><a class="section-open-link" href="performances.html">Ouvrir Performances ↗</a></div>
 <div class="subhead">Bulletin METAR / TAF</div>
 <div class="smallhint" style="margin-bottom:10px;">
       Données Aviation Weather Center (NOAA), gratuites et sans compte.
@@ -410,6 +281,9 @@
 <div class="btnrow" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
 <button class="btnMini" id="wxClearBtn" style="display:none;" type="button">Effacer le bulletin</button>
 </div>
+
+<div class="smallhint">Le bulletin METAR / TAF se récupère directement dans la section où sont saisis la température, le QNH et le vent.</div>
+
 
 <div class="subhead" id="depEnvHead" style="margin-top:0;">Départ</div>
 <div class="grid g3">
@@ -519,8 +393,8 @@
 <button class="btnMini" id="rwyAddBtn" type="button">+ Ajouter / modifier une piste</button>
 </div>
 </section>
-<!-- 6. OPTIONNEL / CARTOUCHE -->
-<section class="card">
+<!-- 5. OPTIONNEL / CARTOUCHE -->
+<section class="card view-folder" id="sectionCartouche">
 <h2><span class="idx">05</span> Cartouche folder <span style="font-weight:400;color:var(--muted);text-transform:none;font-family:var(--body);font-size:12px;">(pour la page de garde du PDF)</span></h2>
 <div class="grid g3">
 <div class="field opt"><label>MEL</label><input id="mel" placeholder="RAS" type="text"/></div>
@@ -529,8 +403,8 @@
 </div>
 </section>
 <!-- 7. DOCUMENTS & PILOTE -->
-<section class="card" id="sectionDocs">
-<h2><span class="idx">06</span> Documents &amp; Pilote</h2>
+<section class="card view-docs" id="sectionDocs">
+<div class="section-title-row"><h2><span class="idx">06</span> Documents &amp; Pilote</h2><a class="section-open-link" href="documents.html">Ouvrir Documents ↗</a></div>
 <div class="subhead">Documents avion</div>
 <div class="checklist">
 <label class="chk"><input id="docAFM" type="checkbox"/><span>Manuel de vol (AFM)</span></label>
@@ -564,8 +438,8 @@
 <div class="imsafe-status" id="imsafeStatus"></div>
 </section>
 <!-- 8. METEO & NOTAM -->
-<section class="card" id="sectionWeather">
-<h2><span class="idx">07</span> Météo &amp; NOTAM</h2>
+<section class="card view-weather" id="sectionWeather">
+<div class="section-title-row"><h2><span class="idx">07</span> Météo &amp; NOTAM</h2><a class="section-open-link" href="meteo.html">Ouvrir Météo ↗</a></div>
 <div class="subhead">Éléments consultés</div>
 <div class="checklist">
 <label class="chk"><input id="wxEuroc" type="checkbox"/><span>EUROC</span></label>
@@ -576,7 +450,7 @@
 <label class="chk"><input id="wxMaritime" type="checkbox"/><span>Survol maritime (vagues, T° eau)</span></label>
 </div>
 <div class="field" style="margin-top:12px;"><label>Minima de planification (T/O, dégagements, destination)</label><textarea id="wxMinimaText" placeholder="ICAO / RWY-APP / minima / météo / remarques"></textarea></div>
-<div class="smallhint">Le bulletin METAR / TAF se récupère directement dans la section où sont saisis la température, le QNH et le vent.</div>
+<div class="smallhint">Le bulletin METAR / TAF se récupère directement dans la section <b>Environnement &amp; pistes</b>, au-dessus des champs de température, QNH et vent.</div>
 
 <div class="subhead">Cartes (TEMSI / WINTEM / SIGWX)</div>
 <div class="smallhint" style="margin-bottom:10px;">
@@ -628,7 +502,7 @@
 <div id="freeDocPreview"></div>
 </section>
 <!-- 11. EQUIPEMENTS SECURITE -->
-<section class="card">
+<section class="card view-decision" id="sectionSafety">
 <h2><span class="idx">08</span> Équipements de sécurité &amp; TEM</h2>
 <div class="checklist">
 <label class="chk"><input id="eqFirstAid" type="checkbox"/><span>Trousse premiers secours</span></label>
@@ -641,7 +515,7 @@
 </div>
 </section>
 <!-- 12. MENACES GENERALES & DECISION -->
-<section class="card" id="sectionDecision">
+<section class="card view-decision" id="sectionDecision">
 <h2><span class="idx">09</span> Menaces générales &amp; décision</h2>
 <div class="field"><label>Revue des menaces spécifiques du vol &amp; mitigations</label><textarea id="genThreats"></textarea></div>
 <div class="grid g2">

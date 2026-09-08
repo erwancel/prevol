@@ -4,8 +4,8 @@
 // douze fichiers HTML, qui avaient divergé en trois variantes.
 // Base retenue : celle d'index.html, la plus à jour (gestion des
 // panneaux Avions/Aérodromes). Seule correction apportée : le
-// bloc « carburant de dégagement » accepte désormais les deux
-// identifiants qui coexistaient (altFuelSection et altFuelField).
+// bloc « carburant de dégagement » est unifié sous altFuelField, et le
+// terrain de dégagement se saisit en section 01.
 // ============================================================
 
 
@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v32 · 2026.09.08';
+const APP_VERSION = 'v33 · 2026.09.08';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -914,10 +914,7 @@ function hasAlternate(){
   return (str('altn1')||'').trim() !== '';
 }
 function toggleAlternateFuel(){
-  // Les pages n'ont pas toutes le même identifiant pour ce bloc :
-  // on accepte les deux plutôt que d'imposer un renommage global du HTML.
-  const sec = document.getElementById('altFuelSection')
-           || document.getElementById('altFuelField');
+  const sec = document.getElementById('altFuelField');
   if(!sec) return;
   const show = hasAlternate();
   sec.style.display = show ? '' : 'none';
