@@ -863,3 +863,32 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
   .side-nav .tab span:not(.nav-ico){display:inline;}
   .side-nav .tab{justify-content:flex-start;}
 }
+
+/* ============================================================
+   DÉCALAGE DU CONTENU : MARGE -> REMPLISSAGE
+   ------------------------------------------------------------
+   Le contenu était décalé par margin-left:72px, sa largeur restant
+   en auto. En théorie sa largeur vaut alors « parent moins 72 »,
+   et tout tient. En pratique la page carnet débordait par la
+   droite d'exactement la largeur du menu — comportement d'une
+   boîte large de 100 % À LAQUELLE on ajoute la marge.
+
+   On supprime la dépendance : largeur 100 %, décalage porté par un
+   remplissage intérieur, et box-sizing:border-box pour que ce
+   remplissage soit COMPRIS dans les 100 % au lieu de s'y ajouter.
+   La largeur totale ne peut plus dépasser celle du parent, quelle
+   que soit la règle de largeur héritée.
+
+   Le menu est en position fixe et opaque : le fond du contenu qui
+   passe désormais sous lui n'est jamais visible.
+   ============================================================ */
+@media(min-width:761px){
+  .main-content,
+  .app-shell > main{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    margin-left:0!important;
+    padding-left:72px!important;
+  }
+}
