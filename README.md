@@ -462,3 +462,30 @@ titre de document et leur URL que lorsque la marge de page n'est pas nulle :
 dans la plupart des cas ces mentions disparaissent. Si elles persistent, c'est
 un réglage du navigateur, hors de portée du code — dans le dialogue
 d'impression, décocher « En-têtes et pieds de page ».
+
+## v44 — Entité simulateur
+
+Une séance de simulateur était saisie comme un vol : il fallait lui inventer
+des terrains, une immatriculation, un temps de vol. Ces valeurs remontaient
+ensuite dans les colonnes « aéronef » de l'export EASA, où elles n'ont rien à
+faire, et gonflaient les totaux d'expérience.
+
+Le carnet EASA ne demande que trois informations pour la colonne 11
+« Synthetic training devices » : date, type d'appareillage, durée de la séance.
+
+- **Formulaire dédié.** Choisir « Simulator » comme type d'entrée masque tout
+  ce qui relève du vol — terrains, horaires, avion, équipage, temps, opérations
+  — et affiche un bloc de trois champs, plus une remarque libre (LPC, OPC,
+  entraînement). Liste de types courants proposée : BITD, FNPT I/II, FTD 1/2,
+  FFS A à D.
+- **Données propres.** À l'enregistrement, tous les champs de vol sont vidés :
+  aucune donnée résiduelle ne peut remonter dans l'export.
+- **Export EASA.** Les colonnes 1 à 10 restent vides pour une séance, hormis la
+  date et la mention SIMULATOR avec le type d'appareillage, afin que la ligne
+  reste lisible en regard de la colonne 11. Les fonctions PIC, SIC et dual sont
+  neutralisées.
+- **Totaux séparés.** Le temps de simulateur ne compte plus dans le temps de
+  vol ni dans les totaux PIC, SIC, nuit et IFR. Vérifié : deux vols de 1 h 30
+  et 2 h plus une séance de 4 h donnent 03:30 de vol et 04:00 de simulateur.
+- **Tableau à l'écran.** Une séance affiche un badge SIM au lieu de
+  l'immatriculation, et sa durée est marquée « sess. ».

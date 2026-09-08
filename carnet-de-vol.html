@@ -121,22 +121,33 @@
 
 <section class="section"><div class="section-title"><div class="num">01</div><h4>Vol</h4></div><div class="grid-5">
 <div class="field"><label>Date</label><input id="f_date" type="date"></div><div class="field"><label>Type de vol</label><select id="f_entryType"><option>Flight</option><option>Simulator</option><option>Training</option><option>Positioning</option><option>Commercial</option><option>Other</option></select></div><div class="field"><label>Numéro de vol</label><input id="f_flightNumber"></div><div class="field"><label>Départ ICAO</label><input id="f_from" maxlength="4"></div><div class="field"><label>Arrivée ICAO</label><input id="f_to" maxlength="4"></div></div>
-<div class="grid-4" style="margin-top:10px"><div class="field"><label>Départ réel</label><input id="f_actualDeparture" type="time"></div><div class="field"><label>Arrivée réelle</label><input id="f_actualArrival" type="time"></div><div class="field"><label>Distance NM</label><input id="f_distance" type="number" step=".1"></div><div class="field"><label>Route</label><input id="f_route"></div></div></section>
+<div class="grid-4" style="margin-top:10px"><div class="field"><label>Départ réel</label><input id="f_actualDeparture" type="time"></div><div class="field"><label>Arrivée réelle</label><input id="f_actualArrival" type="time"></div><div class="field"><label>Distance NM</label><input id="f_distance" type="number" step=".1"></div><div class="field"><label>Route</label><input id="f_route"></div></div></section><section class="section" id="simSection" style="display:none">
+<div class="section-title"><div class="num">S</div><h4>Séance simulateur</h4></div>
+<div class="small" style="margin-bottom:10px">Une séance de simulateur n'est pas un vol : elle ne comporte ni terrains, ni immatriculation, ni temps de vol. Le carnet EASA ne lui demande que trois informations, reportées dans la colonne « Synthetic training devices ».</div>
+<div class="grid-3">
+<div class="field"><label>Date</label><input id="f_simDate" type="date"></div>
+<div class="field"><label>Type d'appareillage</label><input id="f_simType" list="simTypeList" placeholder="FNPT II, FFS A320, BITD…"></div>
+<div class="field"><label>Durée totale de la séance</label><input id="f_simTotal" placeholder="01:30"></div>
+</div>
+<datalist id="simTypeList"><option value="BITD"></option><option value="FNPT I"></option><option value="FNPT II"></option><option value="FTD 1"></option><option value="FTD 2"></option><option value="FFS A"></option><option value="FFS B"></option><option value="FFS C"></option><option value="FFS D"></option></datalist>
+<div class="field" style="margin-top:10px"><label>Exercice / remarques</label><input id="f_simRemark" placeholder="LPC, OPC, entraînement, panne moteur…"></div>
+</section>
 
-<section class="section"><div class="section-title"><div class="num">02</div><h4>Avion</h4></div><div class="grid-4">
+
+<section class="section flight-only"><div class="section-title"><div class="num">02</div><h4>Avion</h4></div><div class="grid-4">
 <div class="field"><label>Immatriculation / Device</label><input id="f_aircraftId" list="aircraftList"></div><div class="field"><label>Type / modèle</label><input id="f_aircraftType"></div><div class="field"><label>SE / ME</label><select id="f_engineClass"><option value="">—</option><option>SE</option><option>ME</option></select></div><div class="field"><label>Single / Multi-pilot</label><select id="f_pilotMode"><option value="">—</option><option>Single-Pilot</option><option>Multi-Pilot</option></select></div></div><datalist id="aircraftList"></datalist></section>
 
-<section class="section"><div class="section-title"><div class="num">03</div><h4>Équipage</h4></div>
+<section class="section flight-only"><div class="section-title"><div class="num">03</div><h4>Équipage</h4></div>
 <table style="width:100%;border-collapse:collapse">
 <thead><tr><th>Fonction</th><th>Personne</th></tr></thead><tbody id="crewRows"></tbody></table><datalist id="peopleList"></datalist></section>
 
 <section class="section"><div class="section-title"><div class="num">04</div><h4>Temps de vol</h4></div><div class="grid-5" id="timeFields"></div></section>
-<section class="section"><div class="section-title"><div class="num">05</div><h4>Décollages & atterrissages</h4></div><div class="grid-4" id="opsFields"></div></section>
-<section class="section"><div class="section-title"><div class="num">06</div><h4>Approches</h4></div><table style="width:100%;border-collapse:collapse"><thead><tr><th>N°</th><th>Type</th><th>Catégorie</th><th>Mode</th><th>Aérodrome</th></tr></thead><tbody id="approachRows"></tbody></table></section>
-<section class="section"><div class="section-title"><div class="num">07</div><h4>Duty / FDP</h4></div><div class="grid-4">
+<section class="section flight-only"><div class="section-title"><div class="num">05</div><h4>Décollages & atterrissages</h4></div><div class="grid-4" id="opsFields"></div></section>
+<section class="section flight-only"><div class="section-title"><div class="num">06</div><h4>Approches</h4></div><table style="width:100%;border-collapse:collapse"><thead><tr><th>N°</th><th>Type</th><th>Catégorie</th><th>Mode</th><th>Aérodrome</th></tr></thead><tbody id="approachRows"></tbody></table></section>
+<section class="section flight-only"><div class="section-title"><div class="num">07</div><h4>Duty / FDP</h4></div><div class="grid-4">
 <div class="field"><label>On Duty</label><input id="duty_on" type="datetime-local"></div><div class="field"><label>Off Duty</label><input id="duty_off" type="datetime-local"></div><div class="field"><label>Total Duty</label><input id="duty_total"></div><div class="field"><label>Rest</label><input id="duty_rest"></div><div class="field"><label>FDP Start</label><input id="duty_fdpStart" type="datetime-local"></div><div class="field"><label>FDP End</label><input id="duty_fdpEnd" type="datetime-local"></div><div class="field"><label>Total FDP</label><input id="duty_fdpTotal"></div></div></section>
 
-<section class="section"><div class="section-title"><div class="num">08</div><h4>Carburant</h4></div><div class="grid-5">
+<section class="section flight-only"><div class="section-title"><div class="num">08</div><h4>Carburant</h4></div><div class="grid-5">
 <div class="field"><label>Fuel Added</label><input id="fuel_added" type="number" step=".1"></div><div class="field"><label>Fuel Burned</label><input id="fuel_burned" type="number" step=".1"></div><div class="field"><label>Min. Diversion</label><input id="fuel_diversion" type="number" step=".1"></div><div class="field"><label>Fuel Aboard</label><input id="fuel_aboard" type="number" step=".1"></div><div class="field"><label>Fuel Uplift</label><input id="fuel_uplift" type="number" step=".1"></div></div></section>
 
 <section class="section"><div class="section-title"><div class="num">09</div><h4>Conditions</h4></div><div class="grid-4" id="weatherFields"></div></section>
