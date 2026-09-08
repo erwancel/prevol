@@ -1046,3 +1046,58 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
   .carnet-page .modal-backdrop{padding:8px;}
   .carnet-page .modal-body{padding:12px;}
 }
+
+/* =========================================================
+   AIR ONE AERO — LOGO DANS LA SIDEBAR
+   Visible en permanence : à gauche de PréVol quand le rail
+   est déplié, centré au-dessus de l'accueil quand il est fermé.
+   ========================================================= */
+@media (min-width:761px){
+  .side-brand{
+    opacity:1 !important;
+    display:flex !important;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    padding:0 6px !important;
+    min-height:58px;
+    white-space:nowrap;
+  }
+  .side-brand-logo{
+    width:42px;
+    height:42px;
+    flex:0 0 42px;
+    object-fit:contain;
+    display:block;
+  }
+  .side-brand-copy{
+    min-width:0;
+    overflow:hidden;
+    opacity:0;
+    transition:opacity .13s ease;
+  }
+  .side-brand-copy .side-name,
+  .side-brand-copy .side-sub{display:block !important;}
+  .side-brand-copy .side-name{font-size:34px;line-height:1;font-weight:650;letter-spacing:-.04em;}
+  .side-brand-copy .side-sub{font-size:14px;color:#aebccc;margin-top:10px;}
+
+  .sidebar:hover .side-brand,
+  .sidebar:focus-within .side-brand{
+    justify-content:flex-start;
+  }
+  .sidebar:hover .side-brand-copy,
+  .sidebar:focus-within .side-brand-copy{
+    opacity:1;
+  }
+
+  .sidebar:not(:hover) .side-brand-logo,
+  .sidebar:focus-within .side-brand-logo{
+    /* logo stays centered in the closed rail; no visual jump on open */
+  }
+}
+
+@media (max-width:760px){
+  .side-brand{
+    display:none !important;
+  }
+}
