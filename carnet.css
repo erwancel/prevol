@@ -72,3 +72,51 @@
 
 /* Le bandeau ne doit pas non plus dépasser */
 .carnet-page .hero{max-width:100%;}
+
+/* ============================================================
+   LIMITE DURE DE LARGEUR — page carnet
+   ------------------------------------------------------------
+   Diagnostic : .toolbar est en flex-wrap:wrap et ne s'enroule pas
+   sur la capture. Un conteneur en wrap s'enroule TOUJOURS si son
+   contenu dépasse sa largeur. S'il ne le fait pas, c'est que le
+   conteneur est lui-même plus large que l'écran — le problème est
+   donc en amont du contenu, dans la chaîne de largeurs.
+
+   Plutôt que de continuer à chercher le maillon exact, on borne
+   explicitement le contenu à la largeur de la fenêtre moins le rail
+   du menu. Le calcul ne dépend plus d'aucune règle héritée.
+
+   L'écart de 100vw (qui inclut la barre de défilement verticale) est
+   absorbé par overflow-x:hidden sur la page.
+   ============================================================ */
+.carnet-page{overflow-x:hidden;}
+
+@media(min-width:761px){
+  .carnet-page .app-shell{max-width:100%;}
+  .carnet-page .main-content{
+    box-sizing:border-box;
+    width:calc(100vw - 72px)!important;
+    max-width:calc(100vw - 72px)!important;
+    overflow-x:hidden;
+  }
+}
+@media(max-width:760px){
+  .carnet-page .main-content{
+    box-sizing:border-box;
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:hidden;
+  }
+}
+
+.carnet-page .container{max-width:100%;box-sizing:border-box;}
+
+/* Grilles intrinsèquement souples : le nombre de colonnes s'adapte à
+   la place disponible au lieu d'être imposé. Elles ne peuvent plus
+   réclamer une largeur minimale supérieure à l'écran. */
+.carnet-page .stats{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))!important;}
+.carnet-page .filters-grid{grid-template-columns:repeat(auto-fit,minmax(165px,1fr))!important;}
+.carnet-page .toolbar > *{flex:1 1 155px;min-width:0;}
+
+/* Seul le tableau défile horizontalement */
+.carnet-page .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
