@@ -60,3 +60,31 @@ vers le centre, et l'axe de piste porte son numéro.
 `a-propos.html` ne possède pas les cartes du tableau de bord (sauvegarde,
 stockage, thème, liste des dossiers). C'est volontaire, et sans effet : toutes
 les fonctions concernées vérifient la présence de leur élément avant d'agir.
+
+## État partagé entre les pages (v31)
+
+Chaque page du menu est un document HTML distinct qui contient le même
+formulaire, avec les mêmes identifiants. Naviguer d'une page à l'autre est donc
+un rechargement complet : la mémoire de la page disparaît, seul le stockage
+survit.
+
+Le mécanisme de brouillon sert désormais d'état partagé :
+
+- tous les champs du vol sont écrits dans `localStorage` à chaque frappe, et
+  immédiatement sur `pagehide`, donc avant chaque changement de page ;
+- à l'ouverture de n'importe quelle page, ils sont restaurés automatiquement,
+  puis remis en cohérence dans l'ordre : avion appliqué en premier (il
+  conditionne les tables et l'enveloppe), listes de pistes, verrouillages de
+  surface, indications de vent ;
+- l'identifiant du dossier ouvert est lui aussi stocké
+  (`prevol_dossier_courant_v1`), sinon « Enregistrer » créerait une fiche par
+  page visitée ;
+- les pièces jointes et le bulletin météo étaient déjà partagés, en IndexedDB
+  et en localStorage.
+
+Le bandeau du tableau de bord ne demande plus quoi faire : la reprise est
+automatique. Il indique le vol en cours et permet de repartir de zéro.
+
+Attention : `restoreFlight` est appelé trois fois de suite dans la remise en
+cohérence. C'est voulu — `applyAircraft` et `applyRunwayToFields` réécrivent
+certains champs, il faut reposer les valeurs du pilote après chacun.

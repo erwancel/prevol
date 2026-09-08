@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v30 · 2026.09.08';
+const APP_VERSION = 'v31 · 2026.09.08';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -4265,7 +4265,20 @@ function dossierLabel(){
 // Dossier actuellement ouvert. Tant qu'il est renseigné, « Enregistrer »
 // met à jour cette fiche au lieu d'en empiler une nouvelle à chaque appui.
 // Pour repartir d'une copie sans toucher à l'original, utiliser « Dupliquer ».
+// Le dossier ouvert suit la navigation : chaque page du menu est un
+// rechargement complet, donc l'identifiant doit vivre hors de la mémoire
+// de la page. Sans cela, « Enregistrer » créerait une fiche par page visitée.
+const CURRENT_DOSSIER_KEY = 'prevol_dossier_courant_v1';
 let CURRENT_DOSSIER_ID = null;
+try{ CURRENT_DOSSIER_ID = localStorage.getItem(CURRENT_DOSSIER_KEY) || null; }catch(e){}
+
+function setCurrentDossier(id){
+  CURRENT_DOSSIER_ID = id || null;
+  try{
+    if(id) localStorage.setItem(CURRENT_DOSSIER_KEY, id);
+    else   localStorage.removeItem(CURRENT_DOSSIER_KEY);
+  }catch(e){}
+}
 
 async function saveDossier(){
   const msg = document.getElementById('dossierMsg');
@@ -4297,7 +4310,7 @@ async function saveDossier(){
         ? 'Dossier « '+dossier.label+' » mis à jour.'
         : 'Dossier « '+dossier.label+' » enregistré.';
     }
-    CURRENT_DOSSIER_ID = dossier.id;
+    setCurrentDossier(dossier.id);
     renderDossierList();
     return true;
   }catch(e){
@@ -4358,7 +4371,7 @@ async function duplicateDossier(id){
   const d = await getDossier(id);
   if(!d) return;
 
-  CURRENT_DOSSIER_ID = null;   // la copie doit créer une fiche distincte
+  setCurrentDossier(null);   // la copie doit créer une fiche distincte
   restoreFlight(d.fields || {});
 
   const clear = ids => ids.forEach(k=>{
@@ -4419,7 +4432,7 @@ async function openDossier(id){
   });
   if(!d) return;
 
-  CURRENT_DOSSIER_ID = d.id;   // « Enregistrer » mettra à jour cette fiche
+  setCurrentDossier(d.id);   // « Enregistrer » mettra à jour cette fiche
   restoreFlight(d.fields || {});
 
   WXDOC = d.wxdoc || null;
@@ -4509,7 +4522,7 @@ async function newFlight(){
 
   // Le pilote a explicitement demandé une page vierge : le brouillon
   // précédent n'a plus lieu d'être proposé.
-  CURRENT_DOSSIER_ID = null;
+  setCurrentDossier(null);
   LM_REF = null;
   if(typeof clearDraft === 'function') clearDraft();
   const db = document.getElementById('draftBanner');
@@ -4561,7 +4574,7 @@ function renderDossierList(){
     box.querySelectorAll('[data-del]').forEach(b=>{
       b.addEventListener('click', async ()=>{
         if(!confirm('Supprimer définitivement ce dossier ?')) return;
-        if(CURRENT_DOSSIER_ID === b.dataset.del) CURRENT_DOSSIER_ID = null;
+        if(CURRENT_DOSSIER_ID === b.dataset.del) setCurrentDossier(null);
         await deleteDossier(b.dataset.del);
         renderDossierList();
       });
@@ -4572,12 +4585,17 @@ function renderDossierList(){
 (function initHome(){
   const nf = document.getElementById('homeNewFlight');
   if(nf) nf.addEventListener('click', ()=>{
-    window.location.href='dossier.html';
-    return;
-    if(LAST || str('depIcao')){
-      if(!confirm('Repartir sur un dossier vierge ? Les saisies et cartes météo en cours seront effacées (enregistre-les d\'abord si besoin).')) return;
+    // Le vol en cours est désormais partagé entre toutes les pages : il faut
+    // l'effacer AVANT de naviguer, sinon dossier.html le restaurerait aussitôt.
+    const enCours = readDraft();
+    if(enCours && !(PRISTINE_FLIGHT && JSON.stringify(enCours.fields) === JSON.stringify(PRISTINE_FLIGHT))){
+      if(!confirm('Repartir sur un dossier vierge ?\n\n'
+        + 'Le vol en cours et ses cartes importées seront effacés sur toutes les pages. '
+        + 'Les dossiers déjà enregistrés ne sont pas touchés.')) return;
     }
-    newFlight();
+    clearDraft();
+    setCurrentDossier(null);
+    window.location.href = 'dossier.html';
   });
   // Les cartes Avions et Aérodromes restent des aperçus du tableau de bord.
   // Les fonctions complètes seront accessibles depuis leurs pages dédiées lorsqu'elles seront publiées.
@@ -4721,55 +4739,115 @@ function readDraft(){
 }
 
 (function initDraft(){
+  // ---- État partagé entre les pages du menu ----
+  // Chaque page (Dossier, Performances, Carburant…) est un document HTML
+  // distinct qui contient le MÊME formulaire, avec les mêmes identifiants.
+  // Naviguer d'une page à l'autre est donc un rechargement complet : la
+  // mémoire de la page est perdue, seul le stockage survit.
+  //
+  // On enregistre en continu tous les champs du vol, et on les rétablit
+  // automatiquement à chaque ouverture de page. Résultat : le vol saisi sur
+  // le dossier principal se retrouve tel quel sur la page Performances, les
+  // essais faits là-bas remontent aussitôt dans le dossier, et les pièces
+  // jointes suivent d'elles-mêmes puisqu'elles vivent en IndexedDB.
   const panel = document.getElementById('pageFlight');
   if(panel){
     panel.addEventListener('input',  scheduleDraft);
     panel.addEventListener('change', scheduleDraft);
   }
-  // Un passage en arrière-plan peut être suivi d'une purge sans préavis :
-  // on écrit immédiatement, sans attendre la temporisation.
+  // Une navigation vers une autre page déclenche pagehide : on écrit sans
+  // attendre la temporisation, sinon les 500 dernières ms seraient perdues.
   window.addEventListener('pagehide', writeDraft);
   document.addEventListener('visibilitychange', ()=>{
     if(document.visibilityState === 'hidden') writeDraft();
   });
 
   const d = readDraft();
-  const banner = document.getElementById('draftBanner');
-  if(!d || !banner) return;
+  if(!d) return;
   if(PRISTINE_FLIGHT && JSON.stringify(d.fields) === JSON.stringify(PRISTINE_FLIGHT)){
     clearDraft();
     return;
   }
 
+  // ---- Restauration ----
+  restoreFlight(d.fields);
+
+  // Les valeurs météo déjà saisies sont marquées comme manuelles, sinon un
+  // rapatriement de METAR viendrait écraser ce que le pilote a entré.
+  WX_MANUAL.clear();
+  ['temp','qnh','wind','tempArr','qnhArr','windArr','tempLdg','qnhLdg','windLdg']
+    .forEach(id=>{ if(d.fields[id]) WX_MANUAL.add(id); });
+
+  // Remettre en cohérence tout ce qui se déduit des champs : l'avion
+  // sélectionné, les listes de pistes, les verrouillages de surface et les
+  // indications de vent. Sans cela les menus déroulants seraient vides et les
+  // valeurs restaurées ne tiendraient pas.
+  try{
+    // L'avion doit être appliqué en premier : il conditionne les tables de
+    // performances, l'enveloppe de centrage et une partie des champs.
+    if(typeof applyAircraft === 'function' && d.fields.aircraftSelect){
+      applyAircraft(d.fields.aircraftSelect);
+      restoreFlight(d.fields);        // applyAircraft réécrit des champs : on repose les valeurs du pilote
+    }
+    if(typeof toggleArrivalRunway === 'function') toggleArrivalRunway();
+    ['dep','arr','ldg'].forEach(ctx=>{
+      if(typeof applyRunwayToFields === 'function') applyRunwayToFields(ctx);
+    });
+    restoreFlight(d.fields);          // idem après le report des pistes
+    if(typeof syncAllSurfaceLocks === 'function') syncAllSurfaceLocks();
+    if(typeof refreshWindHints === 'function') refreshWindHints();
+  }catch(e){
+    console.warn('[brouillon] remise en cohérence partielle :', e);
+  }
+
+  // ---- Bandeau d'information ----
+  // Il ne demande plus quoi faire : la reprise est automatique. Il signale
+  // seulement quel vol est en cours et permet de repartir de zéro.
+  const banner = document.getElementById('draftBanner');
+  if(!banner) return;
+  const dep = (d.fields.depIcao || '????').toUpperCase();
+  const arr = (d.fields.arrIcao || dep || '????').toUpperCase();
   const when = new Date(d.savedAt);
   const stamp = isNaN(when) ? '' : when.toLocaleString('fr-FR',
     {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
-  const dep = (d.fields.depIcao || '???').toUpperCase();
-  const arr = (d.fields.arrIcao || '???').toUpperCase();
+
+  const titre = banner.querySelector('h2');
+  if(titre) titre.textContent = 'Vol en cours';
   const info = document.getElementById('draftBannerInfo');
   if(info){
-    info.textContent = `Saisie non enregistrée ${dep} → ${arr}, laissée le ${stamp}. `
-      + `Elle n'est pas dans les dossiers enregistrés : reprends-la, ou abandonne-la définitivement.`;
+    info.textContent = `${dep} → ${arr}, modifié le ${stamp}. `
+      + `Les saisies sont partagées entre toutes les pages du menu : `
+      + `ce que tu changes ici se retrouve partout.`
+      + (CURRENT_DOSSIER_ID ? '' : ' Ce vol n\u2019est pas encore enregistré dans tes dossiers.');
   }
   banner.style.display = '';
 
-  document.getElementById('draftResume').addEventListener('click', ()=>{
-    restoreFlight(d.fields);
-    WX_MANUAL.clear();
-    Object.keys(d.fields).forEach(id=>{
-      if(['temp','qnh','wind','tempArr','qnhArr','windArr','tempLdg','qnhLdg','windLdg'].includes(id)
-         && d.fields[id]) WX_MANUAL.add(id);
+  const btnOuvrir = document.getElementById('draftResume');
+  if(btnOuvrir){
+    btnOuvrir.textContent = 'Ouvrir le dossier';
+    btnOuvrir.addEventListener('click', ()=>{
+      // Sur une page qui affiche déjà le formulaire, on y descend ;
+      // depuis une page sans formulaire, on rejoint le dossier complet.
+      if(document.getElementById('pageFlight') && typeof goToPage === 'function'){
+        goToPage('pageFlight');
+      } else {
+        window.location.href = 'dossier.html';
+      }
     });
-    banner.style.display = 'none';
-    toggleArrivalRunway();
-    goToPage('pageFlight');
-  });
+  }
 
-  document.getElementById('draftDiscard').addEventListener('click', ()=>{
-    if(!confirm('Abandonner définitivement cette saisie non enregistrée ?')) return;
-    clearDraft();
-    banner.style.display = 'none';
-  });
+  const btnVider = document.getElementById('draftDiscard');
+  if(btnVider){
+    btnVider.textContent = 'Repartir de zéro';
+    btnVider.addEventListener('click', ()=>{
+      if(!confirm('Effacer le vol en cours sur toutes les pages ?\n\n'
+        + 'Les dossiers déjà enregistrés ne sont pas touchés.')) return;
+      clearDraft();
+      setCurrentDossier(null);
+      if(typeof newFlight === 'function') newFlight();
+      else window.location.reload();
+    });
+  }
 })();
 
 // ============ SAUVEGARDE COMPLÈTE & STOCKAGE ============
