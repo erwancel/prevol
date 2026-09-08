@@ -214,3 +214,28 @@ Si le formulaire est affichable, on y bascule ; sinon on écrit le brouillon et
 on rejoint `dossier.html`, l'état étant partagé. Utilisée par `openDossier`,
 `newFlight` et le bandeau « Ouvrir le dossier », qui faisaient tous la même
 erreur.
+
+## Correctif v36.1 — TypeError au chargement
+
+`app.js` accrochait 34 écouteurs au niveau racine sans vérifier l'existence de
+l'élément :
+
+    document.getElementById('rwyDepSel').addEventListener('change', …)
+
+Tant que toutes les pages contenaient le formulaire complet, cela passait.
+Depuis que le carnet de vol utilise la coquille commune sans embarquer les
+panneaux du dossier, `rwyDepSel` n'y existe plus : TypeError à la ligne 1291,
+**script interrompu au chargement**, donc menu, thème et carnet inertes.
+
+Corrigé par un helper `on(id, evt, fn)` qui ne branche que ce qui existe, et
+par le conditionnement des six appels d'initialisation du formulaire
+(`toggleArrivalRunway`, `refreshWindHints`, `syncAllSurfaceLocks`,
+`renderCartouche`, `refreshAlternateList`, `applyMetarEverywhere`) à la
+présence de `#pageFlight`. Un accès direct à `arrRunwayIcao` a également été
+protégé.
+
+Vérifié par simulation du chargement dans deux DOM : l'un vide (page sans
+formulaire), l'autre répondant à tout (page complète). Aucune erreur.
+
+Règle pour la suite : dans `app.js`, utiliser `on(...)` plutôt que
+`document.getElementById(...).addEventListener(...)`.

@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v36 · 2026.09.08';
+const APP_VERSION = 'v36.1 · 2026.09.08';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -897,7 +897,8 @@ function toggleArrivalRunway(){
     depHead.textContent = dep ? 'Départ — '+dep : 'Départ';
   }
   if(show){
-    document.getElementById('arrRunwayIcao').textContent = (str('arrIcao')||'').trim().toUpperCase();
+    const icaoLbl = document.getElementById('arrRunwayIcao');
+    if(icaoLbl) icaoLbl.textContent = (str('arrIcao')||'').trim().toUpperCase();
   }
   const sameWx = document.getElementById('sameFieldWxBlock');
   if(sameWx) sameWx.style.display = isLongSameField() ? 'block' : 'none';
@@ -971,7 +972,7 @@ function refreshAlternateList(){
   const el = document.getElementById(id);
   if(el) el.addEventListener('input', refreshAlternateList);
 });
-refreshAlternateList();
+if(document.getElementById('pageFlight')) refreshAlternateList();
 
 // ---- Initialisation : remplit le menu avion puis charge le premier ----
 (function initAircraft(){
@@ -989,7 +990,7 @@ refreshAlternateList();
   applyAircraft('');
 })();
 
-toggleArrivalRunway();
+if(document.getElementById('pageFlight')) toggleArrivalRunway();
 
 
 // ===================== COMPOSANTE DE VENT =====================
@@ -1287,20 +1288,34 @@ function refreshAirportStatus(){
   hint.textContent = parts.length ? parts.join('  ·  ') : "Saisis un code OACI pour gérer les pistes.";
 }
 
+
+// ---- Branchement tolérant ----
+// app.js est partagé par treize pages qui n'affichent pas toutes le même
+// balisage : le carnet de vol, par exemple, ne contient pas le formulaire.
+// Accrocher un écouteur sur un élément absent levait une TypeError qui
+// interrompait le script AU CHARGEMENT, et donc désactivait tout ce qui
+// suivait sur la page. On ne branche que ce qui existe.
+function on(id, evt, fn, opts){
+  const el = document.getElementById(id);
+  if(!el) return null;
+  el.addEventListener(evt, fn, opts);
+  return el;
+}
+
 // ---- Branchements ----
-document.getElementById('rwyDepSel').addEventListener('change', function(){
+on('rwyDepSel', 'change', function(){
   if(this.value === '__new__'){ this.value=''; openRwyEditor('dep',''); }
   else applyRunwayToFields('dep');
 });
-document.getElementById('rwyArrSel').addEventListener('change', function(){
+on('rwyArrSel', 'change', function(){
   if(this.value === '__new__'){ this.value=''; openRwyEditor('arr',''); }
   else applyRunwayToFields('arr');
 });
-document.getElementById('rwyLdgSel').addEventListener('change', function(){
+on('rwyLdgSel', 'change', function(){
   if(this.value === '__new__'){ this.value=''; openRwyEditor('dep',''); }
   else applyRunwayToFields('ldg');
 });
-document.getElementById('rwyLdgTxt').addEventListener('blur', ()=>applyRunwayToFields('ldg'));
+on('rwyLdgTxt', 'blur', ()=>applyRunwayToFields('ldg'));
 
 // Le détail du vent se recalcule à chaque frappe ou changement de piste
 ['wind','windArr','windLdg'].forEach(id=>{
@@ -1314,12 +1329,12 @@ document.getElementById('rwyLdgTxt').addEventListener('blur', ()=>applyRunwayToF
     el.addEventListener('blur',   ()=>{ refreshWindHints(); syncAllSurfaceLocks(); if(typeof applyMetarEverywhere==='function') applyMetarEverywhere(); });
   }
 });
-refreshWindHints();
-syncAllSurfaceLocks();
-document.getElementById('rwyDepTxt').addEventListener('blur', ()=>applyRunwayToFields('dep'));
-document.getElementById('rwyArrTxt').addEventListener('blur', ()=>applyRunwayToFields('arr'));
+if(document.getElementById('pageFlight')) refreshWindHints();
+if(document.getElementById('pageFlight')) syncAllSurfaceLocks();
+on('rwyDepTxt', 'blur', ()=>applyRunwayToFields('dep'));
+on('rwyArrTxt', 'blur', ()=>applyRunwayToFields('arr'));
 
-document.getElementById('rwyAddBtn').addEventListener('click', ()=>{
+on('rwyAddBtn', 'click', ()=>{
   // Propose d'abord un terrain pas encore en base, sinon le départ
   const dep = normIcao(str('depIcao')), arr = normIcao(str('arrIcao')), alt = normIcao(str('altn1'));
   let ctx = 'dep';
@@ -1332,18 +1347,18 @@ document.getElementById('rwyAddBtn').addEventListener('click', ()=>{
   openRwyEditor(ctx, cur);
 });
 
-document.getElementById('rwyEdCancel').addEventListener('click', ()=>{
+on('rwyEdCancel', 'click', ()=>{
   document.getElementById('rwyEditor').style.display = 'none';
 });
 
-document.getElementById('rwyEdIcaoSel').addEventListener('change', ()=>{
+on('rwyEdIcaoSel', 'change', ()=>{
   syncRwyEdIcaoTxt();
   loadRwyEditorFields(str('rwyEdDesig'));
 });
-document.getElementById('rwyEdIcaoTxt').addEventListener('blur', ()=>loadRwyEditorFields(str('rwyEdDesig')));
-document.getElementById('rwyEdDesig').addEventListener('blur', ()=>loadRwyEditorFields(str('rwyEdDesig')));
+on('rwyEdIcaoTxt', 'blur', ()=>loadRwyEditorFields(str('rwyEdDesig')));
+on('rwyEdDesig', 'blur', ()=>loadRwyEditorFields(str('rwyEdDesig')));
 
-document.getElementById('rwyEdSave').addEventListener('click', ()=>{
+on('rwyEdSave', 'click', ()=>{
   const icao = rwyEdIcao();
   const desig = normRwy(str('rwyEdDesig'));
   if(!icao){ setRwyMsg("Choisis un aérodrome (ou saisis son code OACI).", false); return; }
@@ -1383,7 +1398,7 @@ document.getElementById('rwyEdSave').addEventListener('click', ()=>{
 
 // ---- Sauvegarde / restauration de la base ----
 // Télécharge la base complète au format airports.json (à déposer sur le site)
-document.getElementById('apDownloadBtn').addEventListener('click', ()=>{
+on('apDownloadBtn', 'click', ()=>{
   const msg = document.getElementById('apImportMsg');
   try{
     const data = JSON.stringify(allAirports(), null, 2);
@@ -1401,7 +1416,7 @@ document.getElementById('apDownloadBtn').addEventListener('click', ()=>{
     msg.textContent = "Téléchargement impossible : copie le texte ci-dessus à la place.";
   }
 });
-document.getElementById('apImportBtn').addEventListener('click', ()=>{
+on('apImportBtn', 'click', ()=>{
   const msg = document.getElementById('apImportMsg');
   try{
     const parsed = JSON.parse(str('apExportText'));
@@ -1510,7 +1525,7 @@ function downloadText(filename, text, mime){
 }
 
 // ---- Boutons ----
-document.getElementById('apShareLinkBtn').addEventListener('click', ()=>{
+on('apShareLinkBtn', 'click', ()=>{
   const msg = document.getElementById('apImportMsg');
   const box = document.getElementById('apExportText');
   try{
@@ -1527,7 +1542,7 @@ document.getElementById('apShareLinkBtn').addEventListener('click', ()=>{
   }
 });
 
-document.getElementById('apRebuildBtn').addEventListener('click', async ()=>{
+on('apRebuildBtn', 'click', async ()=>{
   const msg = document.getElementById('apImportMsg');
   msg.className = 'rwyMsg'; msg.textContent = 'Génération du fichier…';
   try{
@@ -1650,12 +1665,12 @@ function acMsg(text, ok){
   m.className = 'rwyMsg ' + (ok?'ok':'bad'); m.textContent = text;
 }
 
-document.getElementById('acNewBtn').addEventListener('click', ()=>startWizard(null));
-document.getElementById('acCancelBtn').addEventListener('click', ()=>{
+on('acNewBtn', 'click', ()=>startWizard(null));
+on('acCancelBtn', 'click', ()=>{
   document.getElementById('acEditorCard').style.display = 'none';
 });
 
-document.getElementById('acSaveBtn').addEventListener('click', ()=>{
+on('acSaveBtn', 'click', ()=>{
   const key = (str('acfKey')||'').trim().toUpperCase();
   if(!key){ acMsg("Immatriculation obligatoire.", false); return; }
 
@@ -1704,13 +1719,13 @@ function refreshAircraftSelect(preferred){
 }
 
 // ---- Partage de la base avions ----
-document.getElementById('acShareBtn').addEventListener('click', ()=>{
+on('acShareBtn', 'click', ()=>{
   const z = document.getElementById('acShareZone');
   const show = z.style.display === 'none';
   z.style.display = show ? 'block' : 'none';
   if(show) document.getElementById('acShareText').value = JSON.stringify(AIRCRAFT_USER, null, 2);
 });
-document.getElementById('acImportBtn').addEventListener('click', ()=>{
+on('acImportBtn', 'click', ()=>{
   const m = document.getElementById('acShareMsg');
   try{
     const parsed = JSON.parse(str('acShareText'));
@@ -1720,7 +1735,7 @@ document.getElementById('acImportBtn').addEventListener('click', ()=>{
     renderAircraftList(); refreshAircraftSelect();
   }catch(e){ m.className='rwyMsg bad'; m.textContent = "Texte invalide."; }
 });
-document.getElementById('acLinkBtn').addEventListener('click', ()=>{
+on('acLinkBtn', 'click', ()=>{
   const m = document.getElementById('acShareMsg');
   try{
     const link = location.origin + location.pathname + '#ac=' + b64urlEncode(JSON.stringify(AIRCRAFT_USER));
@@ -2024,13 +2039,13 @@ function startWizard(editKey){
   document.getElementById('acWizardCard').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-document.getElementById('wizPrevBtn').addEventListener('click', ()=>{
+on('wizPrevBtn', 'click', ()=>{
   if(wizStep > 0){ wizStep--; renderWizard(); window.scrollTo({top:document.getElementById('acWizardCard').offsetTop-20, behavior:'smooth'}); }
 });
-document.getElementById('wizQuitBtn').addEventListener('click', ()=>{
+on('wizQuitBtn', 'click', ()=>{
   document.getElementById('acWizardCard').style.display = 'none';
 });
-document.getElementById('wizNextBtn').addEventListener('click', ()=>{
+on('wizNextBtn', 'click', ()=>{
   const err = wizValidate();
   if(err){ wizMsgSet(err, false); return; }
 
@@ -2152,15 +2167,15 @@ function openAirportEditor(icao){
   card.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-document.getElementById('apNewBtn').addEventListener('click', ()=>openAirportEditor(null));
-document.getElementById('apfCancelBtn').addEventListener('click', ()=>{
+on('apNewBtn', 'click', ()=>openAirportEditor(null));
+on('apfCancelBtn', 'click', ()=>{
   document.getElementById('apEditorCard').style.display='none';
 });
-document.getElementById('apfAddRwyBtn').addEventListener('click', ()=>{
+on('apfAddRwyBtn', 'click', ()=>{
   apfRows.push({desig:'', qfu:'', surface:'1', toda:'', asda:'', lda:''}); renderApfRows();
 });
 
-document.getElementById('apfSaveBtn').addEventListener('click', ()=>{
+on('apfSaveBtn', 'click', ()=>{
   const m = document.getElementById('apfSaveMsg');
   const icao = normIcao(str('apfIcao'));
   if(!icao || icao.length !== 4){ m.className='rwyMsg bad'; m.textContent="Code OACI à 4 lettres requis."; return; }
@@ -2407,7 +2422,7 @@ async function importVacPdf(file){
   }
 }
 
-document.getElementById('vacInput').addEventListener('change', e=>{
+on('vacInput', 'change', e=>{
   const f = e.target.files && e.target.files[0];
   importVacPdf(f);
   e.target.value = '';
@@ -2747,7 +2762,7 @@ if(dofCartouche){
     dofCartouche.value = new Date(now.getTime() - now.getTimezoneOffset()*60000).toISOString().slice(0,10);
   }
 }
-renderCartouche();
+if(document.getElementById('pageFlight')) renderCartouche();
 
 // Rose des vents : axe de piste et provenance du vent, lus d'un coup d'œil.
 // Un dessin remplace ici trois nombres qu'il fallait comparer mentalement.
@@ -2970,7 +2985,7 @@ function runCompute(scroll){
   }
 }
 
-document.getElementById('computeBtn').addEventListener('click', ()=>{ LM_REF = null; runCompute(true); });
+on('computeBtn', 'click', ()=>{ LM_REF = null; runCompute(true); });
 
 // ---------------- PDF GENERATION (via browser print → "Enregistrer en PDF") ----------------
 // No external library needed: this builds a printable report and opens the browser's
@@ -3373,7 +3388,7 @@ function buildPrintReport(fuel, mb, perf){
   return page1+page2+page3+wxDocPages()+page4+ntmDocPages()+page5+page6+page7+page8+page9+page10+freeDocPages();
 }
 
-document.getElementById('pdfBtn').addEventListener('click', ()=>{
+on('pdfBtn', 'click', ()=>{
   if(!LAST) return;
   const {fuel, mb, perf} = LAST;
   document.getElementById('printReport').innerHTML = buildPrintReport(fuel, mb, perf);
@@ -3394,11 +3409,11 @@ document.getElementById('pdfBtn').addEventListener('click', ()=>{
   document.getElementById('printReportWrap').scrollIntoView({behavior:'smooth', block:'start'});
 });
 
-document.getElementById('reportPrintBtn').addEventListener('click', ()=>{
+on('reportPrintBtn', 'click', ()=>{
   window.print();
 });
 
-document.getElementById('reportNewFlightBtn').addEventListener('click', ()=>{
+on('reportNewFlightBtn', 'click', ()=>{
   newFlight();
 });
 
@@ -3881,7 +3896,7 @@ function applyMetarEverywhere(){
 });
 
 // Report initial, une fois toutes les déclarations de ce bloc évaluées
-applyMetarEverywhere();
+if(document.getElementById('pageFlight')) applyMetarEverywhere();
 
 // ============ DOSSIER AEROWEB IMPORTÉ (TEMSI / WINTEM / SIGWX) ============
 // Les cartes de Météo-France ne sont pas récupérables automatiquement :
