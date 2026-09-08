@@ -1,4 +1,4 @@
-# PréVol — v30
+# PréVol — v30.1
 
 Application de préparation de vol (PWA). Hébergement : GitHub Pages.
 
@@ -38,3 +38,25 @@ ne gardait qu'`index.html` et la servait pour toutes les navigations : hors
 ligne, chaque page affichait le tableau de bord.
 
 Incrémenter `CACHE_VERSION` à chaque modification de `app.js` ou `app.css`.
+
+## Fonctions reconnectées (v30.1)
+
+La refonte visuelle avait supprimé des éléments que `app.js` cherchait encore.
+Croisement des 145 identifiants attendus par le script avec le balisage de
+chaque page : quatre manquaient partout, tous reconnectés.
+
+- `draftBanner` / `draftBannerInfo` / `draftResume` / `draftDiscard` — le
+  brouillon était toujours enregistré à chaque frappe, mais plus aucun bandeau
+  ne proposait de le reprendre : la saisie était donc perdue en silence.
+  Bandeau réinséré en tête du tableau de bord des douze pages.
+- `netDot` / `netStatusLabel` — état en ligne / hors ligne, replacé en pied de
+  menu avec le numéro de version.
+
+Corrigé également : la rose des vents pointait vers l'extérieur, indiquant la
+direction vers laquelle le vent souffle au lieu de sa provenance — une erreur
+de 180° sur la lecture du travers. La flèche part maintenant du bord et pointe
+vers le centre, et l'axe de piste porte son numéro.
+
+`a-propos.html` ne possède pas les cartes du tableau de bord (sauvegarde,
+stockage, thème, liste des dossiers). C'est volontaire, et sans effet : toutes
+les fonctions concernées vérifient la présence de leur élément avant d'agir.

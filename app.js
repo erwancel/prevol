@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = '2026.09.07-d';
+const APP_VERSION = 'v30 · 2026.09.08';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -2707,15 +2707,27 @@ renderCartouche();
 function svgWindRose(comp){
   if(!comp) return '';
   const qfu = comp.qfu, dir = comp.dir;
-  return `<svg viewBox="0 0 80 80" width="78" height="78" aria-hidden="true">
-    <circle cx="40" cy="40" r="31" fill="none" stroke="var(--accent-soft)" stroke-width="9" opacity="0.45"/>
-    <line x1="40" y1="12" x2="40" y2="68" stroke="var(--muted)" stroke-width="7"
-          transform="rotate(${qfu - 180} 40 40)"/>
-    <g transform="rotate(${dir} 40 40)">
-      <line x1="40" y1="40" x2="40" y2="9" stroke="var(--accent)" stroke-width="2.5"/>
-      <polygon points="40,6 36,15 44,15" fill="var(--accent)"/>
+  // Le vent est désigné par sa PROVENANCE : la flèche doit donc partir du
+  // bord, du côté d'où il souffle, et pointer vers le centre. La version
+  // précédente pointait vers l'extérieur, ce qui indiquait la direction
+  // opposée — soit une erreur de 180° sur la lecture du travers.
+  //
+  // Repères SVG : 0° = vers le haut, rotation dans le sens horaire, donc
+  // un cap en degrés se transpose directement en angle de rotation.
+  const rwyLabel = String(Math.round(qfu/10)).padStart(2,'0');
+  return `<svg viewBox="0 0 80 80" width="78" height="78" role="img"
+       aria-label="Vent du ${dir} degrés, piste au cap ${qfu} degrés">
+    <circle cx="40" cy="40" r="30" fill="none" stroke="var(--accent-soft)" stroke-width="8" opacity="0.4"/>
+    <g transform="rotate(${qfu} 40 40)">
+      <line x1="40" y1="14" x2="40" y2="66" stroke="var(--muted)" stroke-width="7"/>
+      <text x="40" y="72" text-anchor="middle" font-size="9"
+            fill="var(--muted)" transform="rotate(${-qfu} 40 66)">${rwyLabel}</text>
     </g>
-    <circle cx="40" cy="40" r="3" fill="var(--text)"/>
+    <g transform="rotate(${dir} 40 40)">
+      <line x1="40" y1="6" x2="40" y2="27" stroke="var(--accent)" stroke-width="2.5"/>
+      <polygon points="40,33 35.5,23 44.5,23" fill="var(--accent)"/>
+    </g>
+    <circle cx="40" cy="40" r="2.5" fill="var(--text)"/>
   </svg>`;
 }
 

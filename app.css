@@ -611,3 +611,13 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
      Le rendu ne dépend plus de l'immatriculation sélectionnée. */
   #fuelAircraftInfo{font-family:var(--disp);font-size:14px;font-weight:600;color:var(--muted);line-height:1.45;margin:0 0 10px 0 !important;}
   #fuelAircraftSelect{font-family:var(--disp);font-size:16px;font-weight:600;}
+
+/* ---- Pied du menu : état réseau et version ----
+   Réintroduits après la refonte, qui avait supprimé leurs éléments alors que
+   le script continuait de les chercher. Le point n'est visible que lorsqu'il
+   dit quelque chose : vert en ligne, rouge hors ligne. */
+.side-footer{display:flex;flex-direction:column;gap:3px;}
+.side-footer .net-status{display:flex;align-items:center;gap:6px;}
+.side-footer .net-status .dot{width:7px;height:7px;border-radius:50%;
+  background:var(--muted);display:inline-block;flex:0 0 auto;}
+#appVersionLine{opacity:.65;font-variant-numeric:tabular-nums;}
