@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v49.1 · 2026.09.09';
+const APP_VERSION = 'v49.2 · 2026.09.09';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -3255,7 +3255,7 @@ function buildPrintReport(fuel, mb, perf){
   const minimaBlock = (label, icao, rwy, wx) => `
         <tr><td class="lbl" rowspan="3">${label}</td><td class="val ctr" rowspan="3">${icao||''}</td>
             <td class="val ctr" rowspan="3">${rwy||''}</td>
-            <td class="fill"></td><td class="val" rowspan="3" style="font-size:6.5pt;font-family:monospace;line-height:1.35;word-break:break-word;">${wx||''}</td><td class="fill"></td></tr>
+            <td class="fill"></td><td class="val" rowspan="3" style="font-size:6pt;font-family:monospace;line-height:1.25;word-break:break-word;">${wx||''}</td><td class="fill"></td></tr>
         <tr><td class="fill"></td><td class="fill"></td></tr>
         <tr><td class="fill"></td><td class="fill"></td></tr>`;
 

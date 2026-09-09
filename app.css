@@ -389,10 +389,10 @@
   #printReport td.val{background:#fff;}
   #printReport th.ctr,#printReport td.ctr{text-align:center;}
   #printReport td.yn{color:#2d5b96;font-weight:bold;text-align:center;width:38px;}
-  #printReport td.fill{height:13px;background:#fff;}
+  #printReport td.fill{height:3.6mm;background:#fff;}
   /* Minima : lignes réduites pour tenir sur une seule page météo */
   #printReport .minimaTable{font-size:7.5pt;}
-  #printReport .minimaTable td.fill{height:22px;}
+  #printReport .minimaTable td.fill{height:6mm;}
   #printReport .minimaTable td,#printReport .minimaTable th{padding:1px 4px;}
   #printReport .minimaTable td.lbl,#printReport .minimaTable td.val{vertical-align:middle;}
   /* Carburant : lignes +15% */
@@ -400,7 +400,7 @@
   /* Masse & centrage : un peu plus aéré */
   #printReport .massTable td,#printReport .massTable th{padding:4px 6px;}
   /* Grande zone de saisie (menaces) */
-  #printReport td.bigbox{height:430px;background:#fff;vertical-align:top;}
+  #printReport td.bigbox{height:114mm;background:#fff;vertical-align:top;}
   /* Résultat conforme mis en évidence */
   #printReport td.okcell{background:#d9f0e1;font-weight:bold;}
   /* Page performances : en-tête compact pour libérer de la place,
@@ -429,7 +429,7 @@
   #printReport .statusline{font-size:10pt;font-weight:bold;margin:7px 0;}
   #printReport .statusline.ok{color:#1a7d43;}
   #printReport .statusline.bad{color:#b02a20;}
-  #printReport .freebox{border:1px solid #000;min-height:150px;padding:6px 8px;margin-bottom:8px;
+  #printReport .freebox{border:1px solid #000;min-height:40mm;padding:6px 8px;margin-bottom:8px;
     white-space:pre-wrap;background:#fff;}
 
   

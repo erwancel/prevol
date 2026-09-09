@@ -627,3 +627,22 @@ retrait, soit 186 mm utiles sur une A4.
 
 Le bloc d'impression a été replacé en fin de fichier : des règles ajoutées
 depuis la v43 s'étaient intercalées après lui.
+
+## v49.2 — Hauteurs de lignes du dossier imprimé
+
+Les blocs du tableau des minima n'avaient pas tous la même hauteur : ceux qui
+portaient un METAR étaient plus hauts que les blocs vides, et les lignes à
+remplir à la main ne s'alignaient plus.
+
+Même cause que les bordures de la v49.1 : les hauteurs étaient déclarées en
+pixels. Un pixel ne vaut rien de fixe à l'impression, et la hauteur d'une
+cellule n'est qu'un minimum — un contenu plus grand la dépasse.
+
+Converties en millimètres : 3,6 mm pour les lignes à remplir, 6 mm pour celles
+du tableau des minima, 114 mm pour le cadre des menaces, 40 mm pour l'encadré
+libre. La cellule METAR passe de 6,5 pt interligne 1,35 à 6 pt interligne 1,25 :
+cinq lignes occupent 13,2 mm, contre 18 mm disponibles dans le bloc. Le METAR
+ne peut donc plus faire grandir son bloc.
+
+Contrôle du balisage : les vingt-et-un tableaux du dossier ont un nombre de
+colonnes constant sur toutes leurs lignes, fusions comprises.
