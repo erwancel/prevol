@@ -1238,40 +1238,7 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 
 /* Les règles d'impression closent le fichier : elles doivent l'emporter
    sur toutes les couches de correctifs ajoutées au fil du temps. */
-@media print{
-    html,body{background:#fff !important;background-image:none !important;}
-    /* La bande de barre d'état est un artifice d'écran : jamais imprimée */
-    body::before{display:none !important;}
-    /* Structure actuelle : body > .wrap > .app-shell > (aside + main) >
-       (header + panneaux) > #printReportWrap. Masquer « .wrap > * » revenait
-       à masquer .app-shell, donc le dossier avec. On dégage donc les frères
-       à chaque niveau, en laissant passer la seule chaîne utile. */
-    .sidebar, header.top, .tabs, footer, .premium-footer,
-    #pageHome, #pageAircraft, #pageAirport,
-    .runbar, #results, #lastMinuteCard, #loadFixCard{display:none !important;}
-    .wrap, .app-shell, .main-content, .app-shell > main{
-      display:block !important; margin:0 !important; padding:0 !important;
-      max-width:none !important; width:auto !important; min-height:0 !important;
-      background:#fff !important; box-shadow:none !important;}
-    #pageFlight{display:block !important; max-width:none !important; padding:0 !important;}
-    #pageFlight > *:not(#printReportWrap){display:none !important;}
-    #printReportWrap{display:block !important;background:#fff !important;}
-    #printReportWrap .hint, #printReportWrap .btnrow{display:none !important;}
-    #printReport{position:static !important;max-width:none !important;width:auto !important;margin:0 !important;
-      transform:none !important;}
-    #printScaler{overflow:visible !important;height:auto !important;}
-    #printReport .page{box-shadow:none !important;border:none !important;border-radius:0 !important;margin-bottom:0 !important;
-      padding:12mm !important;box-sizing:border-box !important;width:auto !important;min-height:0 !important;overflow:visible !important;
-      page-break-after:always !important;break-after:page !important;}
-    #printReport .page:last-child{page-break-after:auto !important;break-after:auto !important;}
-    #printReport th,#printReport td,#printReport .fplTitle.boxed,#printReport .noteBox,#printReport .summaryTable td{
-      -webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
-    /* Marge nulle ici : avec des marges de page non nulles, Chrome et Firefox
-   impriment leur propre en-tête (titre du document) et leur pied de page
-   (URL, date, pagination). En la mettant à zéro et en reportant la marge
-   sur le contenu, ces mentions disparaissent dans la plupart des cas. */
-    @page{size:A4;margin:0;}
-  }
+
 
 /* ---- Carnet : ligne de séance simulateur ----
    Elle fusionne les colonnes qui ne la concernent pas. Un fond légèrement
@@ -1361,3 +1328,56 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 @media(max-width:760px){ .fuel-live-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
 /* La page Carburant a déjà son propre bloc de résultat : pas de doublon */
 body[data-view="fuel"] #dossierFuelResult{display:none;}
+
+/* Les règles d'impression closent le fichier : elles doivent l'emporter
+   sur toutes les couches ajoutées au fil du temps. */
+@media print{
+    html,body{background:#fff !important;background-image:none !important;}
+    /* La bande de barre d'état est un artifice d'écran : jamais imprimée */
+    body::before{display:none !important;}
+    /* Structure actuelle : body > .wrap > .app-shell > (aside + main) >
+       (header + panneaux) > #printReportWrap. Masquer « .wrap > * » revenait
+       à masquer .app-shell, donc le dossier avec. On dégage donc les frères
+       à chaque niveau, en laissant passer la seule chaîne utile. */
+    .sidebar, header.top, .tabs, footer, .premium-footer,
+    #pageHome, #pageAircraft, #pageAirport,
+    .runbar, #results, #lastMinuteCard, #loadFixCard{display:none !important;}
+    .wrap, .app-shell, .main-content, .app-shell > main{
+      display:block !important; margin:0 !important; padding:0 !important;
+      max-width:none !important; width:auto !important; min-height:0 !important;
+      background:#fff !important; box-shadow:none !important;}
+    #pageFlight{display:block !important; max-width:none !important; padding:0 !important;}
+    #pageFlight > *:not(#printReportWrap){display:none !important;}
+    #printReportWrap{display:block !important;background:#fff !important;}
+    #printReportWrap .hint, #printReportWrap .btnrow{display:none !important;}
+    #printReport{position:static !important;max-width:none !important;width:auto !important;margin:0 !important;
+      transform:none !important;}
+    #printScaler{overflow:visible !important;height:auto !important;}
+    #printReport .page{box-shadow:none !important;border:none !important;border-radius:0 !important;margin-bottom:0 !important;
+      padding:12mm !important;box-sizing:border-box !important;width:auto !important;min-height:0 !important;overflow:visible !important;
+      page-break-after:always !important;break-after:page !important;}
+    #printReport .page:last-child{page-break-after:auto !important;break-after:auto !important;}
+    #printReport th,#printReport td,#printReport .fplTitle.boxed,#printReport .noteBox,#printReport .summaryTable td{
+      -webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+    /* Marge nulle ici : avec des marges de page non nulles, Chrome et Firefox
+   impriment leur propre en-tête (titre du document) et leur pied de page
+   (URL, date, pagination). En la mettant à zéro et en reportant la marge
+   sur le contenu, ces mentions disparaissent dans la plupart des cas. */
+    @page{size:A4;margin:0;}
+  
+    /* Bordures des tableaux du dossier.
+       Elles étaient déclarées en 1px. À l'impression, un pixel vaut environ
+       0,26 mm : les traits VERTICAUX tombent alors sous le seuil de rendu de
+       certains moteurs PDF et disparaissent, tandis que les horizontaux
+       survivent en s'alignant sur une rangée de pixels. D'où des tableaux
+       sans montants ni cadre extérieur.
+       En millimètres, l'épaisseur ne dépend plus de la résolution. */
+    #printReport table{border:0.35mm solid #000 !important;
+      border-collapse:collapse !important;}
+    #printReport th, #printReport td{border:0.2mm solid #000 !important;}
+    #printReport .noteBox, #printReport .freebox,
+    #printReport .fplTitle.boxed{border:0.25mm solid #000 !important;}
+    /* Les aplats de titre doivent être imprimés, pas ignorés comme décor */
+    #printReport th, #printReport .fplTitle.boxed, #printReport .noteBox{
+      -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
+  }

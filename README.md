@@ -604,3 +604,26 @@ est sur un autre terrain ou une autre piste. Deux blocs désormais :
   le vent d'atterrissage s'il a été saisi séparément.
 
 Le dossier imprimé, lui, avait déjà ses deux sections.
+
+## v49.1 — Bordures de tableau à l'impression
+
+Les traits horizontaux des tableaux sortaient, les verticaux et le cadre
+extérieur non.
+
+Cause : les bordures étaient déclarées en `1px`. À l'impression, un pixel vaut
+environ 0,26 mm. Les traits verticaux tombent alors sous le seuil de rendu de
+certains moteurs PDF et disparaissent, tandis que les horizontaux survivent en
+s'alignant sur une rangée de pixels — d'où l'asymétrie observée.
+
+Les bordures du dossier sont désormais exprimées en millimètres, indépendantes
+de la résolution : 0,2 mm pour les cellules, 0,35 mm pour le cadre du tableau,
+0,25 mm pour les encadrés. `print-color-adjust:exact` est ajouté sur les
+en-têtes et encadrés pour que leurs aplats soient imprimés et non traités comme
+décor.
+
+Les marges ne sont pas en cause : `@page` reste à zéro — c'est ce qui évite
+l'en-tête et le pied de page du navigateur — et le contenu garde 12 mm de
+retrait, soit 186 mm utiles sur une A4.
+
+Le bloc d'impression a été replacé en fin de fichier : des règles ajoutées
+depuis la v43 s'étaient intercalées après lui.
