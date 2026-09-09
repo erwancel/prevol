@@ -184,118 +184,173 @@ function easaRows(){
     String(a.actualDeparture).localeCompare(String(b.actualDeparture))
   );
 }
+// ============ EXPORT EASA-FCL ============
+// Modèle : le carnet professionnel LogTen, qui suit la présentation
+// réglementaire. Une page est un double feuillet : la moitié gauche (A)
+// décrit le vol sur aéronef, la moitié droite (B) les conditions, les
+// fonctions et la colonne 11 « Synthetic training devices ».
+//
+// Point structurant : une séance de simulateur laisse la moitié GAUCHE
+// entièrement vide — ni date, ni terrains, ni aéronef — et n'apparaît que
+// dans la colonne 11. C'est ainsi que le carnet officiel les présente, et
+// c'est ce qui permet aux totaux de temps de vol de rester justes.
+
 function easaCell(v,cls=''){return`<td class="${cls}">${esc(safeText(v)||'')}</td>`}
+
+// Moitié gauche : colonnes 1 à 8 plus décollages et atterrissages (16 cases)
 function easaFlightA(f){
-  // Colonnes 1 à 10 du carnet EASA : elles décrivent un vol sur aéronef.
-  // Une séance de simulateur n'y figure pas — seule la date est reportée,
-  // pour que la ligne reste lisible en regard de la colonne 11.
   if(isSim(f)){
-    return `<tr class="simrow">
-      ${easaCell(easaDate(f.date),'date')}
-      <td class="route"></td><td class="route"></td>
-      <td class="aircraft"><div>SIMULATOR</div><span>${esc(f.sim?.type||'')}</span></td>
-      <td class="tiny"></td><td class="tiny"></td>
-      <td class="tiny"></td><td class="tiny"></td>
-      <td class="time"></td>
-      <td class="name"></td>
-      <td class="count"></td><td class="count"></td><td class="count"></td><td class="count"></td>
-    </tr>`;
+    // Séance : la ligne existe pour rester en regard de la colonne 11,
+    // mais aucune case du vol n'est renseignée.
+    return '<tr class="simrow">' + '<td></td>'.repeat(16) + '</tr>';
   }
   const total=f.times?.total||'';
-  const sp=f.pilotMode==='Single-Pilot'?total:'';
-  const mp=f.pilotMode==='Multi-Pilot'?total:'';
-  const se=f.engineClass==='SE'?total:'';
-  const me=f.engineClass==='ME'?total:'';
+  const multi=f.pilotMode==='Multi-Pilot';
   return `<tr>
     ${easaCell(easaDate(f.date),'date')}
-    <td class="route"><div>${esc(f.from||'')}</div><span>${esc(f.actualDeparture||'')}</span></td>
-    <td class="route"><div>${esc(f.to||'')}</div><span>${esc(f.actualArrival||'')}</span></td>
-    <td class="aircraft"><div>${esc(f.aircraftType||'')}</div><span>${esc(f.aircraftId||'')}</span></td>
-    <td class="tiny">${esc(se)}</td><td class="tiny">${esc(me)}</td>
-    <td class="tiny">${esc(sp)}</td><td class="tiny">${esc(mp)}</td>
-    <td class="time">${esc(total)}</td>
-    <td class="name">${esc(f.crew?.PIC||'')}</td>
-    <td class="count">${esc(f.operations?.dayTakeoffs||'')}</td>
-    <td class="count">${esc(f.operations?.nightTakeoffs||'')}</td>
-    <td class="count">${esc(f.operations?.dayLandings||'')}</td>
-    <td class="count">${esc(f.operations?.nightLandings||'')}</td>
+    ${easaCell(f.from,'place')}${easaCell(f.actualDeparture,'hour')}
+    ${easaCell(f.to,'place')}${easaCell(f.actualArrival,'hour')}
+    ${easaCell(f.aircraftType,'model')}${easaCell(f.aircraftId,'reg')}
+    ${easaCell(!multi && f.engineClass==='SE' ? total : '','time')}
+    ${easaCell(!multi && f.engineClass==='ME' ? total : '','time')}
+    ${easaCell(multi ? total : '','time')}
+    ${easaCell(total,'time')}
+    ${easaCell(f.crew?.PIC,'name')}
+    ${easaCell(f.operations?.dayTakeoffs||'','count')}
+    ${easaCell(f.operations?.nightTakeoffs||'','count')}
+    ${easaCell(f.operations?.dayLandings||'','count')}
+    ${easaCell(f.operations?.nightLandings||'','count')}
   </tr>`;
 }
+
+// Moitié droite : colonnes 9 à 12 (11 cases)
 function easaFlightB(f){
-  const sim = isSim(f) || tmin(f.times?.simulator)>0;
-  const funcPIC=!sim && tmin(f.times?.pic)>0;
-  const funcSIC=!sim && tmin(f.times?.sic)>0;
-  const dual=f.times?.dualReceived||'';
-  const instr=f.crew?.Instructor||'';
-  const p1us=f.times?.p1us||'';
-  const remark=f.notes||'';
-  return `<tr>
-    <td>${esc(f.times?.night||'')}</td>
-    <td>${esc(f.times?.ifr||'')}</td>
-    <td>${funcPIC?esc(f.times?.pic||f.times?.total||''):''}</td>
-    <td>${funcSIC?esc(f.times?.sic||''):''}</td>
-    <td>${esc(dual)}</td>
-    <td>${esc(instr)}</td>
-    <td>${esc(sim?easaDate(f.date):'')}</td>
-    <td>${esc(sim?(f.sim?.type||f.aircraftType||''):'')}</td>
-    <td>${esc(sim?simTotal(f):'')}</td>
-    <td>${esc(tmin(f.times?.pic)>0?(f.times?.pic||''):'')}</td>
-    <td>${esc(p1us)}</td>
-    <td class="remark">${esc(remark)}</td>
+  const sim=isSim(f);
+  return `<tr${sim?' class="simrow"':''}>
+    ${easaCell(sim?'':f.times?.night,'time')}
+    ${easaCell(sim?'':f.times?.ifr,'time')}
+    ${easaCell(sim?'':f.times?.pic,'time')}
+    ${easaCell(sim?'':f.times?.p1us,'time')}
+    ${easaCell(sim?'':f.times?.sic,'time')}
+    ${easaCell(sim?'':f.times?.dualReceived,'time')}
+    ${easaCell(sim?'':f.times?.dualGiven,'time')}
+    ${easaCell(sim?easaDate(f.date):'','date')}
+    ${easaCell(sim?(f.sim?.type||f.aircraftType||''):'','model')}
+    ${easaCell(sim?simTotal(f):'','time')}
+    ${easaCell(f.sim?.remark||f.notes||'','remark')}
   </tr>`;
 }
+
+// ---- Totaux ----
+// Chaque colonne chiffrée a sa propre règle : les temps de vol excluent les
+// séances, la colonne 11 ne compte qu'elles, les décollages et atterrissages
+// se comptent en unités.
+const EASA_TIME_COLS = {
+  se:      f=>(!isSim(f) && f.pilotMode!=='Multi-Pilot' && f.engineClass==='SE') ? f.times?.total : '',
+  me:      f=>(!isSim(f) && f.pilotMode!=='Multi-Pilot' && f.engineClass==='ME') ? f.times?.total : '',
+  multi:   f=>(!isSim(f) && f.pilotMode==='Multi-Pilot') ? f.times?.total : '',
+  total:   f=>isSim(f)?'':f.times?.total,
+  night:   f=>isSim(f)?'':f.times?.night,
+  ifr:     f=>isSim(f)?'':f.times?.ifr,
+  p1:      f=>isSim(f)?'':f.times?.pic,
+  p1us:    f=>isSim(f)?'':f.times?.p1us,
+  copilot: f=>isSim(f)?'':f.times?.sic,
+  dual:    f=>isSim(f)?'':f.times?.dualReceived,
+  instr:   f=>isSim(f)?'':f.times?.dualGiven,
+  session: f=>isSim(f)?simTotal(f):''
+};
+const EASA_COUNT_COLS = {
+  toDay:   f=>isSim(f)?0:(f.operations?.dayTakeoffs||0),
+  toNight: f=>isSim(f)?0:(f.operations?.nightTakeoffs||0),
+  ldgDay:  f=>isSim(f)?0:(f.operations?.dayLandings||0),
+  ldgNight:f=>isSim(f)?0:(f.operations?.nightLandings||0)
+};
+
+function easaSums(rows){
+  const out={};
+  for(const k in EASA_TIME_COLS) out[k]=rows.reduce((s,f)=>s+tmin(EASA_TIME_COLS[k](f)),0);
+  for(const k in EASA_COUNT_COLS) out[k]=rows.reduce((s,f)=>s+n(EASA_COUNT_COLS[k](f)),0);
+  return out;
+}
+function easaAdd(a,b){const o={};for(const k in a)o[k]=(a[k]||0)+(b[k]||0);return o}
+// Une case de total vide s'écrit « --- » dans le carnet officiel
+function tt(m){return m>0?fmt(m):'---'}
+function tc(v){return v>0?String(v):'---'}
+
+// Conservé pour la couverture et les statistiques
 function easaTotalTime(rows,key){
-  // Le total « simulator » additionne la durée des séances ; les autres
-  // totaux ne portent que sur les vols réels, séances exclues.
   if(key==='simulator') return fmt(rows.reduce((s,f)=>s+tmin(simTotal(f)),0));
   return fmt(rows.filter(f=>!isSim(f)).reduce((s,f)=>s+tmin(f.times?.[key]),0));
 }
-function easaPagePair(rows,pageNo,totalPrevious){
-  const a=rows.map(easaFlightA).join('');
-  const b=rows.map(easaFlightB).join('');
-  const pageTotal=easaTotalTime(rows,'total');
-  const pagePIC=easaTotalTime(rows,'pic');
-  const pageSIC=easaTotalTime(rows,'sic');
-  const pageNight=easaTotalTime(rows,'night');
-  const pageIFR=easaTotalTime(rows,'ifr');
-  const pageDual=easaTotalTime(rows,'dualReceived');
-  const prevTotal=totalPrevious?.total||'---';
-  const grandTotal=fmt(tmin(totalPrevious?.minutes||0)+rows.reduce((s,f)=>s+tmin(f.times?.total),0));
+
+function easaPagePair(rows,pageNo,prev,plage){
+  const page=easaSums(rows);
+  const cum=easaAdd(prev,page);
+  const lignesA=rows.map(easaFlightA).join('');
+  const lignesB=rows.map(easaFlightB).join('');
+
+  const totauxA=(lib,t)=>`<tr class="totals"><td colspan="7">${lib}</td>
+    <td>${tt(t.se)}</td><td>${tt(t.me)}</td><td>${tt(t.multi)}</td><td>${tt(t.total)}</td>
+    <td>---</td><td>${tc(t.toDay)}</td><td>${tc(t.toNight)}</td><td>${tc(t.ldgDay)}</td><td>${tc(t.ldgNight)}</td></tr>`;
+  const totauxB=(t,derniere)=>`<tr class="totals${derniere?' grand':''}">
+    <td>${tt(t.night)}</td><td>${tt(t.ifr)}</td><td>${tt(t.p1)}</td><td>${tt(t.p1us)}</td>
+    <td>${tt(t.copilot)}</td><td>${tt(t.dual)}</td><td>${tt(t.instr)}</td>
+    <td>---</td><td>---</td><td>${tt(t.session)}</td>
+    <td class="remark">${derniere?'<b>I certify that the entries in this log are true.</b><br><br>________________________________<br>PILOT\u2019S SIGNATURE':''}</td></tr>`;
+
   return `
   <section class="easa-sheet">
-    <div class="sheet-head">PAGE ${pageNo}A <span>REPORT: ${esc(easaDate(rows[0]?.date)||'')} - ${esc(easaDate(rows[rows.length-1]?.date)||'')}</span></div>
     <table class="sheet-table table-a">
-      <thead><tr>
-        <th>DATE<br><small>(dd/mm/yy)</small></th>
-        <th colspan="2">DEPARTURE / ARRIVAL<br><small>PLACE &nbsp;&nbsp;&nbsp; TIME</small></th>
-        <th colspan="4">AIRCRAFT<br><small>MAKE, MODEL, VARIANT / REGISTRATION / SE / ME</small></th>
-        <th colspan="2">SINGLE-PILOT / MULTI-PILOT</th>
-        <th>TIME<br>OF FLIGHT</th>
-        <th>NAME PIC</th>
-        <th colspan="4">TAKEOFFS / LANDINGS<br><small>DAY / NIGHT</small></th>
-      </tr></thead>
-      <tbody>${a}</tbody>
-      <tfoot><tr class="totals"><td colspan="8">TOTAL THIS PAGE</td><td>${esc(pageTotal)}</td><td>---</td><td colspan="4">${esc(pageTotal)}</td></tr>
-      <tr class="totals"><td colspan="8">TOTAL FROM PREVIOUS PAGES</td><td>${esc(prevTotal)}</td><td>---</td><td colspan="4">---</td></tr>
-      <tr class="totals grand"><td colspan="8">TOTAL TIME</td><td>${esc(grandTotal)}</td><td>---</td><td colspan="4">---</td></tr></tfoot>
+      <colgroup><col class="c-date"><col class="c-place"><col class="c-hour"><col class="c-place"><col class="c-hour"><col class="c-model"><col class="c-reg"><col class="c-t"><col class="c-t"><col class="c-t"><col class="c-t"><col class="c-name"><col class="c-n"><col class="c-n"><col class="c-n"><col class="c-n"></colgroup>
+      <thead>
+        <tr class="grp"><th>1</th><th colspan="2">2</th><th colspan="2">3</th><th colspan="2">4</th><th colspan="2">5</th><th>6</th><th>7</th><th>8</th><th colspan="2">&nbsp;</th><th colspan="2">&nbsp;</th></tr>
+        <tr><th rowspan="2">DATE<br><small>(dd/mm/yy)</small></th>
+            <th colspan="2">DEPARTURE</th><th colspan="2">ARRIVAL</th>
+            <th colspan="2">AIRCRAFT</th>
+            <th colspan="2">SINGLE-PILOT</th>
+            <th rowspan="2">MULTI-<br>PILOT</th>
+            <th rowspan="2">TOTAL<br>TIME OF<br>FLIGHT</th>
+            <th rowspan="2">NAME PIC</th>
+            <th colspan="2">TAKEOFFS</th><th colspan="2">LANDINGS</th></tr>
+        <tr><th>PLACE</th><th>TIME</th><th>PLACE</th><th>TIME</th>
+            <th>MAKE, MODEL,<br>VARIANT</th><th>REGISTRATION</th>
+            <th>SE</th><th>ME</th>
+            <th>DAY</th><th>NIGHT</th><th>DAY</th><th>NIGHT</th></tr>
+      </thead>
+      <tbody>${lignesA}</tbody>
+      <tfoot>
+        ${totauxA('TOTAL THIS PAGE',page)}
+        ${totauxA('TOTAL FROM PREVIOUS PAGES',prev)}
+        ${totauxA('TOTAL TIME',cum)}
+      </tfoot>
     </table>
+    <div class="sheet-foot">PAGE ${pageNo}A <span>( REPORT: ${esc(plage)} )</span></div>
   </section>
 
   <section class="easa-sheet">
-    <div class="sheet-head">PAGE ${pageNo}B <span>REPORT: ${esc(easaDate(rows[0]?.date)||'')} - ${esc(easaDate(rows[rows.length-1]?.date)||'')}</span></div>
     <table class="sheet-table table-b">
-      <thead><tr>
-        <th colspan="2">OPERATIONAL CONDITION TIME<br><small>NIGHT / IFR</small></th>
-        <th colspan="4">PILOT FUNCTION TIME<br><small>PILOT-IN-COMMAND / CO-PILOT / DUAL / INSTRUCTOR</small></th>
-        <th colspan="3">SYNTHETIC TRAINING DEVICES<br><small>DATE / TYPE / TOTAL TIME OF SESSION</small></th>
-        <th>P1</th><th>P1 u/s</th><th>REMARKS AND ENDORSEMENTS</th>
-      </tr></thead>
-      <tbody>${b}</tbody>
-      <tfoot><tr class="totals"><td colspan="2">${esc(pageNight)} / ${esc(pageIFR)}</td><td>${esc(pagePIC)}</td><td>${esc(pageSIC)}</td><td>${esc(pageDual)}</td><td>---</td><td colspan="3">---</td><td>---</td><td>---</td><td class="remark">I certify that the entries in this log are true.<br><br>______________________________<br>PILOT'S SIGNATURE</td></tr>
-      <tr class="totals grand"><td colspan="2">${esc(easaTotalTime(easaRows(),'night'))} / ${esc(easaTotalTime(easaRows(),'ifr'))}</td><td>${esc(easaTotalTime(easaRows(),'pic'))}</td><td>${esc(easaTotalTime(easaRows(),'sic'))}</td><td>${esc(easaTotalTime(easaRows(),'dualReceived'))}</td><td>---</td><td colspan="3">${esc(easaTotalTime(easaRows(),'simulator'))}</td><td>---</td><td>---</td><td></td></tr></tfoot>
+      <colgroup><col class="c-t"><col class="c-t"><col class="c-t"><col class="c-t"><col class="c-t"><col class="c-t"><col class="c-t"><col class="c-date"><col class="c-model"><col class="c-t"><col class="c-remark"></colgroup>
+      <thead>
+        <tr class="grp"><th colspan="2">9</th><th colspan="5">10</th><th colspan="3">11</th><th>12</th></tr>
+        <tr><th colspan="2">OPERATIONAL<br>CONDITION TIME</th>
+            <th colspan="5">PILOT FUNCTION TIME</th>
+            <th colspan="3">SYNTHETIC TRAINING<br>DEVICES SESSION</th>
+            <th rowspan="2">REMARKS AND<br>ENDORSEMENTS</th></tr>
+        <tr><th>NIGHT</th><th>IFR</th>
+            <th>P1</th><th>P1 u/s</th><th>CO-PILOT</th><th>DUAL</th><th>INSTRUCTOR</th>
+            <th>DATE<br><small>(dd/mm/yy)</small></th><th>TYPE</th><th>TOTAL TIME<br>OF SESSION</th></tr>
+      </thead>
+      <tbody>${lignesB}</tbody>
+      <tfoot>
+        ${totauxB(page,false)}
+        ${totauxB(prev,false)}
+        ${totauxB(cum,true)}
+      </tfoot>
     </table>
+    <div class="sheet-foot">( REPORT: ${esc(plage)} ) <span>PAGE ${pageNo}B</span></div>
   </section>`;
 }
+
 function exportEASA(){
   const rows=easaRows();
   if(!rows.length){toast('Aucun vol à exporter.');return}
@@ -310,10 +365,13 @@ function exportEASA(){
   const dual=easaTotalTime(rows,'dualReceived');
   const sim=easaTotalTime(rows,'simulator');
   let sheets='';
-  let cumulativeMinutes=0;
+  // Les totaux se reportent de page en page, comme dans un carnet papier :
+  // chaque feuillet affiche son total, celui des pages précédentes, et la somme.
+  const plage=from+' - '+to;
+  let cumul={};
   chunks.forEach((chunk,i)=>{
-    sheets+=easaPagePair(chunk,i+1,{total:fmt(cumulativeMinutes),minutes:cumulativeMinutes});
-    cumulativeMinutes+=chunk.reduce((s,f)=>s+tmin(f.times?.total),0);
+    sheets+=easaPagePair(chunk,i+1,cumul,plage);
+    cumul=easaAdd(cumul,easaSums(chunk));
   });
   const cover=`<section class="cover">
     <div class="cover-logo">PréVol</div>
@@ -347,26 +405,35 @@ function exportEASA(){
   .cover-stats div{border:1px solid #222;padding:4mm 2mm}
   .cover-stats b{display:block;font-size:15px}.cover-stats span{display:block;margin-top:1mm;font-size:7px}
   .easa-sheet{page-break-after:always;break-after:page;position:relative}
-  .sheet-head{font-size:6px;color:#555;margin:0 0 2mm 1mm;text-transform:uppercase}
-  .sheet-head span{float:right}
+  /* Le numéro de page figure SOUS le tableau, comme dans le carnet officiel */
+  .sheet-foot{font-size:6.5px;margin:1.5mm 0 0;display:flex;justify-content:space-between}
   table{border-collapse:collapse;width:100%;table-layout:fixed}
   .sheet-table{border:1px solid #111}
-  th,td{border:1px solid #111;padding:1.1mm .9mm;vertical-align:middle;text-align:center;height:6.4mm;line-height:1.05}
-  th{font-size:6px;font-weight:700;background:#f7f7f7}
-  th small{font-size:4.5px;font-weight:400}
-  td{font-size:6.5px}
-  .table-a th:nth-child(1){width:7%}.table-a th:nth-child(2),.table-a th:nth-child(3){width:9%}
-  .table-a th:nth-child(4){width:14%}.table-a th:nth-child(5),.table-a th:nth-child(6),.table-a th:nth-child(7),.table-a th:nth-child(8){width:4%}
-  .table-a th:nth-child(9){width:5%}.table-a th:nth-child(10){width:10%}
-  .table-a th:nth-child(11),.table-a th:nth-child(12),.table-a th:nth-child(13),.table-a th:nth-child(14){width:3.5%}
-  .route span,.aircraft span{display:block;font-size:5px;color:#444}
-  .name{text-align:left;padding-left:1.4mm}.remark{text-align:left;padding-left:1.4mm}
-  .count,.tiny{font-variant-numeric:tabular-nums}
-  tfoot .totals td{font-weight:700;background:#f4f4f4}
+  th,td{border:1px solid #111;padding:.8mm .6mm;vertical-align:middle;text-align:center;
+    height:5.9mm;line-height:1.05;overflow:hidden}
+  th{font-size:5.6px;font-weight:700;background:#fff}
+  th small{font-size:4.4px;font-weight:400}
+  td{font-size:6.4px}
+  /* Bandeau des numéros de rubrique EASA (1 à 12) */
+  .grp th{height:3.4mm;font-size:6px;font-weight:600;border-bottom:1px solid #111}
+
+  /* Moitié gauche, 16 colonnes */
+  .table-a col.c-date{width:6.4%} .table-a col.c-place{width:5.4%} .table-a col.c-hour{width:5%}
+  .table-a col.c-model{width:9%} .table-a col.c-reg{width:8%} .table-a col.c-t{width:5.4%}
+  .table-a col.c-name{width:13%} .table-a col.c-n{width:3.1%}
+  /* Moitié droite, 11 colonnes */
+  .table-b col.c-t{width:5.6%} .table-b col.c-date{width:6.6%}
+  .table-b col.c-model{width:9%} .table-b col.c-remark{width:29%}
+
+  .name{text-align:left;padding-left:1.2mm;font-size:6px}
+  .remark{text-align:left;padding-left:1.2mm;font-size:5.8px}
+  .count,.time,.hour,.date{font-variant-numeric:tabular-nums}
+  /* Une séance laisse la moitié gauche vide : on garde la hauteur de ligne */
+  .simrow td{height:5.9mm}
+  tfoot .totals td{font-weight:700;background:#fff}
   tfoot .grand td{font-weight:800}
-  .table-b th{height:10mm}
-  .table-b td{height:6.4mm}
-  .table-b tfoot td{height:10mm}
+  tfoot .totals td:first-child{text-align:left;padding-left:1.4mm}
+  .table-b tfoot .totals td:first-child{text-align:center;padding-left:0}
   @media print{.easa-sheet{break-inside:avoid}}
   </style></head><body>${cover}${sheets}<script>window.onload=()=>setTimeout(()=>window.print(),350);<\/script></body></html>`);
   w.document.close();
