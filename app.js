@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v45 · 2026.09.08';
+const APP_VERSION = 'v46 · 2026.09.09';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -5081,6 +5081,22 @@ function renderHomeWeather(rec){
   homeWxSet('homeWxState',age&&age.stale?'METAR ancien':'Bulletin disponible');
   homeWxSet('homeWxWind',wind); homeWxSet('homeWxVis',homeWxVisibility(rec.metar)); homeWxSet('homeWxQnh',qnh); homeWxSet('homeWxTemp',temp);
   homeWxSet('homeWxObserved',obs!=null?'Observation '+age.txt:'METAR reçu');
+
+  // Prévision : affichée brute, découpée à chaque groupe de changement
+  // (BECMG, TEMPO, FM, PROB) pour rester lisible sans être réécrite.
+  const tafBox=document.getElementById('homeWxTaf');
+  if(tafBox){
+    if(rec.taf){
+      const brut=String(rec.taf).replace(/\s+/g,' ').trim();
+      const lignes=brut.split(/\s(?=(?:BECMG|TEMPO|FM\d{6}|PROB\d{2}|TAF)\b)/);
+      tafBox.innerHTML = '<div class="taf-title">Prévision TAF</div>'
+        + lignes.map((l,i)=>`<div class="taf-line${i?'':' first'}">${l.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</div>`).join('');
+      tafBox.style.display='';
+    } else {
+      tafBox.innerHTML='<div class="taf-title">Prévision TAF</div><div class="taf-line">Non disponible.</div>';
+      tafBox.style.display='';
+    }
+  }
   const icon=document.getElementById('homeWxIcon');
   if(icon){ icon.textContent=homeWxWeatherIcon(rec.metar); icon.classList.toggle('stale',!!(age&&age.stale)); icon.classList.add('live'); }
 }
@@ -5091,10 +5107,19 @@ async function fetchHomeLFRS(){
   loadHomeWeatherCache();
   if(!navigator.onLine) return;
   try{
+    // Le TAF n'était pas demandé (taf=false), d'où son absence à l'accueil.
+    // Deux appels : l'observation et la prévision, la seconde étant facultative
+    // — une prévision manquante ne doit pas priver de l'observation.
     const rows=await awcFetch('ids=LFRS&taf=false');
     const rec=rows.find(r=>String(r.icaoId||'').toUpperCase()==='LFRS')||rows[0];
     if(!rec||!rec.rawOb) throw new Error('METAR LFRS indisponible');
-    const payload={fetchedAt:new Date().toISOString(),rec:{icao:'LFRS',name:rec.name||'Nantes Atlantique',metar:rec.rawOb}};
+    let taf='';
+    try{
+      const tafs=await awcFetch('ids=LFRS&taf=true');
+      const t=tafs.find(r=>String(r.icaoId||'').toUpperCase()==='LFRS')||tafs[0];
+      taf=(t&&(t.rawTAF||t.rawOb))||'';
+    }catch(e){ /* prévision indisponible : on garde l'observation */ }
+    const payload={fetchedAt:new Date().toISOString(),rec:{icao:'LFRS',name:rec.name||'Nantes Atlantique',metar:rec.rawOb,taf}};
     try{localStorage.setItem(HOME_WX_KEY,JSON.stringify(payload));}catch(e){}
     renderHomeWeather(payload.rec);
   }catch(e){ loadHomeWeatherCache(); }
@@ -5105,6 +5130,131 @@ async function fetchHomeLFRS(){
   setInterval(fetchHomeLFRS,HOME_WX_REFRESH_MS);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible') fetchHomeLFRS();});
   window.addEventListener('online',fetchHomeLFRS);
+})();
+
+
+// ============ GRAPHIQUES D'EXPÉRIENCE (tableau de bord) ============
+// Alimentés par le carnet de vol, qui vit sous sa propre clé. Le tableau de
+// bord ne fait que lire : aucune écriture, aucun risque pour le carnet.
+// Tout est dessiné en HTML et CSS — pas de bibliothèque à charger, et le
+// rendu suit le thème clair ou sombre sans traitement particulier.
+
+const LOGBOOK_KEY = 'prevol.logbook.v2';
+
+function lireCarnet(){
+  try{ const v=JSON.parse(localStorage.getItem(LOGBOOK_KEY)||'[]'); return Array.isArray(v)?v:[]; }
+  catch(e){ return []; }
+}
+
+// « 1:30 » ou « 1,5 » -> minutes. Le carnet accepte les deux écritures.
+function minutesDe(v){
+  const t=String(v==null?'':v).trim();
+  if(!t) return 0;
+  if(t.includes(':')){
+    const [h,m]=t.split(':');
+    return (parseInt(h,10)||0)*60 + (parseInt(m,10)||0);
+  }
+  const d=parseFloat(t.replace(',','.'));
+  return isNaN(d)?0:Math.round(d*60);
+}
+function hDe(min){ return (min/60); }
+function libelleHeures(min){
+  const h=Math.floor(min/60), m=min%60;
+  return h+' h'+(m?' '+String(m).padStart(2,'0'):'');
+}
+
+// Une séance de simulateur n'est pas du temps de vol : même règle que dans
+// le carnet, sinon les deux écrans afficheraient des totaux différents.
+function estSeance(f){
+  if(String(f?.entryType||'').toLowerCase()==='simulator') return true;
+  return minutesDe(f?.times?.simulator)>0 && minutesDe(f?.times?.total)===0;
+}
+
+function renderHoursCharts(){
+  const carte=document.getElementById('hoursCard');
+  if(!carte) return;
+  const vols=lireCarnet().filter(f=>!estSeance(f) && minutesDe(f?.times?.total)>0);
+  const vide=document.getElementById('hoursEmpty');
+
+  if(!vols.length){
+    if(vide) vide.style.display='';
+    ['hoursFigures','hoursBars','hoursAxis','hoursByType'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.innerHTML='';
+    });
+    const s=document.getElementById('hoursScale'); if(s) s.textContent='';
+    return;
+  }
+  if(vide) vide.style.display='none';
+
+  const totalMin=vols.reduce((a,f)=>a+minutesDe(f.times?.total),0);
+  const picMin  =vols.reduce((a,f)=>a+minutesDe(f.times?.pic),0);
+  const nuitMin =vols.reduce((a,f)=>a+minutesDe(f.times?.night),0);
+  const seances =lireCarnet().filter(estSeance);
+  const simMin  =seances.reduce((a,f)=>a+minutesDe(f.sim?.total||f.times?.simulator),0);
+
+  // ---- Chiffres clés ----
+  const douzeMois=new Date(); douzeMois.setMonth(douzeMois.getMonth()-12);
+  const recentMin=vols.filter(f=>new Date(f.date)>=douzeMois)
+                      .reduce((a,f)=>a+minutesDe(f.times?.total),0);
+  const fig=document.getElementById('hoursFigures');
+  if(fig) fig.innerHTML=[
+    ['Total',        libelleHeures(totalMin), vols.length+' vols'],
+    ['12 derniers mois', libelleHeures(recentMin), 'expérience récente'],
+    ['Commandant',   libelleHeures(picMin),   totalMin?Math.round(picMin/totalMin*100)+' % du total':''],
+    ['Nuit',         libelleHeures(nuitMin),  simMin?('simulateur '+libelleHeures(simMin)):'']
+  ].map(([k,v,sub])=>`<div class="fig"><span class="fig-k">${k}</span><b>${v}</b><small>${sub}</small></div>`).join('');
+
+  // ---- Heures par mois, 12 derniers mois ----
+  const mois=[]; const now=new Date();
+  for(let i=11;i>=0;i--){
+    const d=new Date(now.getFullYear(), now.getMonth()-i, 1);
+    mois.push({cle:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'), d, min:0});
+  }
+  const index=Object.fromEntries(mois.map(m=>[m.cle,m]));
+  vols.forEach(f=>{
+    const d=new Date(f.date);
+    if(isNaN(d)) return;
+    const cle=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    if(index[cle]) index[cle].min+=minutesDe(f.times?.total);
+  });
+  const max=Math.max(1,...mois.map(m=>m.min));
+  const barres=document.getElementById('hoursBars');
+  if(barres) barres.innerHTML=mois.map(m=>{
+    const h=Math.round(m.min/max*100);
+    return `<div class="bar-slot" title="${m.d.toLocaleDateString('fr-FR',{month:'long',year:'numeric'})} — ${libelleHeures(m.min)}">`
+      + `<div class="bar" style="height:${Math.max(h,m.min?3:0)}%"></div></div>`;
+  }).join('');
+  const axe=document.getElementById('hoursAxis');
+  if(axe) axe.innerHTML=mois.map((m,i)=>
+    `<span>${(i%2===0||i===11)?m.d.toLocaleDateString('fr-FR',{month:'narrow'}):''}</span>`).join('');
+  const ech=document.getElementById('hoursScale');
+  if(ech) ech.textContent='max '+libelleHeures(max);
+
+  // ---- Répartition par type d'appareil ----
+  const parType={};
+  vols.forEach(f=>{
+    const t=(f.aircraftType||'Autre').trim()||'Autre';
+    parType[t]=(parType[t]||0)+minutesDe(f.times?.total);
+  });
+  const classe=Object.entries(parType).sort((a,b)=>b[1]-a[1]);
+  const top=classe.slice(0,5);
+  const reste=classe.slice(5).reduce((a,x)=>a+x[1],0);
+  if(reste) top.push(['Autres',reste]);
+  const split=document.getElementById('hoursByType');
+  if(split) split.innerHTML=top.map(([t,m],i)=>{
+    const pct=totalMin?Math.round(m/totalMin*100):0;
+    return `<div class="split-row">
+      <span class="split-name">${String(t).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</span>
+      <span class="split-bar"><i style="width:${pct}%;opacity:${1-i*0.13}"></i></span>
+      <span class="split-val">${libelleHeures(m)}</span>
+    </div>`;
+  }).join('');
+}
+
+(function initHoursCharts(){
+  if(!document.getElementById('hoursCard')) return;
+  const run=()=>renderHoursCharts();
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run,{once:true}); else run();
 })();
 
 // ============ BROUILLON AUTOMATIQUE ============

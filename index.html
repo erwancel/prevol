@@ -109,10 +109,22 @@
 <button class="quick-card" id="homeAirport" data-page="pageAirport" type="button"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 20V9h8v11"/><path d="M6 20h12"/><path d="M9.5 9V5h5v4"/><path d="M7 5h10"/><path d="M10.2 12h1.2M12.6 12h1.2M10.2 15h1.2M12.6 15h1.2"/><path d="M12 5V2.5"/></svg></span><b>Aérodromes</b><small>Fiches et pistes</small></button>
 </section>
 <section class="dashboard-grid">
-<div class="card dashboard-card recent-card" id="recentDossiers">
-<div class="dash-head"><div><span class="eyebrow">HISTORIQUE</span><h2>Ma préparation</h2></div><button class="text-link" onclick="window.location.href='dossiers.html'" type="button">Tout voir  →</button></div>
-<div class="rwyMsg" id="dossierMsg"></div>
-<div id="dossierList"></div>
+<div class="card dashboard-card chart-card" id="hoursCard">
+<div class="dash-head">
+<div><span class="eyebrow">EXPÉRIENCE</span><h2>Mes heures de vol</h2></div>
+<a class="icon-link" href="carnet-de-vol.html">↗</a>
+</div>
+<div class="chart-figures" id="hoursFigures"></div>
+<div class="chart-block">
+<div class="chart-legend"><span>Heures par mois</span><span id="hoursScale"></span></div>
+<div class="chart-bars" id="hoursBars"></div>
+<div class="chart-axis" id="hoursAxis"></div>
+</div>
+<div class="chart-block">
+<div class="chart-legend"><span>Répartition par type</span></div>
+<div class="chart-split" id="hoursByType"></div>
+</div>
+<div class="smallhint" id="hoursEmpty" style="display:none">Aucun vol dans le carnet. Importe ton LogTen depuis la page Carnet de vol.</div>
 </div>
 <div class="card dashboard-card quick-tools-card">
 <div class="dash-head"><div><span class="eyebrow">OUTILS</span><h2>Accès rapides</h2></div></div>
@@ -126,7 +138,8 @@
 </div>
 </div>
 <div class="dashboard-side">
-<div class="card weather-preview"><div class="dash-head"><div><span class="eyebrow">APERÇU</span><h2>Météo</h2></div><a class="icon-link" href="meteo.html">↗</a></div><div class="weather-placeholder"><div class="weather-sun" id="homeWxIcon">☼</div><div><span>Conditions actuelles · LFRS</span><strong id="homeWxState">Chargement…</strong><small id="homeWxObserved" style="display:block;margin-top:6px;color:#8a96a4;font-size:10px;"></small></div></div><div class="weather-stats"><span>Vent<strong id="homeWxWind">—</strong></span><span>Visibilité<strong id="homeWxVis">—</strong></span><span>QNH<strong id="homeWxQnh">—</strong></span><span>Temp.<strong id="homeWxTemp">—</strong></span></div></div>
+<div class="card weather-preview"><div class="dash-head"><div><span class="eyebrow">APERÇU</span><h2>Météo</h2></div><a class="icon-link" href="meteo.html">↗</a></div><div class="weather-placeholder"><div class="weather-sun" id="homeWxIcon">☼</div><div><span>Conditions actuelles · LFRS</span><strong id="homeWxState">Chargement…</strong><small id="homeWxObserved" style="display:block;margin-top:6px;color:#8a96a4;font-size:10px;"></small></div></div><div class="weather-stats"><span>Vent<strong id="homeWxWind">—</strong></span><span>Visibilité<strong id="homeWxVis">—</strong></span><span>QNH<strong id="homeWxQnh">—</strong></span><span>Temp.<strong id="homeWxTemp">—</strong></span></div>
+<div class="weather-taf" id="homeWxTaf" style="display:none"></div></div>
 </div>
 </section>
 <section class="card storage-card">

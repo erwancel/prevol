@@ -1282,3 +1282,52 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 @supports not (background: color-mix(in srgb, red 6%, transparent)){
   .carnet-page .sim-row{background:rgba(31,78,121,.06);}
 }
+
+/* ============================================================
+   TABLEAU DE BORD — graphiques d'expérience
+   Dessinés en HTML/CSS, sans bibliothèque : le rendu suit donc
+   le thème clair ou sombre sans traitement particulier, et rien
+   n'est à charger au démarrage.
+   ============================================================ */
+.chart-card .chart-figures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;margin:4px 0 18px;}
+.chart-card .fig{border:1px solid var(--line);border-radius:3px;padding:10px 12px;background:var(--panel);}
+.chart-card .fig-k{display:block;font-size:11.5px;color:var(--muted);letter-spacing:.02em;}
+.chart-card .fig b{display:block;font-family:var(--disp);font-size:23px;font-weight:700;
+  line-height:1.1;margin-top:2px;font-variant-numeric:tabular-nums;}
+.chart-card .fig small{display:block;font-size:11px;color:var(--muted);margin-top:1px;}
+
+.chart-card .chart-block{margin-top:16px;}
+.chart-card .chart-legend{display:flex;justify-content:space-between;align-items:baseline;
+  font-size:12px;color:var(--muted);margin-bottom:7px;}
+
+/* Histogramme : douze colonnes de hauteur proportionnelle */
+.chart-card .chart-bars{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));
+  gap:5px;align-items:end;height:104px;border-bottom:1px solid var(--line);}
+.chart-card .bar-slot{height:100%;display:flex;align-items:flex-end;}
+.chart-card .bar{width:100%;background:var(--accent);border-radius:2px 2px 0 0;
+  min-height:0;transition:height .25s ease;}
+.chart-card .chart-axis{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));
+  gap:5px;margin-top:5px;font-size:10.5px;color:var(--muted);text-align:center;
+  text-transform:uppercase;}
+
+/* Répartition par type : libellé, barre, valeur */
+.chart-card .split-row{display:grid;grid-template-columns:minmax(0,84px) 1fr auto;
+  align-items:center;gap:10px;padding:5px 0;}
+.chart-card .split-name{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.chart-card .split-bar{display:block;height:9px;background:var(--readout-bg);
+  border-radius:2px;overflow:hidden;}
+.chart-card .split-bar i{display:block;height:100%;background:var(--accent);border-radius:2px;}
+.chart-card .split-val{font-family:var(--disp);font-size:13.5px;font-weight:600;
+  font-variant-numeric:tabular-nums;white-space:nowrap;}
+
+@media(max-width:600px){
+  .chart-card .chart-figures{grid-template-columns:minmax(0,1fr);}
+}
+
+/* ---- Prévision TAF sous l'aperçu météo ---- */
+.weather-taf{margin-top:12px;border-top:1px solid var(--line);padding-top:10px;}
+.weather-taf .taf-title{font-size:11.5px;color:var(--muted);margin-bottom:5px;}
+.weather-taf .taf-line{font-family:var(--code);font-size:11px;line-height:1.5;
+  word-break:break-word;}
+.weather-taf .taf-line:not(.first){padding-left:12px;color:var(--muted);}

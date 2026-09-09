@@ -532,3 +532,29 @@ Vérifications : comptage des colonnes ligne par ligne (16 et 11, en-têtes avec
 `rowspan` et pieds avec `colspan` compris) et contrôle des totaux sur un jeu
 mêlant un vol multi-pilote, un vol single-pilote et une séance — SE 01:06,
 multi 00:56, total de vol 02:02 séance exclue, session 04:00.
+
+## v46 — Graphiques d'expérience et TAF à l'accueil
+
+**La carte « Historique » est remplacée par des graphiques d'heures de vol**,
+alimentés par le carnet. Quatre chiffres clés — total, douze derniers mois,
+temps commandant de bord avec sa part, temps de nuit et simulateur —, un
+histogramme des heures mois par mois sur un an, et la répartition par type
+d'appareil avec les cinq premiers puis un cumul « Autres ».
+
+Tout est dessiné en HTML et CSS, sans bibliothèque : rien à charger au
+démarrage, et le rendu suit le thème clair ou sombre sans traitement
+particulier. Le tableau de bord se contente de LIRE le carnet, il n'y écrit
+jamais.
+
+Les séances de simulateur sont exclues des heures de vol, avec exactement la
+même règle que dans le carnet — sans quoi les deux écrans afficheraient des
+totaux différents. Les durées sont acceptées en `1:30` comme en `1,5`.
+
+La liste des dossiers reste accessible : le bouton « Charger un vol » et la
+page `dossiers.html` sont inchangés.
+
+**Le TAF s'affiche sous l'aperçu météo.** Il n'était tout simplement pas
+demandé : l'appel portait `taf=false`. Une seconde requête récupère la
+prévision, en tolérant son absence — une prévision manquante ne doit pas priver
+de l'observation. Le TAF est présenté brut, découpé à chaque groupe de
+changement (BECMG, TEMPO, FM, PROB) pour rester lisible sans être réécrit.
