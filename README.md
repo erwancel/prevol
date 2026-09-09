@@ -580,3 +580,27 @@ changement (BECMG, TEMPO, FM, PROB) pour rester lisible sans être réécrit.
   affiche « terrain inconnu ». Mieux vaut une distance à saisir qu'un chiffre
   inventé. Les terrains étrangers du carnet (EDDL, LOWW, LEPA…) ne sont pas
   dans la base : les ajouter depuis la page Aérodromes les rendra calculables.
+
+## v49 — Verdict carburant et perfs séparées
+
+**Bloc « Calcul carburant » sous la section 03 du dossier.** Trajet, minimum
+réglementaire, autonomie et marge, plus un verdict GO/NOGO chiffré : « il
+manque 12,2 L pour atteindre le minimum réglementaire ». Il se met à jour
+pendant la saisie, sans attendre « Calculer » — c'est la décision la plus
+structurante de la préparation, elle n'a pas à être en bas de page.
+
+Il réutilise `computeFuel()`, le calcul du dossier, et non une copie : deux
+implémentations finiraient par diverger et afficher deux verdicts différents.
+La page Carburant garde son propre bloc, le nouveau y est masqué.
+
+**La feuille de résultats sépare départ et arrivée.** Tout était rangé sous le
+titre de la piste de départ, atterrissage compris — trompeur dès que l'arrivée
+est sur un autre terrain ou une autre piste. Deux blocs désormais :
+
+- Départ : terrain, piste, TODA, distance de décollage, marges TODA et ASDA,
+  altitude densité, écart ISA, rose des vents du départ ;
+- Arrivée : terrain, piste, LDA, distance d'atterrissage, marge, altitude
+  densité d'arrivée, masse à l'atterrissage, rose des vents de l'arrivée avec
+  le vent d'atterrissage s'il a été saisi séparément.
+
+Le dossier imprimé, lui, avait déjà ses deux sections.

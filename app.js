@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v48 · 2026.09.09';
+const APP_VERSION = 'v49 · 2026.09.09';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -2908,6 +2908,16 @@ function renderResults(fuel, mb, perf){
   const ap    = icao ? getAirport(icao) : null;
   const rwy   = runwayValue('rwyDepSel','rwyDepTxt');
   const comp  = resolveWindComponent(str('wind'), runwayQfu(icao, rwy));
+  const toda  = (ap && rwy && ap.runways[rwy]) ? ap.runways[rwy].toda : null;
+
+  // L'atterrissage se fait sur une autre piste, souvent sur un autre terrain :
+  // le ranger sous le titre de la piste de départ induisait en erreur.
+  const icaoArr = normIcao(str('arrIcao')) || icao;
+  const apArr   = icaoArr ? getAirport(icaoArr) : null;
+  const rwyLdg  = runwayValue('rwyLdgSel','rwyLdgTxt') || runwayValue('rwyArrSel','rwyArrTxt') || rwy;
+  const lda     = (apArr && rwyLdg && apArr.runways[rwyLdg]) ? apArr.runways[rwyLdg].lda : null;
+  const ventArr = str('windLdg') || str('windArr') || str('wind');
+  const compArr = resolveWindComponent(ventArr, runwayQfu(icaoArr, rwyLdg));
 
   const dofRaw = str('dof');
   let quandTxt = '';
@@ -2960,12 +2970,11 @@ function renderResults(fuel, mb, perf){
   </div>
 
   <div class="bloc">
-    <h3>${rwy ? 'Piste ' + rwy : 'Performances'}${ap && rwy && ap.runways[rwy] && ap.runways[rwy].toda ? ' \u2014 ' + ap.runways[rwy].toda + ' m' : ''}</h3>
+    <h3>Départ${ap ? ' — ' + (ap.name || icao) : (icao ? ' — ' + icao : '')}${rwy ? ' · piste ' + rwy : ''}${toda ? ' — ' + toda + ' m' : ''}</h3>
     <table>
-      ${ligne('Décollage', fmt(perf.toDist, 0), ' m', 'fort')}
+      ${ligne('Distance de décollage', fmt(perf.toDist, 0), ' m', 'fort')}
       ${ligne('Marge sur la distance disponible', marge(perf.marginToda, ' m'))}
-      ${ligne('Atterrissage', fmt(perf.ldDist, 0), ' m', 'fort')}
-      ${ligne('Marge sur la distance disponible', marge(perf.marginLda, ' m'))}
+      ${ligne('Marge sur la distance accélération-arrêt', marge(perf.marginAsda, ' m'))}
       ${ligne('Altitude densité', fmt(perf.da, 0), ' ft')}
       ${ligne('Écart à l\u2019atmosphère type', fmt(perf.isaDev, 1), ' °C')}
     </table>
@@ -2975,6 +2984,24 @@ function renderResults(fuel, mb, perf){
         Vent du ${comp.dir}\u00b0 à ${comp.speed} kt${comp.gust != null ? `, rafales ${comp.gust} kt` : ''}.<br>
         <b>${Math.abs(comp.head)} kt ${comp.head >= 0 ? 'de face' : 'arrière'}</b>,
         ${comp.cross} kt de travers venant de la ${comp.from}.
+      </div>
+    </div>` : ''}
+  </div>
+
+  <div class="bloc">
+    <h3>Arrivée${apArr ? ' — ' + (apArr.name || icaoArr) : (icaoArr ? ' — ' + icaoArr : '')}${rwyLdg ? ' · piste ' + rwyLdg : ''}${lda ? ' — ' + lda + ' m' : ''}</h3>
+    <table>
+      ${ligne('Distance d\u2019atterrissage', fmt(perf.ldDist, 0), ' m', 'fort')}
+      ${ligne('Marge sur la distance disponible', marge(perf.marginLda, ' m'))}
+      ${ligne('Altitude densité', fmt(perf.daArr != null ? perf.daArr : perf.da, 0), ' ft')}
+      ${ligne('Masse à l\u2019atterrissage', fmt(mb.massLanding, 0), ' kg')}
+    </table>
+    ${compArr ? `<div class="vent">
+      ${svgWindRose(compArr)}
+      <div class="vent-txt">
+        Vent du ${compArr.dir}\u00b0 à ${compArr.speed} kt${compArr.gust != null ? `, rafales ${compArr.gust} kt` : ''}.<br>
+        <b>${Math.abs(compArr.head)} kt ${compArr.head >= 0 ? 'de face' : 'arrière'}</b>,
+        ${compArr.cross} kt de travers venant de la ${compArr.from}.
       </div>
     </div>` : ''}
   </div>
@@ -3004,6 +3031,7 @@ function renderResults(fuel, mb, perf){
   syncLastMinuteFields();
   renderLmDelta(perf);
   renderLoadFix(mb, fuel);
+  renderFuelLive();
 }
 
 document.querySelectorAll('.imsafe').forEach(el=>{
@@ -5254,6 +5282,67 @@ function renderHoursCharts(){
 (function initHoursCharts(){
   if(!document.getElementById('hoursCard')) return;
   const run=()=>renderHoursCharts();
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run,{once:true}); else run();
+})();
+
+
+// ============ CALCUL CARBURANT EN CONTINU ============
+// Le verdict carburant n'apparaissait qu'après « Calculer », en bas de page.
+// Or c'est la décision la plus structurante de la préparation : il vaut mieux
+// la voir se former pendant la saisie, sous les champs qui l'alimentent.
+// On réutilise computeFuel(), le calcul du dossier — surtout pas une copie,
+// qui finirait par diverger.
+
+function renderFuelLive(){
+  const bloc=document.getElementById('dossierFuelResult');
+  if(!bloc) return;
+  const mettre=(id,v)=>{const e=document.getElementById(id); if(e) e.textContent=v;};
+  const msg=document.getElementById('dfStatus');
+
+  let fuel=null;
+  try{ if(AC) fuel=computeFuel(); }catch(e){ fuel=null; }
+
+  if(!fuel || !(fuel.tripFuelL>0) || !(fuel.fuelOnBoardL>0)){
+    ['dfTrip','dfMin','dfEndurance','dfMargin'].forEach(id=>mettre(id,'—'));
+    if(msg){
+      msg.className='rwyMsg';
+      msg.textContent = AC
+        ? 'Renseigne le temps de vol et le carburant embarqué.'
+        : 'Choisis un avion : la consommation et la capacité en dépendent.';
+    }
+    return;
+  }
+
+  mettre('dfTrip', fmt(fuel.tripFuelL,1)+' L');
+  mettre('dfMin',  fmt(fuel.minRequiredL,1)+' L');
+  mettre('dfEndurance', hm(fuel.enduranceMin));
+  mettre('dfMargin', (fuel.marginMin>=0?'+':'\u2212')+hm(Math.abs(fuel.marginMin)));
+
+  const marge=document.getElementById('dfMargin');
+  if(marge) marge.style.color = fuel.marginMin>=0 ? 'var(--ok)' : 'var(--warn)';
+
+  if(msg){
+    if(fuel.sufficient){
+      msg.className='rwyMsg ok';
+      msg.textContent='GO carburant : '+fmt(fuel.fuelOnBoardL-fuel.minRequiredL,1)
+        +' L au-dessus du minimum réglementaire, soit '+hm(fuel.marginMin)+' de vol.';
+    } else {
+      msg.className='rwyMsg bad';
+      msg.textContent='NOGO carburant : il manque '+fmt(fuel.minRequiredL-fuel.fuelOnBoardL,1)
+        +' L pour atteindre le minimum réglementaire.';
+    }
+  }
+}
+
+(function initFuelLive(){
+  const sec=document.getElementById('sectionFuel');
+  if(!sec) return;
+  sec.addEventListener('input', renderFuelLive);
+  sec.addEventListener('change', renderFuelLive);
+  // La consommation dépend de l'avion, choisi dans une autre section
+  const ac=document.getElementById('aircraftSelect');
+  if(ac) ac.addEventListener('change', ()=>setTimeout(renderFuelLive,0));
+  const run=()=>renderFuelLive();
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run,{once:true}); else run();
 })();
 

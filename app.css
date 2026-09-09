@@ -1348,3 +1348,16 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 .carnet-page .extra-toggle{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
   margin:18px 0 4px;padding-top:14px;border-top:1px solid var(--line);}
 .carnet-page .extra-toggle .small{color:var(--muted);}
+
+/* ---- Verdict carburant, sous la section 03 ----
+   Affiché pendant la saisie, sans attendre le calcul complet : c'est la
+   décision la plus structurante de la préparation. */
+.fuel-live-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
+.fuel-live-item{border:1px solid var(--line);border-radius:3px;padding:9px 11px;
+  background:var(--readout-bg);}
+.fuel-live-item span{display:block;font-size:11.5px;color:var(--muted);line-height:1.3;}
+.fuel-live-item b{display:block;font-family:var(--disp);font-size:20px;font-weight:700;
+  margin-top:3px;font-variant-numeric:tabular-nums;}
+@media(max-width:760px){ .fuel-live-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+/* La page Carburant a déjà son propre bloc de résultat : pas de doublon */
+body[data-view="fuel"] #dossierFuelResult{display:none;}
