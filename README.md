@@ -688,3 +688,27 @@ transport aérien commercial. Un DR400 en aéroclub relève de la partie NCO
 Plus aucune référence CAT dans le dossier. La seule occurrence restante du mot
 est « CAT. AÉRODROME », la catégorie d'aérodrome de la page de garde. Le calcul
 carburant était déjà intitulé PART-NCO.
+
+## v51 — Schéma de piste
+
+Sous la section Environnement & pistes, deux vues en plan — décollage puis
+atterrissage — dessinées en SVG.
+
+- **Deux barres superposées** : la distance brute lue dans l'AFM, et la
+  distance corrigée des facteurs vent et piste. L'écart entre les deux montre
+  ce que coûtent les corrections, information invisible quand on ne lit que le
+  chiffre final.
+- **La marge restante** est tracée en vert sur la longueur disponible. En cas
+  de dépassement, la barre passe au rouge et le dépassement est chiffré.
+- **Rose de vent** orientée par rapport à l'axe de piste, pas au nord :
+  la piste étant dessinée à l'horizontale, le vent est tourné de
+  (direction − QFU + 90°) pour que sa provenance soit juste par rapport à
+  l'axe. Direction et vitesse affichées dessous.
+- Le détail des facteurs appliqués est rappelé sous les schémas.
+
+Contrôlé sur le dossier F-GTPD du 17/09 : piste 25, 1200 m, 379 m sans
+facteurs, 355 m avec, marge 845 m, vent 310/5 tourné de 148°. Et sur un cas de
+dépassement, correctement signalé en rouge.
+
+Retiré : la mention « Calcul mis à jour automatiquement à chaque modification
+des masses, du carburant ou des paramètres avion. »

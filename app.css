@@ -1381,3 +1381,9 @@ body[data-view="fuel"] #dossierFuelResult{display:none;}
     #printReport th, #printReport .fplTitle.boxed, #printReport .noteBox{
       -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;}
   }
+
+/* ---- Schéma de piste, section Environnement ----
+   Deux vues en plan, décollage puis atterrissage, dessinées en SVG :
+   elles suivent donc le thème sans traitement particulier. */
+.rwy-live-host svg{display:block;width:100%;height:auto;margin:6px 0 14px;
+  border:1px solid var(--line);border-radius:3px;background:var(--panel);}

@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v50.1 · 2026.09.09';
+const APP_VERSION = 'v51 · 2026.09.09';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -858,9 +858,7 @@ function refreshLiveMassBalance(){
       xCgTo.textContent=fmt(d.mb.cgTakeoff,0)+' mm';
       xLd.textContent=fmt(d.mb.massLanding,0)+' kg';
       xCgLd.textContent=fmt(d.mb.cgLanding,0)+' mm';
-      hint.textContent=ok
-        ? 'Calcul mis à jour automatiquement à chaque modification des masses, du carburant ou des paramètres avion.'
-        : 'Le point sort de l’enveloppe : vérifie les masses et le centrage.';
+      hint.textContent = ok ? '' : 'Le point sort de l’enveloppe : vérifie les masses et le centrage.';
     }else{
       // Draw envelope without pretending that a calculated point exists.
       const empty={massTakeoff:ENV_W_MIN,cgTakeoff:ENV_FWD_LOW,massLanding:ENV_W_MIN,cgLanding:ENV_FWD_LOW};
@@ -5349,6 +5347,140 @@ function renderFuelLive(){
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run,{once:true}); else run();
 })();
 
+
+// ============ SCHÉMA DE PISTE ============
+// Vue en plan de la piste, orientée dans le sens du décollage. Deux barres
+// superposées : la distance brute lue dans l'AFM, et la distance corrigée des
+// facteurs (vent, nature et état de la piste). L'écart entre les deux montre
+// d'un coup d'œil ce que les corrections coûtent — c'est ce qui manque quand
+// on ne lit qu'un chiffre final.
+// Le vent est dessiné par rapport à l'axe de piste, avec sa provenance.
+
+function svgRunwayDiagram(o){
+  const W=760, H=250;
+  const x0=70, x1=W-70, y=150, ep=26;          // bande de piste
+  const long=Math.max(1, o.longueur||1000);
+  const px = m => x0 + (Math.max(0,Math.min(m,long))/long)*(x1-x0);
+  const esc = t => String(t||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+
+  // Barres de distance : brute puis corrigée
+  const barre=(m, yb, h, couleur, opac) => m>0
+    ? `<rect x="${x0}" y="${yb}" width="${(px(m)-x0).toFixed(1)}" height="${h}" fill="${couleur}" opacity="${opac}" rx="2"/>`
+    : '';
+  const repere=(m, yb, h, couleur) => m>0
+    ? `<line x1="${px(m).toFixed(1)}" y1="${yb}" x2="${px(m).toFixed(1)}" y2="${yb+h}" stroke="${couleur}" stroke-width="2"/>`
+    : '';
+
+  const depasse = o.corrigee > long;
+
+  // Rose de vent, en haut à droite, orientée par rapport à l'axe de piste.
+  // La piste est dessinée horizontale : on tourne le vent de (dir − qfu + 90°)
+  // pour que sa provenance soit juste par rapport à cet axe.
+  let vent='';
+  if(o.vent){
+    const cx=W-58, cy=52, r=30;
+    const a=(o.vent.dir - o.vent.qfu + 90);
+    vent = `
+      <g>
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--accent-soft)" stroke-width="7" opacity="0.4"/>
+        <line x1="${cx-r}" y1="${cy}" x2="${cx+r}" y2="${cy}" stroke="var(--muted)" stroke-width="5"/>
+        <g transform="rotate(${a} ${cx} ${cy})">
+          <line x1="${cx}" y1="${cy-r-4}" x2="${cx}" y2="${cy-9}" stroke="var(--accent)" stroke-width="2.5"/>
+          <polygon points="${cx},${cy-4} ${cx-4.5},${cy-13} ${cx+4.5},${cy-13}" fill="var(--accent)"/>
+        </g>
+        <circle cx="${cx}" cy="${cy}" r="2.5" fill="var(--text)"/>
+        <text x="${cx}" y="${cy+r+16}" text-anchor="middle" font-size="12" fill="var(--text)"
+              font-weight="600">${o.vent.dir}\u00b0 / ${o.vent.speed} kt</text>
+      </g>`;
+  }
+
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img"
+       aria-label="Schéma de la piste ${esc(o.piste)} avec distances et vent">
+    <text x="${x0}" y="26" font-size="14" font-weight="700" fill="var(--text)">Piste ${esc(o.piste||'—')}</text>
+    <text x="${x0}" y="44" font-size="12" fill="var(--muted)">${esc(o.phase)} · ${o.longueur} m disponibles</text>
+
+    ${vent}
+
+    <!-- Barres de distance, au-dessus de la piste -->
+    ${barre(o.brute,    y-46, 14, 'var(--muted)', '0.45')}
+    ${barre(o.corrigee, y-28, 14, depasse ? 'var(--red)' : 'var(--accent)', '0.9')}
+    ${repere(o.brute,    y-46, 32, 'var(--muted)')}
+    ${repere(o.corrigee, y-46, 46, depasse ? 'var(--red)' : 'var(--accent)')}
+    <text x="${x0+4}" y="${y-49}" font-size="11" fill="var(--muted)">sans facteurs ${o.brute} m</text>
+    <text x="${x0+4}" y="${y-16}" font-size="11.5" font-weight="700"
+          fill="${depasse?'var(--red)':'var(--accent)'}">avec facteurs ${o.corrigee} m</text>
+
+    <!-- La piste -->
+    <rect x="${x0}" y="${y}" width="${x1-x0}" height="${ep}" fill="var(--readout-bg)"
+          stroke="var(--text)" stroke-width="1.5"/>
+    <line x1="${x0+14}" y1="${y+ep/2}" x2="${x1-14}" y2="${y+ep/2}"
+          stroke="var(--muted)" stroke-width="2" stroke-dasharray="18 12"/>
+    <text x="${x0+6}" y="${y+ep+17}" font-size="12" font-weight="600" fill="var(--text)">${esc(o.piste||'')}</text>
+    <text x="${x1-6}" y="${y+ep+17}" font-size="12" text-anchor="end" fill="var(--muted)">${o.longueur} m</text>
+
+    <!-- Marge restante -->
+    ${o.corrigee<long ? `
+      <line x1="${px(o.corrigee).toFixed(1)}" y1="${y+ep+30}" x2="${x1}" y2="${y+ep+30}"
+            stroke="var(--ok)" stroke-width="2"/>
+      <text x="${((px(o.corrigee)+x1)/2).toFixed(1)}" y="${y+ep+46}" text-anchor="middle"
+            font-size="12" font-weight="600" fill="var(--ok)">marge ${long-o.corrigee} m</text>` : `
+      <text x="${((x0+x1)/2).toFixed(1)}" y="${y+ep+46}" text-anchor="middle"
+            font-size="12.5" font-weight="700" fill="var(--red)">dépassement de ${o.corrigee-long} m</text>`}
+  </svg>`;
+}
+
+function renderRunwayDiagram(){
+  const host=document.getElementById('rwyDiagramHost');
+  if(!host) return;
+  const hint=document.getElementById('rwyDiagramHint');
+
+  let perf=null, mb=null;
+  try{ if(AC){ const f=computeFuel(); mb=computeMB(f); perf=computePerf(mb); } }catch(e){ perf=null; }
+
+  if(!perf || !perf.afmOk || !(perf.toda>0)){
+    host.innerHTML='';
+    if(hint) hint.textContent = AC
+      ? 'Renseigne la piste, la météo et les masses : le schéma apparaîtra avec les distances.'
+      : 'Choisis un avion pour obtenir les distances.';
+    return;
+  }
+
+  const icao=normIcao(str('depIcao'));
+  const dep={
+    phase:'Décollage', piste:perf.rwyDep, longueur:Math.round(perf.toda),
+    brute:Math.round(perf.toAfm), corrigee:Math.round(perf.toDist),
+    vent:perf.windDepComp || null
+  };
+  const icaoArr=normIcao(str('arrIcao'))||icao;
+  const arr={
+    phase:'Atterrissage', piste:perf.rwyLdg, longueur:Math.round(perf.lda),
+    brute:Math.round(perf.ldAfm), corrigee:Math.round(perf.ldDist),
+    vent:perf.windArrComp || perf.windDepComp || null
+  };
+
+  host.innerHTML = svgRunwayDiagram(dep) + (arr.longueur>0 ? svgRunwayDiagram(arr) : '');
+  if(hint){
+    const cd=(perf.wc*perf.grassCoef), ca=(perf.wcArr*perf.grassCoefArr);
+    hint.textContent='Facteurs appliqués : décollage × '+fmt(cd,2)
+      +' (vent '+fmt(perf.wc,2)+' × piste '+fmt(perf.grassCoef,2)+')'
+      +', atterrissage × '+fmt(ca,2)
+      +' (vent '+fmt(perf.wcArr,2)+' × piste '+fmt(perf.grassCoefArr,2)+').';
+  }
+}
+
+(function initRunwayDiagram(){
+  const sec=document.getElementById('sectionEnvironment');
+  if(!sec || !document.getElementById('rwyDiagramHost')) return;
+  const maj=()=>renderRunwayDiagram();
+  sec.addEventListener('input', maj);
+  sec.addEventListener('change', maj);
+  ['sectionMass','sectionFuel','sectionVol'].forEach(id=>{
+    const s=document.getElementById(id);
+    if(s){ s.addEventListener('input', maj); s.addEventListener('change', maj); }
+  });
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',maj,{once:true}); else maj();
+})();
+
 // ============ BROUILLON AUTOMATIQUE ============
 // Le flux normal de préparation oblige à quitter l'app en pleine saisie :
 // aller chercher le dossier sur Aeroweb, le PIB sur SOFIA, une VAC sur
@@ -5460,6 +5592,7 @@ function readDraft(){
     // « input » n'est émis, il faut donc redessiner explicitement.
     if(typeof refreshLiveMassBalance === 'function') refreshLiveMassBalance();
     if(typeof renderFuelLive === 'function') renderFuelLive();
+    if(typeof renderRunwayDiagram === 'function') renderRunwayDiagram();
   }catch(e){
     console.warn('[brouillon] remise en cohérence partielle :', e);
   }
@@ -5823,6 +5956,7 @@ function apresEffacement(){
   if(typeof renderCartouche === 'function') renderCartouche();
   if(typeof refreshLiveMassBalance === 'function') refreshLiveMassBalance();
   if(typeof renderFuelLive === 'function') renderFuelLive();
+  if(typeof renderRunwayDiagram === 'function') renderRunwayDiagram();
   scheduleDraft();
 }
 
