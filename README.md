@@ -646,3 +646,26 @@ ne peut donc plus faire grandir son bloc.
 
 Contrôle du balisage : les vingt-et-un tableaux du dossier ont un nombre de
 colonnes constant sur toutes leurs lignes, fusions comprises.
+
+## v50 — Schéma de centrage dans le dossier
+
+Le diagramme d'enveloppe en direct existait déjà et fonctionnait, mais son
+balisage n'était présent que sur `masse-centrage.html`. Il est repris tel quel
+sous la section 02 des douze pages qui portent le formulaire.
+
+Rien à réécrire côté logique : `refreshLiveMassBalance` s'accroche déjà aux
+quinze champs concernés — avion, masses, bras de levier, carburant, temps de
+vol — et `initLiveMassBalance` ne s'exécute que si la carte est présente.
+
+Trois cas où le redessin manquait, la restauration des champs se faisant par
+programme sans émettre d'événement `input` :
+
+- après restauration du brouillon en changeant de page ;
+- au changement d'avion depuis la section 01 ;
+- après un effacement de section.
+
+`renderFuelLive` souffrait des mêmes trous, corrigés en même temps.
+
+Contrôle : sur le dossier F-GTPD du 17/09, le calcul en direct donne 800 kg et
+384 mm au décollage, 777 kg et 362 mm à l'atterrissage — identiques au dossier
+imprimé.

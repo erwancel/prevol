@@ -137,6 +137,39 @@
 <div class="field"><label>Bras réservoir (m)</label><input id="armFuel" step="0.01" type="number"/></div>
 </div>
 </details>
+<div class="live-mb-card" id="liveMassBalanceCard">
+  <div class="live-mb-head">
+    <div>
+      <div class="eyebrow">CALCUL EN DIRECT</div>
+      <h3>Masse &amp; centrage</h3>
+    </div>
+    <span class="live-mb-status" id="liveMassBalanceStatus">En attente de données</span>
+  </div>
+  <div class="live-mb-layout">
+    <div class="live-mb-chart" id="liveMassBalanceChart"></div>
+    <div class="live-mb-readout">
+      <div class="live-mb-value">
+        <span>Masse décollage</span>
+        <strong id="liveMassTo">—</strong>
+      </div>
+      <div class="live-mb-value">
+        <span>Centrage décollage</span>
+        <strong id="liveCgTo">—</strong>
+      </div>
+      <div class="live-mb-value">
+        <span>Masse atterrissage</span>
+        <strong id="liveMassLd">—</strong>
+      </div>
+      <div class="live-mb-value">
+        <span>Centrage atterrissage</span>
+        <strong id="liveCgLd">—</strong>
+      </div>
+      <div class="smallhint" id="liveMassBalanceHint">
+        Le diagramme se met à jour automatiquement à chaque modification.
+      </div>
+    </div>
+  </div>
+</div>
 </section>
 <!-- 4. CARBURANT -->
 <section class="card view-fuel" id="sectionFuel">

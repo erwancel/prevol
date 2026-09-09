@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v49.2 · 2026.09.09';
+const APP_VERSION = 'v50 · 2026.09.09';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -5341,7 +5341,10 @@ function renderFuelLive(){
   sec.addEventListener('change', renderFuelLive);
   // La consommation dépend de l'avion, choisi dans une autre section
   const ac=document.getElementById('aircraftSelect');
-  if(ac) ac.addEventListener('change', ()=>setTimeout(renderFuelLive,0));
+  if(ac) ac.addEventListener('change', ()=>setTimeout(()=>{
+    renderFuelLive();
+    if(typeof refreshLiveMassBalance === 'function') refreshLiveMassBalance();
+  },0));
   const run=()=>renderFuelLive();
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run,{once:true}); else run();
 })();
@@ -5453,6 +5456,10 @@ function readDraft(){
     if(typeof refreshWindHints === 'function') refreshWindHints();
     if(typeof refreshAlternateList === 'function') refreshAlternateList();
     if(typeof toggleAlternateFuel === 'function') toggleAlternateFuel();
+    // La restauration écrit les champs par programme : aucun événement
+    // « input » n'est émis, il faut donc redessiner explicitement.
+    if(typeof refreshLiveMassBalance === 'function') refreshLiveMassBalance();
+    if(typeof renderFuelLive === 'function') renderFuelLive();
   }catch(e){
     console.warn('[brouillon] remise en cohérence partielle :', e);
   }
@@ -5814,6 +5821,8 @@ function apresEffacement(){
   if(typeof refreshWindHints === 'function') refreshWindHints();
   if(typeof refreshAlternateList === 'function') refreshAlternateList();
   if(typeof renderCartouche === 'function') renderCartouche();
+  if(typeof refreshLiveMassBalance === 'function') refreshLiveMassBalance();
+  if(typeof renderFuelLive === 'function') renderFuelLive();
   scheduleDraft();
 }
 
