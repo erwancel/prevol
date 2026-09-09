@@ -558,3 +558,25 @@ demandé : l'appel portait `taf=false`. Une seconde requête récupère la
 prévision, en tolérant son absence — une prévision manquante ne doit pas priver
 de l'observation. Le TAF est présenté brut, découpé à chaque groupe de
 changement (BECMG, TEMPO, FM, PROB) pour rester lisible sans être réécrit.
+
+## v48 — Formulaire du carnet allégé
+
+- **Équipage réduit à trois rôles** : commandant de bord, copilote, commander.
+  Les quatorze autres (relief, mécanicien navigant, observateurs, chef de
+  cabine, personnel de cabine, instructeur, élève) sont retirés du formulaire
+  mais **conservés en base** : un import LogTen peut les contenir, et
+  l'enregistrement n'écrase que les trois champs affichés. Aucune donnée n'est
+  perdue.
+- **Une seule ligne d'approche**, plus un bouton « + Ajouter une approche »
+  jusqu'à dix. À la réouverture d'un vol, autant de lignes que d'approches
+  renseignées. Liste de types courants proposée (ILS, RNP, RNAV GNSS, VOR,
+  NDB, LOC, visuelle, circling). Les lignes vides ne sont plus enregistrées.
+- **Distance calculée automatiquement** dès que les deux terrains sont saisis :
+  orthodromie, à partir des coordonnées de la base aérodromes de PréVol.
+  Contrôles : LFFI → LFRE 48 NM, LFRS → LFRE 31 NM, LFRZ → LFRE 8 NM, et 0 NM
+  pour un circuit local.
+
+  Limite assumée : un terrain absent de la base laisse le champ libre et
+  affiche « terrain inconnu ». Mieux vaut une distance à saisir qu'un chiffre
+  inventé. Les terrains étrangers du carnet (EDDL, LOWW, LEPA…) ne sont pas
+  dans la base : les ajouter depuis la page Aérodromes les rendra calculables.

@@ -3,9 +3,17 @@
 // brouillon de dossier ni les dossiers enregistrés.
 
 const STORAGE_KEY='prevol.logbook.v2';let flights=[],editingId=null,importRows=[],importHeaders=[],currentPage=1;const PAGE_SIZE=50,selectedIds=new Set();
+// Seuls les rôles qui figurent au carnet réglementaire sont saisissables.
+// Les quatorze autres (relief, mécanicien, observateurs, personnel de cabine)
+// alourdissaient le formulaire sans jamais servir.
 const CREW_FIELDS=[
-['PIC','Pilot-in-Command'],['SIC','Co-pilot / SIC'],['Relief','Relief Crew'],['Relief2','Relief Crew 2'],['Relief3','Relief Crew 3'],['Relief4','Relief Crew 4'],['FlightEngineer','Flight Engineer'],['Instructor','Instructor'],['Student','Student'],['Observer','Observer'],['Observer2','Observer 2'],['Purser','Purser'],['FlightAttendant','Flight Attendant'],['FlightAttendant2','Flight Attendant 2'],['FlightAttendant3','Flight Attendant 3'],['FlightAttendant4','Flight Attendant 4'],['Commander','Commander']
+['PIC','Pilot-in-Command'],['SIC','Co-pilot / SIC'],['Commander','Commander']
 ];
+// Rôles retirés du formulaire mais CONSERVÉS en base : un import LogTen peut
+// les contenir, et les effacer ferait perdre des données sans prévenir.
+const CREW_LEGACY=['Relief','Relief2','Relief3','Relief4','FlightEngineer','Instructor',
+'Student','Observer','Observer2','Purser','FlightAttendant','FlightAttendant2',
+'FlightAttendant3','FlightAttendant4'];
 const TIME_FIELDS=[['total','Total'],['pic','PIC'],['sic','SIC'],['night','Night'],['ifr','IFR'],['actualInstrument','Actual Instrument'],['simInstrument','Simulated Instrument'],['dualReceived','Dual Received'],['dualGiven','Dual Given'],['solo','Solo'],['p1','P1'],['p1us','P1 u/s / PICUS'],['relief','Relief'],['multiPilot','Multi-pilot'],['simulator','Simulator']];
 const OPS_FIELDS=[['dayTakeoffs','Day Takeoffs'],['nightTakeoffs','Night Takeoffs'],['dayLandings','Day Landings'],['nightLandings','Night Landings'],['touchAndGoes','Touch & Go'],['fullStops','Full Stops'],['autolands','Autolands'],['goArounds','Go-arounds']];
 const WX_FIELDS=[['weather','Météo'],['sky','Ciel'],['visibility','Visibilité'],['cloudbase','Cloudbase'],['windDirection','Vent direction'],['windVelocity','Vent vitesse'],['review','Flight Review'],['ipc','IPC']];
@@ -105,7 +113,69 @@ function ligneCarnet(f){
 function renderTable(){const data=filtered(),pages=Math.max(1,Math.ceil(data.length/PAGE_SIZE));currentPage=Math.min(currentPage,pages);const rows=data.slice((currentPage-1)*PAGE_SIZE,currentPage*PAGE_SIZE);$('flightTableBody').innerHTML=rows.map(f=>ligneCarnet(f)).join('');$('emptyState').classList.toggle('hidden',rows.length>0);$('tableMeta').textContent=`${data.length} vol${data.length>1?'s':''}`;$('pageMeta').textContent=`Page ${currentPage} / ${pages}`;$('prevPage').disabled=currentPage<=1;$('nextPage').disabled=currentPage>=pages;$('selectAll').checked=rows.length>0&&rows.every(f=>selectedIds.has(f.id));$('selectionBadge').textContent=`${selectedIds.size} sélectionné${selectedIds.size>1?'s':''}`}
 function refresh(){refreshFilters();refreshDatalists();renderStats();renderTable()}
 function buildDynamic(){ $('crewRows').innerHTML=CREW_FIELDS.map(([k,l])=>`<tr><td style="padding:8px">${l}</td><td><input id="crew_${k}" list="peopleList" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:9px"></td></tr>`).join('');$('timeFields').innerHTML=TIME_FIELDS.map(([k,l])=>`<div class="field"><label>${l}</label><input id="t_${k}" placeholder="00:00"></div>`).join('');$('opsFields').innerHTML=OPS_FIELDS.map(([k,l])=>`<div class="field"><label>${l}</label><input id="ops_${k}" type="number" min="0" step="1"></div>`).join('');$('weatherFields').innerHTML=WX_FIELDS.map(([k,l])=>`<div class="field"><label>${l}</label><input id="wx_${k}"></div>`).join('');$('paxFields').innerHTML=PAX_FIELDS.map(([k,l])=>`<div class="field"><label>${l}</label><input id="pax_${k}" ${k==='count'||k==='business'?'type="number" min="0"':''}></div>`).join('')}
-function approaches(data){$('approachRows').innerHTML=Array.from({length:10},(_,i)=>{const a=data?.[i]||{};return`<tr><td style="padding:8px">${i+1}</td><td><input data-ap="${i}" data-f="type" value="${esc(a.type||'')}" style="width:100%;padding:7px"></td><td><input data-ap="${i}" data-f="category" value="${esc(a.category||'')}" style="width:100%;padding:7px"></td><td><input data-ap="${i}" data-f="mode" value="${esc(a.mode||'')}" style="width:100%;padding:7px"></td><td><input data-ap="${i}" data-f="airport" value="${esc(a.airport||'')}" style="width:100%;padding:7px"></td></tr>`}).join('')}
+// Une seule ligne d'approche par défaut. Dix lignes vides à remplir alors
+// qu'un vol en compte rarement plus d'une n'apportaient rien.
+const APPROACH_MAX=10;
+function approaches(data){
+  const remplies=(data||[]).filter(a=>a&&(a.type||a.category||a.mode||a.airport)).length;
+  dessinerApproches(data, Math.max(1, remplies));
+}
+function dessinerApproches(data, nb){
+  const corps=$('approachRows');
+  if(!corps) return;
+  corps.dataset.count=nb;
+  corps.innerHTML=Array.from({length:nb},(_,i)=>{
+    const a=data?.[i]||{};
+    return `<tr><td style="padding:8px">${i+1}</td>
+      <td><input data-ap="${i}" data-f="type" value="${esc(a.type||'')}" list="approachTypes" style="width:100%;padding:7px"></td>
+      <td><input data-ap="${i}" data-f="category" value="${esc(a.category||'')}" style="width:100%;padding:7px"></td>
+      <td><input data-ap="${i}" data-f="mode" value="${esc(a.mode||'')}" style="width:100%;padding:7px"></td>
+      <td><input data-ap="${i}" data-f="airport" value="${esc(a.airport||'')}" style="width:100%;padding:7px;text-transform:uppercase"></td></tr>`;
+  }).join('');
+  const b=$('addApproach');
+  if(b) b.style.display = nb>=APPROACH_MAX ? 'none' : '';
+}
+function lireApproches(){
+  const nb=+($('approachRows')?.dataset.count||1);
+  return Array.from({length:nb},(_,i)=>({
+    type:document.querySelector(`[data-ap="${i}"][data-f="type"]`)?.value||'',
+    category:document.querySelector(`[data-ap="${i}"][data-f="category"]`)?.value||'',
+    mode:document.querySelector(`[data-ap="${i}"][data-f="mode"]`)?.value||'',
+    airport:(document.querySelector(`[data-ap="${i}"][data-f="airport"]`)?.value||'').toUpperCase()
+  })).filter(a=>a.type||a.category||a.mode||a.airport);
+}
+
+// --- Distance orthodromique entre deux terrains ---
+// Les coordonnées viennent de la base aérodromes de PréVol (app.js, chargé
+// sur cette page). Un terrain absent de la base laisse la distance à saisir :
+// mieux vaut un champ vide qu'un chiffre inventé.
+function coordsTerrain(icao){
+  const k=String(icao||'').trim().toUpperCase();
+  if(k.length!==4 || typeof allAirports!=='function') return null;
+  const ap=allAirports()[k];
+  return (ap && ap.lat!=null && ap.lon!=null) ? {lat:+ap.lat, lon:+ap.lon} : null;
+}
+function distanceNM(a,b){
+  const A=coordsTerrain(a), B=coordsTerrain(b);
+  if(!A||!B) return null;
+  const R=3440.065;                       // rayon terrestre en milles marins
+  const r=x=>x*Math.PI/180;
+  const dLat=r(B.lat-A.lat), dLon=r(B.lon-A.lon);
+  const h=Math.sin(dLat/2)**2 + Math.cos(r(A.lat))*Math.cos(r(B.lat))*Math.sin(dLon/2)**2;
+  return Math.round(2*R*Math.asin(Math.min(1,Math.sqrt(h))));
+}
+function majDistance(){
+  const champ=$('f_distance'), tag=$('distAuto');
+  if(!champ) return;
+  const d=distanceNM($('f_from')?.value, $('f_to')?.value);
+  if(d==null){
+    if(tag) tag.textContent = ($('f_from')?.value && $('f_to')?.value) ? 'terrain inconnu' : '';
+    return;                               // on n'efface jamais une saisie
+  }
+  champ.value=d;
+  if(tag) tag.textContent = d===0 ? 'circuit local' : 'orthodromie';
+}
+
 function openFlight(id){editingId=id;const f=id?flights.find(x=>x.id===id):emptyFlight();if(!f)return;buildDynamic();$('modalTitle').textContent=id?'Modifier le vol':'Ajouter un vol';for(const[k,v]of Object.entries({f_date:f.date,f_entryType:f.entryType,f_flightNumber:f.flightNumber,f_from:f.from,f_to:f.to,f_actualDeparture:f.actualDeparture,f_actualArrival:f.actualArrival,f_distance:f.distance,f_route:f.route,f_aircraftId:f.aircraftId,f_aircraftType:f.aircraftType,f_engineClass:f.engineClass,f_pilotMode:f.pilotMode,notes_remarks:f.notes,rawLogTen:f.rawLogTen&&Object.keys(f.rawLogTen).length?JSON.stringify(f.rawLogTen,null,2):''})){if($(k))$(k).value=v||''}CREW_FIELDS.forEach(([k])=>{if($(`crew_${k}`))$(`crew_${k}`).value=f.crew?.[k]||''});TIME_FIELDS.forEach(([k])=>{if($(`t_${k}`))$(`t_${k}`).value=f.times?.[k]||''});OPS_FIELDS.forEach(([k])=>{if($(`ops_${k}`))$(`ops_${k}`).value=f.operations?.[k]??0});approaches(f.approaches);$('duty_on').value=f.duty?.on||'';$('duty_off').value=f.duty?.off||'';$('duty_total').value=f.duty?.total||'';$('duty_rest').value=f.duty?.rest||'';$('duty_fdpStart').value=f.duty?.fdpStart||'';$('duty_fdpEnd').value=f.duty?.fdpEnd||'';$('duty_fdpTotal').value=f.duty?.fdpTotal||'';[['fuel_added','added'],['fuel_burned','burned'],['fuel_diversion','diversion'],['fuel_aboard','aboard'],['fuel_uplift','uplift']].forEach(([a,b])=>$(a).value=f.fuel?.[b]??'');WX_FIELDS.forEach(([k])=>{if($(`wx_${k}`))$(`wx_${k}`).value=f.weather?.[k]||''});PAX_FIELDS.forEach(([k])=>{if($(`pax_${k}`))$(`pax_${k}`).value=f.pax?.[k]??''});if($('f_simDate'))$('f_simDate').value=f.date||'';
  if($('f_simType'))$('f_simType').value=f.sim?.type||f.aircraftType||'';
  if($('f_simTotal'))$('f_simTotal').value=simTotal(f)||'';
@@ -222,6 +292,16 @@ function deduireRapide(f){
     d.style.display = ouvert?'none':'';
     b.textContent = ouvert?'Détail des temps ▾':'Masquer le détail ▴';
   });
+  ['f_from','f_to'].forEach(id=>{
+    const el=$(id); if(el) el.addEventListener('input', majDistance);
+  });
+  const ap=$('addApproach');
+  if(ap) ap.addEventListener('click', ()=>{
+    const corps=$('approachRows');
+    const nb=Math.min(APPROACH_MAX, (+(corps?.dataset.count||1))+1);
+    dessinerApproches(lireApproches(), nb);
+  });
+
   const e=$('toggleExtras');
   if(e) e.addEventListener('click', ()=>{
     const secs=[...document.querySelectorAll('.extra-section')];
@@ -255,7 +335,7 @@ function saveFlight(){const f=editingId?flights.find(x=>x.id===editingId):emptyF
    return;
  }
  f.sim={type:'',total:'',remark:''};
- f.date=$('f_date').value;f.flightNumber=$('f_flightNumber').value.trim();f.from=$('f_from').value.toUpperCase();f.to=$('f_to').value.toUpperCase();f.actualDeparture=$('f_actualDeparture').value;f.actualArrival=$('f_actualArrival').value;f.distance=$('f_distance').value;f.route=$('f_route').value.trim();f.aircraftId=$('f_aircraftId').value.toUpperCase();f.aircraftType=$('f_aircraftType').value.trim();f.engineClass=$('f_engineClass').value;f.pilotMode=$('f_pilotMode').value;CREW_FIELDS.forEach(([k])=>f.crew[k]=$(`crew_${k}`).value.trim());TIME_FIELDS.forEach(([k])=>f.times[k]=$(`t_${k}`).value.trim());OPS_FIELDS.forEach(([k])=>f.operations[k]=n($(`ops_${k}`).value));f.approaches=Array.from({length:10},(_,i)=>({type:document.querySelector(`[data-ap="${i}"][data-f="type"]`)?.value||'',category:document.querySelector(`[data-ap="${i}"][data-f="category"]`)?.value||'',mode:document.querySelector(`[data-ap="${i}"][data-f="mode"]`)?.value||'',airport:document.querySelector(`[data-ap="${i}"][data-f="airport"]`)?.value||''}));f.duty={on:$('duty_on').value,off:$('duty_off').value,total:$('duty_total').value,rest:$('duty_rest').value,fdpStart:$('duty_fdpStart').value,fdpEnd:$('duty_fdpEnd').value,fdpTotal:$('duty_fdpTotal').value};f.fuel={added:$('fuel_added').value,burned:$('fuel_burned').value,diversion:$('fuel_diversion').value,aboard:$('fuel_aboard').value,uplift:$('fuel_uplift').value};f.weather=Object.fromEntries(WX_FIELDS.map(([k])=>[k,$(`wx_${k}`).value]));f.pax=Object.fromEntries(PAX_FIELDS.map(([k])=>[k,['count','business'].includes(k)?n($(`pax_${k}`).value):$(`pax_${k}`).value]));f.notes=$('notes_remarks').value;try{f.rawLogTen=JSON.parse($('rawLogTen').value||'{}')}catch{toast('JSON LogTen invalide');return}if(!editingId){flights.push(f)}else{const i=flights.findIndex(x=>x.id===editingId);if(i>=0)flights[i]=f}flights.sort(sortF);save();refresh();closeFlight();toast(editingId?'Vol modifié.':'Vol ajouté.')}
+ f.date=$('f_date').value;f.flightNumber=$('f_flightNumber').value.trim();f.from=$('f_from').value.toUpperCase();f.to=$('f_to').value.toUpperCase();f.actualDeparture=$('f_actualDeparture').value;f.actualArrival=$('f_actualArrival').value;f.distance=$('f_distance').value;f.route=$('f_route').value.trim();f.aircraftId=$('f_aircraftId').value.toUpperCase();f.aircraftType=$('f_aircraftType').value.trim();f.engineClass=$('f_engineClass').value;f.pilotMode=$('f_pilotMode').value;CREW_FIELDS.forEach(([k])=>f.crew[k]=$(`crew_${k}`).value.trim());TIME_FIELDS.forEach(([k])=>f.times[k]=$(`t_${k}`).value.trim());OPS_FIELDS.forEach(([k])=>f.operations[k]=n($(`ops_${k}`).value));f.approaches=lireApproches();f.duty={on:$('duty_on').value,off:$('duty_off').value,total:$('duty_total').value,rest:$('duty_rest').value,fdpStart:$('duty_fdpStart').value,fdpEnd:$('duty_fdpEnd').value,fdpTotal:$('duty_fdpTotal').value};f.fuel={added:$('fuel_added').value,burned:$('fuel_burned').value,diversion:$('fuel_diversion').value,aboard:$('fuel_aboard').value,uplift:$('fuel_uplift').value};f.weather=Object.fromEntries(WX_FIELDS.map(([k])=>[k,$(`wx_${k}`).value]));f.pax=Object.fromEntries(PAX_FIELDS.map(([k])=>[k,['count','business'].includes(k)?n($(`pax_${k}`).value):$(`pax_${k}`).value]));f.notes=$('notes_remarks').value;try{f.rawLogTen=JSON.parse($('rawLogTen').value||'{}')}catch{toast('JSON LogTen invalide');return}if(!editingId){flights.push(f)}else{const i=flights.findIndex(x=>x.id===editingId);if(i>=0)flights[i]=f}flights.sort(sortF);save();refresh();closeFlight();toast(editingId?'Vol modifié.':'Vol ajouté.')}
 function del(id){if(!confirm('Supprimer ce vol ?'))return;flights=flights.filter(f=>f.id!==id);selectedIds.delete(id);save();refresh();toast('Vol supprimé.')}
 function duplicate(id){const f=flights.find(x=>x.id===id);if(!f)return;const c=JSON.parse(JSON.stringify(f));c.id=uid();flights.push(c);flights.sort(sortF);save();refresh();openFlight(c.id)}
 $('addFlightBtn').onclick=()=>openFlight(null);$('closeModalBtn').onclick=closeFlight;$('cancelFlightBtn').onclick=closeFlight;$('saveFlightBtn').onclick=saveFlight;$('deleteFlightBtn').onclick=()=>editingId&&del(editingId);
