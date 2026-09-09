@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v50 · 2026.09.09';
+const APP_VERSION = 'v50.1 · 2026.09.09';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -3482,12 +3482,12 @@ function buildPrintReport(fuel, mb, perf){
       ${fplHead('ÉQUIPEMENTS DE SÉCURITÉ')}
       <table>
         <tr><th colspan="3">ÉQUIPEMENTS DE SÉCURITÉ</th></tr>
-        ${eqRow('eqFirstAid','TROUSSE DE PREMIERS SECOURS','CAT.IDE.A.220')}
-        ${eqRow('eqOxygen','OXYGÈNE SUPPLÉMENTAIRE','CAT.IDE.A.240')}
-        ${eqRow('eqExtinguisher','EXTINCTEUR À MAIN','CAT.IDE.A.250')}
-        ${eqRow('eqLifeJacket','GILET DE SAUVETAGE','CAT.IDE.A.285')}
-        ${eqRow('eqLifeRaft','CANOT DE SAUVETAGE','CAT.IDE.A.285')}
-        ${eqRow('eqPaxBrief','CONSIGNES PASSAGERS','CAT.OP.MPA.170')}
+        ${eqRow('eqFirstAid','TROUSSE DE PREMIERS SECOURS','NCO.IDE.A.145')}
+        ${eqRow('eqOxygen','OXYGÈNE SUPPLÉMENTAIRE','NCO.IDE.A.155')}
+        ${eqRow('eqExtinguisher','EXTINCTEUR À MAIN','NCO.IDE.A.160')}
+        ${eqRow('eqLifeJacket','GILET DE SAUVETAGE','NCO.IDE.A.175')}
+        ${eqRow('eqLifeRaft','CANOT DE SAUVETAGE','NCO.IDE.A.175')}
+        ${eqRow('eqPaxBrief','CONSIGNES PASSAGERS','NCO.OP.130')}
         ${eqRow('eqVest','GILET JAUNE DE SÉCURITÉ','')}
       </table>
     </div>`;

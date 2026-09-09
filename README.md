@@ -669,3 +669,22 @@ programme sans émettre d'événement `input` :
 Contrôle : sur le dossier F-GTPD du 17/09, le calcul en direct donne 800 kg et
 384 mm au décollage, 777 kg et 362 mm à l'atterrissage — identiques au dossier
 imprimé.
+
+## v50.1 — Références réglementaires en NCO
+
+Le tableau des équipements de sécurité citait des références CAT, qui visent le
+transport aérien commercial. Un DR400 en aéroclub relève de la partie NCO
+(exploitation non commerciale, aéronef autre que complexe).
+
+| Équipement | Avant | Après |
+|---|---|---|
+| Trousse de premiers secours | CAT.IDE.A.220 | NCO.IDE.A.145 |
+| Oxygène supplémentaire | CAT.IDE.A.240 | NCO.IDE.A.155 |
+| Extincteur à main | CAT.IDE.A.250 | NCO.IDE.A.160 |
+| Gilet de sauvetage | CAT.IDE.A.285 | NCO.IDE.A.175 |
+| Canot de sauvetage | CAT.IDE.A.285 | NCO.IDE.A.175 |
+| Consignes passagers | CAT.OP.MPA.170 | NCO.OP.130 |
+
+Plus aucune référence CAT dans le dossier. La seule occurrence restante du mot
+est « CAT. AÉRODROME », la catégorie d'aérodrome de la page de garde. Le calcul
+carburant était déjà intitulé PART-NCO.
