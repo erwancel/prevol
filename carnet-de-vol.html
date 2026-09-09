@@ -142,19 +142,43 @@
 <table style="width:100%;border-collapse:collapse">
 <thead><tr><th>Fonction</th><th>Personne</th></tr></thead><tbody id="crewRows"></tbody></table><datalist id="peopleList"></datalist></section>
 
-<section class="section"><div class="section-title"><div class="num">04</div><h4>Temps de vol</h4></div><div class="grid-5" id="timeFields"></div></section>
+<section class="section"><div class="section-title"><div class="num">04</div><h4>Temps de vol</h4></div><div class="quick-times">
+<div class="grid-3">
+<div class="field"><label>Total <span class="auto-tag" id="totalAuto">calculé</span></label><input id="t_total_quick" placeholder="00:00"></div>
+<div class="field"><label>Fonction à bord</label>
+<select id="q_function">
+<option value="pic">Commandant de bord (PIC)</option>
+<option value="sic">Copilote (SIC)</option>
+<option value="p1us">PICUS / P1 u/s</option>
+<option value="dualReceived">Dual reçu</option>
+<option value="dualGiven">Instructeur</option>
+<option value="solo">Solo</option>
+<option value="">Aucune</option>
+</select></div>
+<div class="field"><label>Conditions</label>
+<div class="quick-checks">
+<label class="qc"><input id="q_night" type="checkbox"> Nuit</label>
+<label class="qc"><input id="q_ifr" type="checkbox"> IFR</label>
+<label class="qc"><input id="q_multi" type="checkbox"> Multi-pilote</label>
+</div></div>
+</div>
+<div class="small">Le total se calcule à partir des heures de départ et d'arrivée. Les cases reportent ce total dans les colonnes correspondantes du carnet — décoche et déplie le détail si une durée diffère.</div>
+<button class="btn ghost" id="toggleTimeDetail" type="button" style="margin-top:10px">Détail des temps ▾</button>
+</div>
+<div class="grid-5" id="timeFields" style="display:none;margin-top:12px"></div></section>
 <section class="section flight-only"><div class="section-title"><div class="num">05</div><h4>Décollages & atterrissages</h4></div><div class="grid-4" id="opsFields"></div></section>
-<section class="section flight-only"><div class="section-title"><div class="num">06</div><h4>Approches</h4></div><table style="width:100%;border-collapse:collapse"><thead><tr><th>N°</th><th>Type</th><th>Catégorie</th><th>Mode</th><th>Aérodrome</th></tr></thead><tbody id="approachRows"></tbody></table></section>
-<section class="section flight-only"><div class="section-title"><div class="num">07</div><h4>Duty / FDP</h4></div><div class="grid-4">
+<div class="extra-toggle"><button class="btn ghost" id="toggleExtras" type="button">Afficher les rubriques détaillées ▾</button><span class="small">Décollages, approches, duty, carburant, conditions, passagers, données brutes</span></div>
+<section class="section flight-only extra-section"><div class="section-title"><div class="num">06</div><h4>Approches</h4></div><table style="width:100%;border-collapse:collapse"><thead><tr><th>N°</th><th>Type</th><th>Catégorie</th><th>Mode</th><th>Aérodrome</th></tr></thead><tbody id="approachRows"></tbody></table></section>
+<section class="section flight-only extra-section"><div class="section-title"><div class="num">07</div><h4>Duty / FDP</h4></div><div class="grid-4">
 <div class="field"><label>On Duty</label><input id="duty_on" type="datetime-local"></div><div class="field"><label>Off Duty</label><input id="duty_off" type="datetime-local"></div><div class="field"><label>Total Duty</label><input id="duty_total"></div><div class="field"><label>Rest</label><input id="duty_rest"></div><div class="field"><label>FDP Start</label><input id="duty_fdpStart" type="datetime-local"></div><div class="field"><label>FDP End</label><input id="duty_fdpEnd" type="datetime-local"></div><div class="field"><label>Total FDP</label><input id="duty_fdpTotal"></div></div></section>
 
-<section class="section flight-only"><div class="section-title"><div class="num">08</div><h4>Carburant</h4></div><div class="grid-5">
+<section class="section flight-only extra-section"><div class="section-title"><div class="num">08</div><h4>Carburant</h4></div><div class="grid-5">
 <div class="field"><label>Fuel Added</label><input id="fuel_added" type="number" step=".1"></div><div class="field"><label>Fuel Burned</label><input id="fuel_burned" type="number" step=".1"></div><div class="field"><label>Min. Diversion</label><input id="fuel_diversion" type="number" step=".1"></div><div class="field"><label>Fuel Aboard</label><input id="fuel_aboard" type="number" step=".1"></div><div class="field"><label>Fuel Uplift</label><input id="fuel_uplift" type="number" step=".1"></div></div></section>
 
-<section class="section"><div class="section-title"><div class="num">09</div><h4>Conditions</h4></div><div class="grid-4" id="weatherFields"></div></section>
-<section class="section"><div class="section-title"><div class="num">10</div><h4>Passagers</h4></div><div class="grid-4" id="paxFields"></div></section>
+<section class="section extra-section"><div class="section-title"><div class="num">09</div><h4>Conditions</h4></div><div class="grid-4" id="weatherFields"></div></section>
+<section class="section extra-section"><div class="section-title"><div class="num">10</div><h4>Passagers</h4></div><div class="grid-4" id="paxFields"></div></section>
 <section class="section"><div class="section-title"><div class="num">11</div><h4>Notes & remarques</h4></div><div class="field"><label>Remarks</label><textarea id="notes_remarks" rows="5"></textarea></div></section>
-<section class="section"><div class="section-title"><div class="num">12</div><h4>Données LogTen d'origine</h4></div><div class="field"><label>Données brutes</label><textarea id="rawLogTen" rows="7"></textarea></div></section>
+<section class="section extra-section"><div class="section-title"><div class="num">12</div><h4>Données LogTen d'origine</h4></div><div class="field"><label>Données brutes</label><textarea id="rawLogTen" rows="7"></textarea></div></section>
 
 </div><div class="modal-actions"><button class="btn danger" id="deleteFlightBtn">Supprimer</button><button class="btn" id="cancelFlightBtn">Annuler</button><button class="btn primary" id="saveFlightBtn">Enregistrer</button></div>
 </div></div>

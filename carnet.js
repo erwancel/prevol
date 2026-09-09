@@ -110,6 +110,7 @@ function openFlight(id){editingId=id;const f=id?flights.find(x=>x.id===id):empty
  if($('f_simType'))$('f_simType').value=f.sim?.type||f.aircraftType||'';
  if($('f_simTotal'))$('f_simTotal').value=simTotal(f)||'';
  if($('f_simRemark'))$('f_simRemark').value=f.sim?.remark||f.notes||'';
+ deduireRapide(f);
  syncEntryType();
  $('deleteFlightBtn').style.display=id?'':'none';$('flightModal').classList.add('open')}
 // Affiche le formulaire adapté au type d'entrée : une séance simulateur
@@ -127,6 +128,110 @@ function syncEntryType(){
     ? (editingId?'Modifier la séance simulateur':'Ajouter une séance simulateur')
     : (editingId?'Modifier le vol':'Ajouter un vol');
 }
+
+
+// ============ SAISIE RAPIDE DES TEMPS ============
+// Le carnet compte quinze colonnes de durées. En pratique elles valent
+// presque toutes le temps de vol : un vol de nuit reporte le total en nuit,
+// un vol commandant de bord le reporte en PIC. On calcule donc le total à
+// partir des horaires, et des cases à cocher le recopient là où il faut.
+// Le détail reste accessible pour les vols où une durée diffère.
+
+// « 14:30 » ou « 1430 » -> minutes depuis minuit
+function heureEnMinutes(v){
+  const t=String(v==null?'':v).trim();
+  let m=t.match(/^(\d{1,2})[:hH.](\d{2})$/);
+  if(!m) m=t.match(/^(\d{2})(\d{2})$/);
+  if(!m) return null;
+  const h=+m[1], mi=+m[2];
+  if(h>23||mi>59) return null;
+  return h*60+mi;
+}
+
+function calculerTotal(){
+  const dep=heureEnMinutes($('f_actualDeparture')?.value);
+  const arr=heureEnMinutes($('f_actualArrival')?.value);
+  const tag=$('totalAuto');
+  if(dep==null||arr==null){ if(tag) tag.textContent='à saisir'; return null; }
+  // Un vol qui passe minuit arrive « avant » son départ : on ajoute 24 h.
+  let d=arr-dep; if(d<0) d+=24*60;
+  if(tag) tag.textContent='calculé';
+  return d;
+}
+
+function majTotalAuto(){
+  const min=calculerTotal();
+  const champ=$('t_total_quick');
+  if(min==null||!champ) return;
+  champ.value=fmt(min);
+  appliquerRapide();
+}
+
+// Reporte le total dans les colonnes cochées, et vide celles qui ne le sont
+// plus — sans quoi une case décochée laisserait une durée fantôme.
+function appliquerRapide(){
+  const total=$('t_total_quick')?.value||'';
+  if($('t_total')) $('t_total').value=total;
+
+  const fonction=$('q_function')?.value||'';
+  ['pic','sic','p1us','dualReceived','dualGiven','solo'].forEach(k=>{
+    if($('t_'+k)) $('t_'+k).value = (k===fonction)?total:'';
+  });
+  if($('t_night')) $('t_night').value = $('q_night')?.checked?total:'';
+  if($('t_ifr'))   $('t_ifr').value   = $('q_ifr')?.checked?total:'';
+  if($('t_multiPilot')) $('t_multiPilot').value = $('q_multi')?.checked?total:'';
+  const pm=$('f_pilotMode');
+  if(pm && $('q_multi')) pm.value = $('q_multi').checked ? 'Multi-Pilot' : (pm.value==='Multi-Pilot'?'Single-Pilot':pm.value);
+}
+
+// L'inverse : à l'ouverture d'un vol existant, on déduit l'état des cases
+// des durées déjà enregistrées, pour ne pas les écraser.
+function deduireRapide(f){
+  const total=f.times?.total||'';
+  if($('t_total_quick')) $('t_total_quick').value=total;
+  const eq=k=>total && f.times?.[k]===total;
+  const fonction=['pic','sic','p1us','dualReceived','dualGiven','solo'].find(eq)||'';
+  if($('q_function')) $('q_function').value=fonction;
+  if($('q_night')) $('q_night').checked=eq('night');
+  if($('q_ifr'))   $('q_ifr').checked=eq('ifr');
+  if($('q_multi')) $('q_multi').checked = f.pilotMode==='Multi-Pilot' || eq('multiPilot');
+  const tag=$('totalAuto'); if(tag) tag.textContent = total?'enregistré':'à saisir';
+
+  // Si une durée ne correspond pas au total, le détail est ouvert d'office :
+  // la saisie rapide ne saurait pas la représenter.
+  const particulier=['pic','sic','p1us','dualReceived','dualGiven','solo','night','ifr']
+    .some(k=>{const v=f.times?.[k]||''; return v && v!==total;});
+  const detail=$('timeFields');
+  if(detail) detail.style.display = particulier ? '' : 'none';
+  const b=$('toggleTimeDetail');
+  if(b) b.textContent = particulier ? 'Masquer le détail ▴' : 'Détail des temps ▾';
+}
+
+(function initSaisieRapide(){
+  ['f_actualDeparture','f_actualArrival'].forEach(id=>{
+    const el=$(id); if(el) el.addEventListener('input', majTotalAuto);
+  });
+  const t=$('t_total_quick'); if(t) t.addEventListener('input', appliquerRapide);
+  ['q_function','q_night','q_ifr','q_multi'].forEach(id=>{
+    const el=$(id); if(el) el.addEventListener('change', appliquerRapide);
+  });
+  const b=$('toggleTimeDetail');
+  if(b) b.addEventListener('click', ()=>{
+    const d=$('timeFields'); if(!d) return;
+    const ouvert = d.style.display!=='none';
+    d.style.display = ouvert?'none':'';
+    b.textContent = ouvert?'Détail des temps ▾':'Masquer le détail ▴';
+  });
+  const e=$('toggleExtras');
+  if(e) e.addEventListener('click', ()=>{
+    const secs=[...document.querySelectorAll('.extra-section')];
+    const ouvert = secs.some(x=>x.dataset.open==='1');
+    secs.forEach(x=>{ x.dataset.open = ouvert?'':'1'; x.style.display = ouvert?'none':''; });
+    e.textContent = ouvert?'Afficher les rubriques détaillées ▾':'Masquer les rubriques détaillées ▴';
+  });
+  // Repliées au départ
+  document.querySelectorAll('.extra-section').forEach(x=>{ x.style.display='none'; });
+})();
 
 function closeFlight(){ $('flightModal').classList.remove('open');editingId=null}
 function saveFlight(){const f=editingId?flights.find(x=>x.id===editingId):emptyFlight();

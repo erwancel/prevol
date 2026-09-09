@@ -1331,3 +1331,20 @@ header.top::before{display:none}.hero-copy{position:relative;z-index:2;max-width
 .weather-taf .taf-line{font-family:var(--code);font-size:11px;line-height:1.5;
   word-break:break-word;}
 .weather-taf .taf-line:not(.first){padding-left:12px;color:var(--muted);}
+
+/* ---- Carnet : saisie rapide des temps ----
+   Le carnet compte quinze colonnes de durées, presque toujours égales au
+   temps de vol. Le bloc rapide les remplit ; le détail reste dépliable
+   pour les vols où une durée diffère. */
+.carnet-page .quick-times{border:1px solid var(--line);border-radius:4px;
+  padding:14px;background:var(--readout-bg);}
+.carnet-page .auto-tag{font-size:10.5px;color:var(--accent);font-weight:600;
+  margin-left:6px;text-transform:none;}
+.carnet-page .quick-checks{display:flex;gap:14px;flex-wrap:wrap;align-items:center;
+  min-height:38px;}
+.carnet-page .qc{display:flex;align-items:center;gap:6px;font-size:13px;
+  white-space:nowrap;cursor:pointer;margin:0;}
+.carnet-page .qc input{width:auto;margin:0;}
+.carnet-page .extra-toggle{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  margin:18px 0 4px;padding-top:14px;border-top:1px solid var(--line);}
+.carnet-page .extra-toggle .small{color:var(--muted);}
