@@ -790,3 +790,23 @@ menu replié derrière un bouton demanderait deux gestes au lieu d'un.
 Cascade vérifiée par simulation : à 390 px c'est bien `display:block` qui
 l'emporte sur les deux `display:none` antérieurs ; à 900 px le comportement
 précédent est conservé.
+
+## v52.1 — Menu sous l'îlot des caméras
+
+En mode application installée, le contenu passe sous la barre d'état et l'îlot
+des caméras : c'est l'effet de `apple-mobile-web-app-status-bar-style` réglé sur
+`black-translucent`, combiné à `viewport-fit=cover`.
+
+Une bande sombre en position fixe couvrait déjà cette zone, mais le menu n'en
+tenait pas compte : ses pastilles passaient dessous et la première rangée était
+tronquée.
+
+Sur téléphone, la bande est retirée et c'est le menu qui descend de la hauteur
+de la zone sûre. Son propre fond remplit alors l'espace de l'îlot, sans raccord
+de couleur visible — la bande et le menu n'avaient pas exactement la même
+teinte. Le menu étant en position collante, il continue de couvrir cette zone
+pendant le défilement.
+
+Ajouté aussi : les retraits gauche et droit pour l'orientation paysage, où
+l'îlot mange un bord, et un retrait bas pour que le contenu ne finisse pas sous
+la barre d'accueil.

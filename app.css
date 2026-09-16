@@ -1438,3 +1438,41 @@ body[data-view="fuel"] #dossierFuelResult{display:none;}
     background:linear-gradient(90deg, rgba(16,27,43,0), rgba(16,27,43,.95));
   }
 }
+
+/* ============================================================
+   ZONE SÛRE iOS — menu sur téléphone
+   ------------------------------------------------------------
+   En mode application installée, le contenu passe SOUS la barre
+   d'état et l'îlot des caméras : c'est l'effet de
+   apple-mobile-web-app-status-bar-style=black-translucent, combiné
+   à viewport-fit=cover. Une bande sombre en position fixe couvrait
+   déjà cette zone, mais le menu n'en tenait pas compte et ses
+   pastilles passaient dessous.
+
+   Sur téléphone, la bande est retirée et c'est le menu lui-même qui
+   descend de la hauteur de la zone sûre : son fond remplit alors
+   l'espace de l'îlot, sans raccord de couleur visible. Il est en
+   position collante, donc il continue de couvrir cette zone au
+   défilement.
+   ============================================================ */
+@media(max-width:760px){
+  body::before{display:none;}
+
+  .sidebar{
+    padding-top:calc(env(safe-area-inset-top, 0px) + 8px);
+    padding-left:env(safe-area-inset-left, 0px);
+    padding-right:env(safe-area-inset-right, 0px);
+    z-index:50;
+  }
+  /* En paysage, l'îlot mange le bord gauche ou droit */
+  .side-nav{
+    padding-left:calc(10px + env(safe-area-inset-left, 0px));
+    padding-right:calc(10px + env(safe-area-inset-right, 0px));
+  }
+  .sidebar::after{right:env(safe-area-inset-right, 0px);}
+
+  /* Le bas de page doit rester au-dessus de la barre d'accueil */
+  .main-content, .app-shell > main{
+    padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+}
