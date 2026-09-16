@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v51 · 2026.09.09';
+const APP_VERSION = 'v52 · 2026.09.16';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -952,6 +952,7 @@ function computePerf(mb){
     afmOk,toAfm,toDist,toda,asda,marginToda,marginAsda,statusTO,
     ldAfm,ldDist,lda,marginLda,statusLD,
     sepArr,longSame,grassCoefArr,windArr,wcArr,todaArr,asdaArr,
+    windIndetermineDep:!!windDepR.indetermine, windIndetermineArr:!!windArrR.indetermine,
     qnhArr,tempArr,terrainAltArr,paArr,isaDevArr,daArr,
     rwyDep,rwyLdg,windDepComp:windDepR.comp,windArrComp:windArrR.comp};
 }
@@ -1138,11 +1139,38 @@ function resolveWindComponent(raw, qfu){
 // Vent effectif d'un champ : composante calculée si "dir/vitesse" + piste connue,
 // sinon la valeur est prise telle quelle (saisie directe en kt).
 function effectiveWind(rawId, icao, rwy){
-  const raw = str(rawId);
+  const raw = String(str(rawId) || '').trim();
   const comp = resolveWindComponent(raw, runwayQfu(icao, rwy));
-  if(comp) return {kt: comp.head, comp};
-  const n = parseFloat(String(raw).replace(',', '.'));
-  return {kt: isNaN(n) ? 0 : n, comp: null};
+  if(comp) return {kt: comp.head, comp, indetermine:false};
+
+  // Le champ accepte deux écritures : une composante directe en nœuds
+  // (« 8 », « -3 »), ou un vent météo « 310/05 », « 32015G25KT ».
+  //
+  // Sans piste sélectionnée, le QFU est inconnu et la composante ne peut pas
+  // être calculée. parseFloat lisait alors le début de la chaîne : « 310/05 »
+  // devenait 310 nœuds de face, et la correction de distance tombait à son
+  // plancher de 0,53 — les distances étaient divisées par deux.
+  //
+  // On ne devine plus : une écriture météo sans piste rend le vent
+  // indéterminé, et le calcul se fait sans correction (coefficient 1),
+  // ce qui est le choix prudent.
+  const estMeteo = /^(?:\d{3}|VRB)\s*\/?\s*\d{1,3}/i.test(raw) || /KT\b/i.test(raw);
+  if(estMeteo) return {kt: 0, comp: null, indetermine: true};
+
+  const n = parseFloat(raw.replace(',', '.'));
+  if(isNaN(n)) return {kt: 0, comp: null, indetermine:false};
+
+  // Le filtre ci-dessus exige une vitesse après les trois chiffres : une
+  // DIRECTION SEULE lui échappait. « 310 » devenait alors 310 nœuds de face,
+  // la correction tombait à son plancher (0,53) et les distances étaient
+  // amputées de moitié, sans aucun message.
+  const capSeul = /^\d{3}$/.test(raw) && n >= 0 && n <= 360;
+  // Garde-fou général : sur ces machines, aucune composante plausible ne
+  // dépasse quelques dizaines de nœuds. Au-delà, c'est une erreur de saisie.
+  const implausible = Math.abs(n) > 60;
+  if(capSeul || implausible) return {kt: 0, comp: null, indetermine: true};
+
+  return {kt: n, comp: null, indetermine:false};
 }
 
 // Classe les pistes enregistrées d'un terrain selon le vent saisi.
@@ -5396,7 +5424,8 @@ function svgRunwayDiagram(o){
 
   return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img"
        aria-label="Schéma de la piste ${esc(o.piste)} avec distances et vent">
-    <text x="${x0}" y="26" font-size="14" font-weight="700" fill="var(--text)">Piste ${esc(o.piste||'—')}</text>
+    <text x="${x0}" y="26" font-size="14" font-weight="700" fill="var(--text)">${
+      o.piste ? 'Piste '+esc(o.piste) : 'Piste non sélectionnée'}</text>
     <text x="${x0}" y="44" font-size="12" fill="var(--muted)">${esc(o.phase)} · ${o.longueur} m disponibles</text>
 
     ${vent}
@@ -5415,7 +5444,7 @@ function svgRunwayDiagram(o){
           stroke="var(--text)" stroke-width="1.5"/>
     <line x1="${x0+14}" y1="${y+ep/2}" x2="${x1-14}" y2="${y+ep/2}"
           stroke="var(--muted)" stroke-width="2" stroke-dasharray="18 12"/>
-    <text x="${x0+6}" y="${y+ep+17}" font-size="12" font-weight="600" fill="var(--text)">${esc(o.piste||'')}</text>
+    <text x="${x0+6}" y="${y+ep+17}" font-size="12" font-weight="600" fill="var(--text)">${esc(o.piste||'?')}</text>
     <text x="${x1-6}" y="${y+ep+17}" font-size="12" text-anchor="end" fill="var(--muted)">${o.longueur} m</text>
 
     <!-- Marge restante -->
@@ -5459,12 +5488,24 @@ function renderRunwayDiagram(){
   };
 
   host.innerHTML = svgRunwayDiagram(dep) + (arr.longueur>0 ? svgRunwayDiagram(arr) : '');
+  if(hint && (perf.windIndetermineDep || perf.windIndetermineArr)){
+    hint.className='rwyMsg bad';
+    hint.textContent='Vent non exploitable : direction seule, format météo sans '
+      + 'piste sélectionnée, ou valeur hors du plausible. La composante de face ne '
+      + 'peut pas être calculée, les distances sont données SANS correction de vent '
+      + '— donc au plus pénalisant. Sélectionne une piste, ou saisis directement la '
+      + 'composante en nœuds (« 8 » de face, « -3 » arrière).';
+    return;
+  }
   if(hint){
+    hint.className='smallhint';
     const cd=(perf.wc*perf.grassCoef), ca=(perf.wcArr*perf.grassCoefArr);
+    // La composante retenue est affichée : c'est elle qui explique le
+    // coefficient, et c'est par elle qu'on repère une saisie douteuse.
     hint.textContent='Facteurs appliqués : décollage × '+fmt(cd,2)
-      +' (vent '+fmt(perf.wc,2)+' × piste '+fmt(perf.grassCoef,2)+')'
+      +' (vent '+fmt(perf.wc,2)+' pour '+fmt(perf.wind,0)+' kt de composante · piste '+fmt(perf.grassCoef,2)+')'
       +', atterrissage × '+fmt(ca,2)
-      +' (vent '+fmt(perf.wcArr,2)+' × piste '+fmt(perf.grassCoefArr,2)+').';
+      +' (vent '+fmt(perf.wcArr,2)+' pour '+fmt(perf.windArr,0)+' kt · piste '+fmt(perf.grassCoefArr,2)+').';
   }
 }
 

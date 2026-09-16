@@ -712,3 +712,81 @@ dépassement, correctement signalé en rouge.
 
 Retiré : la mention « Calcul mis à jour automatiquement à chaque modification
 des masses, du carburant ou des paramètres avion. »
+
+## v51.1 — Correction de vent aberrante
+
+Symptôme : coefficient de vent 0,53 au décollage comme à l'atterrissage, soit
+des distances divisées par deux — 392 m ramenés à 208 m.
+
+Cause : `effectiveWind` acceptait deux écritures dans le champ vent, une
+composante directe en nœuds (« 8 », « −3 ») ou un vent météo (« 310/05 »,
+« 32015G25KT »). Sans piste sélectionnée, le QFU est inconnu et la composante
+ne peut pas être calculée. La fonction repliait alors sur `parseFloat`, qui
+lit le début de la chaîne : **« 310/05 » devenait 310 nœuds de face**. La table
+de correction, plafonnée à son dernier point, renvoyait 0,53.
+
+Le titre « Piste — » du schéma était le second symptôme du même défaut :
+aucune piste n'était sélectionnée.
+
+Correction : une écriture au format météo sans piste rend désormais le vent
+**indéterminé**. Le calcul se fait sans correction (coefficient 1), choix
+prudent puisqu'il n'améliore aucune distance, et un avertissement rouge sous le
+schéma explique qu'il faut sélectionner une piste pour obtenir les valeurs
+réelles. Le titre affiche « Piste non sélectionnée ».
+
+Vérifié sur huit écritures : `310/05`, `32015G25KT`, `310/05KT`, `VRB03KT` sont
+reconnues comme météo et neutralisées sans piste ; `8`, `-3`, `12` et le champ
+vide restent traités comme des composantes directes ; avec la piste 25,
+`310/05` redonne bien 8 kt de face et un coefficient de 0,83.
+
+## v51.1 — Vent lu comme une composante de 310 kt
+
+Symptôme : distances divisées par deux, coefficient de vent à 0,53 pour les
+deux phases, et « Piste — » sans désignateur.
+
+0,53 est le dernier point de la table de correction AFM, atteint à 30 kt de
+face et au-delà. Le calcul croyait donc à un vent de face d'au moins 30 nœuds.
+
+Cause : `effectiveWind` neutralise bien les écritures météo (`310/05`,
+`31005KT`, `VRB03`), mais son filtre exige une vitesse APRÈS les trois
+chiffres. Une **direction seule** — « 310 » — lui échappait et partait dans
+`parseFloat` : 310 nœuds de face, coefficient plancher, distances amputées de
+moitié. Silencieusement.
+
+Deux garde-fous :
+
+- une valeur de trois chiffres comprise entre 000 et 360 est une direction,
+  pas une composante : vent déclaré indéterminé ;
+- toute composante supérieure à 60 kt en valeur absolue est une erreur de
+  saisie sur ces machines : même traitement.
+
+Dans les deux cas le coefficient revient à 1,00 — le choix pénalisant — et le
+schéma l'annonce en rouge avec la marche à suivre.
+
+Le message de facteurs indique désormais **la composante retenue** en plus du
+coefficient : c'est par elle qu'une saisie douteuse se repère.
+
+Effet sur le cas signalé : décollage 208 → 392 m, atterrissage 223 → 420 m.
+Avec la piste 25 sélectionnée et un vent 310/05, la composante réelle est de
+3 kt de face, coefficient 0,94, soit 367 m.
+
+## v52 — Menu illisible sur téléphone
+
+Sous 760 px, la barre horizontale n'affichait que des icônes : une règle
+`display:none` masquait tous les libellés. Douze pictogrammes seuls ne se
+distinguent pas, et la barre débordait sur la droite sans que rien ne l'indique.
+
+- Chaque entrée devient une pastille de 72 px, icône et libellé empilés, le
+  libellé sur deux lignes au besoin.
+- L'entrée active reçoit un fond et un libellé en gras : la page courante se
+  repère sans lire.
+- Un dégradé sur le bord droit signale que la barre continue, et le défilement
+  s'aligne pastille par pastille.
+
+Douze entrées à 74 px font 888 px de large : le défilement reste nécessaire sur
+un écran de 390 px, où cinq entrées sont visibles d'emblée. C'est assumé — un
+menu replié derrière un bouton demanderait deux gestes au lieu d'un.
+
+Cascade vérifiée par simulation : à 390 px c'est bien `display:block` qui
+l'emporte sur les deux `display:none` antérieurs ; à 900 px le comportement
+précédent est conservé.
