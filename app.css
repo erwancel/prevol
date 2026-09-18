@@ -1354,7 +1354,7 @@ body[data-view="fuel"] #dossierFuelResult{display:none;}
       transform:none !important;}
     #printScaler{overflow:visible !important;height:auto !important;}
     #printReport .page{box-shadow:none !important;border:none !important;border-radius:0 !important;margin-bottom:0 !important;
-      padding:12mm !important;box-sizing:border-box !important;width:auto !important;min-height:0 !important;overflow:visible !important;
+      padding:10mm !important;box-sizing:border-box !important;width:auto !important;min-height:0 !important;overflow:visible !important;
       page-break-after:always !important;break-after:page !important;}
     #printReport .page:last-child{page-break-after:auto !important;break-after:auto !important;}
     #printReport th,#printReport td,#printReport .fplTitle.boxed,#printReport .noteBox,#printReport .summaryTable td{
@@ -1475,4 +1475,19 @@ body[data-view="fuel"] #dossierFuelResult{display:none;}
   .main-content, .app-shell > main{
     padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));
   }
-}
+
+    /* Pages de pièce jointe (dossier météo, PIB, VAC, documents pilote).
+       L'image était dimensionnée en LARGEUR : width:100%. Sur un scan A4
+       portrait, 186 mm de large donnent 263 mm de haut, plus la légende et
+       les retraits — soit 295 mm pour 297 mm disponibles. Deux millimètres
+       de marge : le moindre arrondi faisait déborder la page, et le
+       navigateur créait une feuille supplémentaire ne contenant que son
+       en-tête. D'où les treize pages parasites.
+       On contraint donc la HAUTEUR, la largeur suivant le rapport d'image. */
+    #printReport .page > img{
+      max-height:265mm !important; width:auto !important; max-width:100% !important;
+      height:auto !important; margin:0 auto !important; display:block !important;
+    }
+    /* Une page de dossier ne doit jamais générer de feuille de débordement */
+    #printReport .page{max-height:297mm !important;}
+  }

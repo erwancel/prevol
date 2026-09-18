@@ -810,3 +810,31 @@ pendant le défilement.
 Ajouté aussi : les retraits gauche et droit pour l'orientation paysage, où
 l'îlot mange un bord, et un retrait bas pour que le contenu ne finisse pas sous
 la barre d'accueil.
+
+## v53 — 42 pages au lieu de 14
+
+Le dossier du 17/09 sortait en 42 pages. Analyse page par page :
+
+- **13 pages parasites** ne contenant que l'en-tête Safari
+  (`https://prevol.pages.dev/dossier`), intercalées entre les pièces jointes ;
+- **1 page** pour la seule note de bas de page des performances ;
+- le sommaire du briefing détaché de la page de garde.
+
+Cause unique : un débordement de quelques millimètres. Les images des pièces
+jointes étaient dimensionnées en LARGEUR (`width:100%`). Sur un scan A4
+portrait, 186 mm de large induisent 263 mm de haut ; avec la légende et les
+retraits on arrive à 295 mm pour 297 mm disponibles. Deux millimètres de marge :
+le moindre arrondi fait déborder, et le navigateur crée une feuille
+supplémentaire qui ne contient que son propre en-tête.
+
+- Les images sont désormais contraintes en HAUTEUR, plafonnées à 265 mm, la
+  largeur suivant le rapport d'image. Total d'une page jointe : 293 mm, soit
+  4 mm de marge au lieu de 2.
+- Le retrait de page passe de 12 à 10 mm : 277 mm de hauteur utile au lieu de
+  273, ce qui laisse respirer la page des performances et la page de garde.
+- `max-height:297mm` sur chaque page du dossier, pour qu'aucune ne puisse
+  engendrer de feuille de débordement.
+
+Réserve : ces valeurs sont calculées, pas rendues — je n'ai pas de navigateur
+ici. S'il reste des pages parasites, elles indiqueront quel gabarit dépasse
+encore.
