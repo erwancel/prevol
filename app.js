@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v53.1 · 2026.09.18';
+const APP_VERSION = 'v54 · 2026.09.18';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -2530,7 +2530,7 @@ async function importVacPdf(file){
     }
 
     box.innerHTML = `<div class="smallhint">${pdf.numPages} page(s) analysée(s) — compare les champs en orange à la carte ci-dessous avant d'enregistrer.</div>
-      <div style="display:flex;gap:8px;overflow-x:auto;padding:8px 0;">
+      <div class="docStrip">
         ${thumbs.map((src,i)=>`<img src="${src}" alt="VAC page ${i+1}" style="height:140px;border:1px solid var(--line);border-radius:4px;background:#fff;">`).join('')}
       </div>`;
 
@@ -3553,6 +3553,7 @@ on('pdfBtn', 'click', ()=>{
   }
   document.getElementById('printReportWrap').classList.add('show');
   fitPreview();
+  fitPreviewApresImages();
   document.getElementById('printReportWrap').scrollIntoView({behavior:'smooth', block:'start'});
 });
 
@@ -3573,7 +3574,14 @@ function fitPreview(){
   scaler.style.height = 'auto';
   const available = scaler.clientWidth;
   const natural = report.scrollWidth;   // 210mm (A4) en px
-  if(!available || !natural) return;
+  if(!available || !natural){
+    // Abandonner ici laissait le transform à « none » : l'aperçu retrouvait
+    // ses 794 px réels et élargissait toute la page, partie droite hors
+    // écran. On le replie plutôt que de le laisser dans cet état.
+    report.style.transform = 'scale(0)';
+    scaler.style.height = '0px';
+    return;
+  }
   // Léger dézoom pour laisser respirer les bords de page, puis centrage horizontal
   const FIT = 0.94;
   const scale = Math.min(available/natural*FIT, 1);
@@ -3584,6 +3592,27 @@ function fitPreview(){
 
 window.addEventListener('resize', fitPreview);
 window.addEventListener('orientationchange', ()=>setTimeout(fitPreview,250));
+
+// Les pages importées (dossier météo, PIB, documents pilote) sont des images
+// en data-URL : elles n'ont pas encore de dimensions au moment où l'échelle
+// est calculée. La mesure se faisait donc sur un document incomplet, et le
+// facteur obtenu ne correspondait plus une fois les images posées — d'où une
+// page élargie dès qu'un PDF était importé, et revenue à la normale dès qu'on
+// le retirait. On recalcule à chaque image chargée.
+function fitPreviewApresImages(){
+  const report = document.getElementById('printReport');
+  if(!report) return;
+  const imgs = [...report.querySelectorAll('img')];
+  if(!imgs.length) return;
+  let restantes = imgs.filter(i=>!i.complete).length;
+  if(!restantes){ fitPreview(); return; }
+  imgs.forEach(i=>{
+    if(i.complete) return;
+    const fini = ()=>{ if(--restantes <= 0) fitPreview(); };
+    i.addEventListener('load', fini, {once:true});
+    i.addEventListener('error', fini, {once:true});
+  });
+}
 
 // ============ BULLETIN METAR / TAF (Aviation Weather Center, NOAA) ============
 // L'API de l'AWC n'autorise pas les appels directs depuis un navigateur
@@ -4196,7 +4225,7 @@ function renderWxDoc(){
   const stamp = isNaN(when) ? '' : when.toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
   box.innerHTML =
     `<div class="smallhint">${WXDOC.images.length} page(s) — importé le ${stamp}</div>
-     <div style="display:flex;gap:8px;overflow-x:auto;padding:8px 0;">
+     <div class="docStrip">
        ${WXDOC.images.map((src,i)=>`<img src="${src}" alt="page ${i+1}" style="height:90px;border:1px solid var(--line);border-radius:4px;background:#fff;">`).join('')}
      </div>`;
 }
@@ -4278,7 +4307,7 @@ function renderNtmDoc(){
   const stamp = isNaN(when) ? '' : when.toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
   box.innerHTML =
     `<div class="smallhint">${NTMDOC.images.length} page(s) — importé le ${stamp}</div>
-     <div style="display:flex;gap:8px;overflow-x:auto;padding:8px 0;">
+     <div class="docStrip">
        ${NTMDOC.images.map((src,i)=>`<img src="${src}" alt="PIB ${i+1}" style="height:90px;border:1px solid var(--line);border-radius:4px;background:#fff;">`).join('')}
      </div>`;
 }
@@ -4356,7 +4385,7 @@ function renderFreeDoc(){
   const stamp = isNaN(when) ? '' : when.toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
   box.innerHTML =
     `<div class="smallhint">${FREEDOC.images.length} page(s) — importé le ${stamp}</div>
-     <div style="display:flex;gap:8px;overflow-x:auto;padding:8px 0;">
+     <div class="docStrip">
        ${FREEDOC.images.map((src,i)=>`<img src="${src}" alt="annexe ${i+1}" style="height:90px;border:1px solid var(--line);border-radius:4px;background:#fff;">`).join('')}
      </div>`;
 }
@@ -4470,7 +4499,7 @@ function renderPilotLib(){
           <span style="font-weight:600;">${esc(it.name)}</span>
         </label>
         <div class="smallhint">${it.images.length} page(s) · ajouté le ${stamp}</div>
-        <div style="display:flex;gap:8px;overflow-x:auto;padding:8px 0;">
+        <div class="docStrip">
           ${it.images.slice(0,4).map((src,i)=>`<img src="${src}" alt="page ${i+1}" style="height:70px;border:1px solid var(--line);border-radius:4px;background:#fff;">`).join('')}
         </div>
         <div class="btnrow" style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -4536,7 +4565,7 @@ function renderPilotDoc(){
   const esc = t => String(t||'').replace(/[<>&]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
   box.innerHTML =
     `<div class="smallhint">${PILOTDOC.images.length} page(s) jointe(s) — ${esc(PILOTDOC.name)}</div>
-     <div style="display:flex;gap:8px;overflow-x:auto;padding:8px 0;">
+     <div class="docStrip">
        ${PILOTDOC.images.map((src,i)=>`<img src="${src}" alt="document ${i+1}" style="height:80px;border:1px solid var(--line);border-radius:4px;background:#fff;">`).join('')}
      </div>`;
 }

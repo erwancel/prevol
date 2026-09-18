@@ -862,3 +862,48 @@ débordait à droite et entraînait toute la page.
 l'échelle plutôt que de défiler — un défilement interne dans une carte de
 390 px de large est inutilisable. Garde-fou ajouté : `min-width:0` sur les
 cartes et les panneaux.
+
+## v54 — Page élargie dès l'import d'un PDF
+
+Diagnostic de l'utilisateur, décisif : le décalage apparaît à l'import d'un PDF
+(météo, NOTAM, documents pilote) et disparaît dès qu'on le retire. Les
+corrections des v53.x visaient le zoom iOS et le diagramme de centrage : deux
+vraies causes, mais pas celle-ci.
+
+Les vignettes des pages importées étaient posées dans une rangée flex avec
+`overflow-x:auto` en style en ligne. Cela crée bien un conteneur défilant, mais
+n'empêche pas la rangée d'imposer sa largeur à ses ancêtres. Huit pages de
+dossier météo côte à côte élargissaient donc la page entière, rendant la partie
+droite inaccessible — et tout rentrait dans l'ordre à la suppression du PDF.
+
+Les six rangées d'aperçu (dossier météo, PIB NOTAM, annexe libre, documents
+pilote, bibliothèque pilote, cartes VAC) partagent désormais une classe
+`.docStrip` avec largeur bornée et vignettes déclarées non rétractables : le
+défilement se fait à l'intérieur de la rangée, jamais au niveau de la page.
+Leurs six conteneurs sont bornés en plus.
+
+## v54 — L'aperçu A4 élargissait la page dès qu'un PDF était importé
+
+Symptôme rapporté : importer un dossier météo, un PIB ou des documents pilote
+« zoome » la page et masque sa partie droite ; retirer le PDF rétablit tout.
+
+`#printReport` mesure 210 mm, soit 794 px — près du double d'un écran d'iPhone.
+Il n'est lisible que réduit par un facteur d'échelle calculé en JavaScript par
+`fitPreview()`. Or cette fonction :
+
+1. remet `transform` à `none` pour mesurer l'élément à sa taille réelle ;
+2. **abandonne** si le conteneur n'a pas encore de largeur — laissant
+   l'aperçu à ses 794 px, donc élargissant toute la page ;
+3. mesure avant que les images des pièces jointes, en data-URL, aient des
+   dimensions : le facteur obtenu ne correspond plus une fois posées.
+
+D'où le lien direct avec l'import de PDF, et le retour à la normale dès qu'on
+les retire.
+
+- L'abandon replie désormais l'aperçu (`scale(0)`, hauteur nulle) au lieu de le
+  laisser à sa taille réelle.
+- `fitPreviewApresImages()` recompte les images non chargées et relance le
+  calcul quand la dernière est posée — sur `load` comme sur `error`, sinon une
+  image invalide bloquerait le recalcul.
+- Le conteneur borne la largeur par CSS, sans dépendre du JavaScript.
+- Sous 760 px, `overflow-x` est bloqué sur la page entière : dernier rempart.

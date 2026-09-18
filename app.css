@@ -1539,3 +1539,53 @@ body[data-view="fuel"] #dossierFuelResult{display:none;}
   .card, .page-panel, .main-content, .app-shell > main{min-width:0;}
   .page-panel{overflow-x:clip;}
 }
+
+/* ============================================================
+   APERÇUS DE PIÈCES JOINTES
+   ------------------------------------------------------------
+   Les vignettes des PDF importés étaient posées dans une rangée
+   flex avec overflow-x:auto en style en ligne. Cela suffit à créer
+   un conteneur défilant, mais PAS à l'empêcher d'imposer sa largeur
+   à ses ancêtres : une rangée de huit pages de dossier météo
+   élargissait la page entière, d'où la partie droite inaccessible
+   dès qu'un PDF était importé — et le retour à la normale dès qu'on
+   le retirait.
+
+   La largeur est désormais bornée explicitement, et les vignettes
+   sont déclarées non rétractables pour que le défilement se fasse
+   à l'intérieur de la rangée, jamais au niveau de la page.
+   ============================================================ */
+.docStrip{
+  display:flex;gap:8px;padding:8px 0;
+  width:100%;max-width:100%;min-width:0;
+  overflow-x:auto;overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+}
+.docStrip > img{flex:0 0 auto;max-width:none;}
+
+/* Les conteneurs qui les accueillent ne doivent pas se laisser élargir */
+#wxDocPreview, #ntmDocPreview, #freeDocPreview, #pilotDocPreview,
+#pilotLibList, #vacPreview{min-width:0;max-width:100%;overflow:hidden;}
+
+/* ============================================================
+   L'APERÇU A4 NE DOIT JAMAIS ÉLARGIR LA PAGE
+   ------------------------------------------------------------
+   #printReport mesure 210 mm, soit 794 px : près du double d'un
+   écran d'iPhone. Il n'est lisible que réduit par un facteur
+   d'échelle calculé en JavaScript. Tant que ce calcul n'a pas
+   abouti — conteneur masqué, images importées pas encore posées —
+   l'élément occupe sa largeur réelle et entraîne toute la page.
+
+   Le conteneur borne donc la largeur par lui-même, sans dépendre
+   du JavaScript. Sur téléphone, l'aperçu est en outre replié : à
+   390 px il est illisible, et le bouton d'impression suffit.
+   ============================================================ */
+#printScaler{overflow:hidden;max-width:100%;}
+#printReportWrap{max-width:100%;overflow:hidden;}
+
+@media(max-width:760px){
+  /* Dernier rempart : rien ne peut dépasser la largeur de l'écran */
+  html, body{max-width:100%;overflow-x:hidden;}
+  .wrap, .app-shell{max-width:100%;overflow-x:clip;}
+}
