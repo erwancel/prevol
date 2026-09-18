@@ -838,3 +838,27 @@ supplémentaire qui ne contient que son propre en-tête.
 Réserve : ces valeurs sont calculées, pas rendues — je n'ai pas de navigateur
 ici. S'il reste des pages parasites, elles indiqueront quel gabarit dépasse
 encore.
+
+## v53.1 — Dossier « zoomé » sur iPhone
+
+Deux causes distinctes derrière le même symptôme.
+
+**1. Le zoom automatique d'iOS.** Safari sur iPhone agrandit la page dès qu'on
+touche un champ dont la police est inférieure à 16 px — et il ne revient jamais
+au niveau initial. D'où un dossier qui paraît zoomé « au bout d'un moment »,
+partie droite hors écran, sans cause apparente.
+
+Trois familles de champs étaient sous le seuil : les zones de texte (13,5 px),
+l'assistant de saisie avion (12 px) et le sélecteur d'aérodrome de l'éditeur de
+piste (13 px). Toutes portées à 16 px sous 760 px seulement — les tailles
+d'origine sont conservées sur ordinateur.
+
+**2. Le diagramme de centrage débordait.** Il porte une largeur fixe en attribut
+SVG, et sa grille parente utilisait `1fr` sous 900 px, soit minmax(auto,1fr) :
+une piste qui refuse de descendre sous la taille de son contenu. La carte
+débordait à droite et entraînait toute la page.
+
+`minmax(0,1fr)` autorise le rétrécissement, et le SVG se met désormais à
+l'échelle plutôt que de défiler — un défilement interne dans une carte de
+390 px de large est inutilisable. Garde-fou ajouté : `min-width:0` sur les
+cartes et les panneaux.

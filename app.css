@@ -1491,3 +1491,51 @@ body[data-view="fuel"] #dossierFuelResult{display:none;}
     /* Une page de dossier ne doit jamais générer de feuille de débordement */
     #printReport .page{max-height:297mm !important;}
   }
+
+/* ============================================================
+   ZOOM AUTOMATIQUE iOS SUR LES CHAMPS
+   ------------------------------------------------------------
+   Safari sur iPhone agrandit la page dès qu'on touche un champ dont
+   la police est inférieure à 16 px — et il ne revient jamais au
+   niveau initial. Le dossier restait alors zoomé, partie droite hors
+   écran, sans que rien n'explique pourquoi.
+
+   Trois familles de champs étaient sous le seuil : les zones de
+   texte (13,5 px), l'assistant de saisie avion (12 px) et le
+   sélecteur d'aérodrome de l'éditeur de piste (13 px).
+
+   La règle ne s'applique qu'au tactile : sur ordinateur, les tailles
+   d'origine sont conservées.
+   ============================================================ */
+@media(max-width:760px){
+  input, select, textarea,
+  .wizGrid input, .wizGrid select,
+  .rwyEdIcaoPick select, .rwyEdIcaoPick input,
+  .carnet-page input, .carnet-page select, .carnet-page textarea{
+    font-size:16px !important;
+  }
+}
+
+/* ============================================================
+   DÉBORDEMENT HORIZONTAL SUR TÉLÉPHONE
+   ------------------------------------------------------------
+   Le diagramme de centrage porte une largeur fixe en attribut SVG.
+   Sa grille parente utilisait `1fr`, équivalent à minmax(auto,1fr) :
+   une piste qui refuse de descendre sous la taille de son contenu.
+   La carte débordait donc à droite, entraînant toute la page.
+
+   minmax(0,1fr) autorise le rétrécissement, et le SVG se met à
+   l'échelle au lieu de défiler — sur un écran de 390 px, un
+   défilement interne dans une carte déjà étroite est inutilisable.
+   ============================================================ */
+@media(max-width:760px){
+  .live-mb-layout{grid-template-columns:minmax(0,1fr) !important;}
+  .live-mb-chart{min-width:0;overflow:hidden;}
+  .live-mb-chart svg{width:100% !important;height:auto !important;}
+  .envchart-wrap{min-width:0;padding:6px;}
+  .envchart-wrap svg{width:100% !important;}
+
+  /* Garde-fou : aucune section ne doit élargir la page */
+  .card, .page-panel, .main-content, .app-shell > main{min-width:0;}
+  .page-panel{overflow-x:clip;}
+}
