@@ -10,7 +10,7 @@
 // Les chemins sont relatifs à l'emplacement du service worker, pour rester
 // valables aussi bien à la racine d'un domaine que sous /nom-du-depot/ comme
 // le fait GitHub Pages.
-const CACHE_VERSION = 'prevol-v54-apercu-a4';
+const CACHE_VERSION = 'prevol-v55';
 
 const PAGES = [
   './',
@@ -35,12 +35,20 @@ const ASSETS = [
   './app.js',
   './app.css',
   './page-carburant.js',
-  './carnet.css',
   './carnet.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
-  './hero-wing.jpg'
+  './hero-wing.jpg',
+  './apple-touch-icon.png',
+  './logo-air-one-aero.png',
+  './font-barlow-400.woff2',
+  './font-barlow-500.woff2',
+  './font-barlow-600.woff2',
+  './font-bsc-400.woff2',
+  './font-bsc-500.woff2',
+  './font-bsc-600.woff2',
+  './font-bsc-700.woff2'
 ];
 
 self.addEventListener('install', (event) => {
@@ -81,6 +89,13 @@ self.addEventListener('fetch', (event) => {
   // silencieusement depuis un cache serait dangereuse en préparation de vol.
   if (url.origin !== self.location.origin) return;
   if (url.pathname.includes('/api/')) return;
+
+  // Base de pistes partagée : app.js la demande avec ?v=<horodatage> à
+  // chaque ouverture de page. Avant la v55, chaque URL unique était ajoutée
+  // au cache, et comme le fichier n'existait pas, Cloudflare répondait par
+  // le tableau de bord (≈ 53 Ko) : le cache grossissait à chaque navigation.
+  // Réseau seul ; hors ligne, app.js retombe sur les pistes locales.
+  if (url.pathname.endsWith('/airports.json')) return;
 
   const isNavigation = req.mode === 'navigate' ||
     (req.destination === '' && req.headers.get('accept')?.includes('text/html'));

@@ -1,6 +1,24 @@
-# PréVol — v30.1
+# PréVol — v55
 
-Application de préparation de vol (PWA). Hébergement : GitHub Pages.
+Application de préparation de vol (PWA). Hébergement : Cloudflare Pages
+(prevol.pages.dev), déployé automatiquement depuis ce dépôt GitHub.
+
+## v55 — 19/11/2026
+
+- Vent : la composante de face est arrondie au kt inférieur (elle l'était au
+  kt supérieur, ce qui accordait jusqu'à 1 kt de bonification de trop).
+- Masse & centrage en direct : l'atterrissage compte désormais les 10 min
+  d'approche, comme le dossier (les deux affichages différaient de ~4 kg).
+- Diagramme : CAT U lue dans la fiche avion (n'est plus figée à 910 kg ni
+  affichée pour les DR400/120 limités à 900 kg) ; axes adaptés à l'enveloppe
+  de l'avion si elle sort du cadre des DR400.
+- Fichiers manquants ajoutés : apple-touch-icon.png (icône de l'écran
+  d'accueil iPhone/iPad), airports.json (base de pistes partagée, vide).
+- Service worker : airports.json n'est plus mis en cache à chaque ouverture
+  de page (le cache grossissait sans fin) ; carnet.css inexistant retiré.
+- Polices Barlow auto-hébergées (font-*.woff2) : plus d'appel à Google
+  Fonts, rendu identique hors ligne.
+- Images allégées (bandeau 279 → 80 Ko, logo 47 → 10 Ko).
 
 ## Structure
 

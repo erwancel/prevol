@@ -1,3 +1,11 @@
+/* Polices auto-hébergées (v55) : disponibles hors ligne, plus d'appel à Google Fonts. */
+@font-face{font-family:'Barlow';font-style:normal;font-weight:400;font-display:swap;src:url(font-barlow-400.woff2) format('woff2');}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:500;font-display:swap;src:url(font-barlow-500.woff2) format('woff2');}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:600;font-display:swap;src:url(font-barlow-600.woff2) format('woff2');}
+@font-face{font-family:'Barlow Semi Condensed';font-style:normal;font-weight:400;font-display:swap;src:url(font-bsc-400.woff2) format('woff2');}
+@font-face{font-family:'Barlow Semi Condensed';font-style:normal;font-weight:500;font-display:swap;src:url(font-bsc-500.woff2) format('woff2');}
+@font-face{font-family:'Barlow Semi Condensed';font-style:normal;font-weight:600;font-display:swap;src:url(font-bsc-600.woff2) format('woff2');}
+@font-face{font-family:'Barlow Semi Condensed';font-style:normal;font-weight:700;font-display:swap;src:url(font-bsc-700.woff2) format('woff2');}
 /* ============================================================
    PréVol — feuille de style unique, partagée par toutes les pages.
    Extraite le 07/09/2026 des blocs <style> qui étaient recopiés

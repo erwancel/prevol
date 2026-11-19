@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v54 · 2026.09.18';
+const APP_VERSION = 'v55 · 2026.11.19';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -608,6 +608,12 @@ function parseWind(raw){
 // Arrondi au kt supérieur en valeur absolue (2,1 -> 3 ; -2,1 -> -3)
 function ceilKt(v){ return v < 0 ? -Math.ceil(Math.abs(v)) : Math.ceil(v); }
 
+// Composante longitudinale arrondie du côté prudent (v55) : le vent de FACE
+// est arrondi au kt INFÉRIEUR (11,9 -> 11), le vent ARRIÈRE au kt supérieur
+// en valeur absolue (-2,1 -> -3). ceilKt arrondissait le vent de face vers le
+// haut et accordait donc jusqu'à 1 kt de bonification de trop sur les distances.
+function headKt(v){ return v < 0 ? -Math.ceil(Math.abs(v) - 1e-9) : Math.floor(v + 1e-9); }
+
 // Composantes de vent par rapport à l'axe magnétique de piste
 // head > 0 : vent de face · head < 0 : vent arrière
 function windComponents(w, qfu){
@@ -621,7 +627,7 @@ function windComponents(w, qfu){
   const head = w.speed * Math.cos(a);
   const cross = Math.abs(w.speed * Math.sin(a));
   const crossGust = Math.abs((w.gust||w.speed) * Math.sin(a));
-  return {head:ceilKt(head), headRaw:head, cross, crossGust, known:true,
+  return {head:headKt(head), headRaw:head, cross, crossGust, known:true,
           fromLeft: Math.sin(a) < 0};
 }
 
@@ -730,7 +736,7 @@ function computeMB(fuel){
   const cgLanding = momentLanding/massLanding*1000;
 
   // Envelope (CAT N reference)
-  const maxMassN = ENV_W_MAX, maxMassU = 910, minMassN = ENV_W_MIN, aftLimit = ENV_AFT;
+  const maxMassN = ENV_W_MAX, maxMassU = (ENV_W_MAX_U > 0 ? ENV_W_MAX_U : ENV_W_MAX), minMassN = ENV_W_MIN, aftLimit = ENV_AFT;
   const fwdLimitTO = fwdLimitAt(massTakeoff), fwdLimitLD = fwdLimitAt(massLanding);
 
   const marginFwdTO = cgTakeoff-fwdLimitTO, marginAftTO = aftLimit-cgTakeoff, marginMassNTO = maxMassN-massTakeoff, marginMassUTO = maxMassU-massTakeoff, marginMinTO = massTakeoff-minMassN;
@@ -750,7 +756,15 @@ function svgEnvelope(mb, opts){
   opts = opts || {};
   const W = opts.width || 620, H = opts.height || 380;
   const padL = 55, padR = 130, padT = 34, padB = 46;
-  const xMin = 190, xMax = 570, yMin = 600, yMax = 1000;
+  // Axes calés sur l'enveloppe de l'avion (v55). Ils étaient figés sur
+  // 190–570 mm / 600–1000 kg : un avion ajouté avec d'autres limites
+  // (PA28, DA40…) sortait du graphique. Pour les DR400 du club, le
+  // résultat est identique à l'ancien cadrage.
+  const fl10 = v => Math.floor(v/10)*10, cl10 = v => Math.ceil(v/10)*10;
+  const fitsDefault = ENV_FWD_LOW - 15 >= 190 && ENV_AFT + 6 <= 570 && ENV_W_MIN >= 600 && ENV_W_MAX <= 1000;
+  const xMin = fitsDefault ? 190  : fl10(ENV_FWD_LOW - 15), xMax = fitsDefault ? 570  : cl10(ENV_AFT + 15);
+  const yMin = fitsDefault ? 600  : fl10(ENV_W_MIN - 10),   yMax = fitsDefault ? 1000 : cl10(ENV_W_MAX + 10);
+  const hasU = ENV_W_MAX_U > 0 && ENV_W_MAX_U < ENV_W_MAX;
   const chartW = W-padL-padR, chartH = H-padT-padB;
   const mapX = cg => padL + (cg-xMin)/(xMax-xMin)*chartW;
   const mapY = kg => padT + (yMax-kg)/(yMax-yMin)*chartH;
@@ -763,12 +777,12 @@ function svgEnvelope(mb, opts){
 
   let grid = '';
   for(let x=xMin; x<=xMax; x+=10){
-    const isMajor = Math.round(x-190)%50===0;
+    const isMajor = Math.round(x-xMin)%50===0;
     grid += `<line x1="${mapX(x)}" y1="${padT}" x2="${mapX(x)}" y2="${H-padB}" stroke="${isMajor?'#cfcfcf':'#eee'}" stroke-width="${isMajor?1:0.6}"/>`;
     if(isMajor) grid += `<text x="${mapX(x)}" y="${H-padB+16}" font-size="11" fill="#333" text-anchor="middle">${x}</text>`;
   }
   for(let y=yMin; y<=yMax; y+=10){
-    const isMajor = Math.round(y-600)%50===0;
+    const isMajor = Math.round(y-yMin)%50===0;
     grid += `<line x1="${padL}" y1="${mapY(y)}" x2="${W-padR}" y2="${mapY(y)}" stroke="${isMajor?'#cfcfcf':'#eee'}" stroke-width="${isMajor?1:0.6}"/>`;
     if(isMajor) grid += `<text x="${padL-8}" y="${mapY(y)+4}" font-size="11" fill="#333" text-anchor="end">${y}</text>`;
   }
@@ -786,15 +800,15 @@ function svgEnvelope(mb, opts){
     <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="#111" stroke-width="1.2"/>
     <line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="#111" stroke-width="1.2"/>
     <polygon points="${envPts}" fill="none" stroke="#0d3a5c" stroke-width="2.2"/>
-    <polygon points="${envUPts}" fill="none" stroke="#0d3a5c" stroke-width="1.6" stroke-dasharray="5,4"/>
+    ${hasU ? `<polygon points="${envUPts}" fill="none" stroke="#0d3a5c" stroke-width="1.6" stroke-dasharray="5,4"/>` : ""}
     <circle cx="${toX}" cy="${toY}" r="6" fill="#b3261e"/>
     <polygon points="${tri(ldX,ldY,7)}" fill="#0d3a5c"/>
     <text x="${(padL+W-padR)/2}" y="${H-8}" font-size="12" fill="#111" text-anchor="middle">Centrage (mm)</text>
     <text x="14" y="${(padT+H-padB)/2}" font-size="12" fill="#111" text-anchor="middle" transform="rotate(-90 14 ${(padT+H-padB)/2})">Poids (kg)</text>
     <line x1="${W-padR+14}" y1="${padT+6}" x2="${W-padR+34}" y2="${padT+6}" stroke="#0d3a5c" stroke-width="2.2"/>
     <text x="${W-padR+40}" y="${padT+10}" font-size="11" fill="#111">Enveloppe CAT N</text>
-    <line x1="${W-padR+14}" y1="${padT+22}" x2="${W-padR+34}" y2="${padT+22}" stroke="#0d3a5c" stroke-width="1.6" stroke-dasharray="5,4"/>
-    <text x="${W-padR+40}" y="${padT+26}" font-size="11" fill="#111">CAT U (910 kg)</text>
+    ${hasU ? `<line x1="${W-padR+14}" y1="${padT+22}" x2="${W-padR+34}" y2="${padT+22}" stroke="#0d3a5c" stroke-width="1.6" stroke-dasharray="5,4"/>` : ""}
+    <text x="${W-padR+40}" y="${padT+26}" font-size="11" fill="#111">${hasU ? `CAT U (${ENV_W_MAX_U} kg)` : ""}</text>
     <circle cx="${W-padR+24}" cy="${padT+42}" r="5" fill="#b3261e"/>
     <text x="${W-padR+40}" y="${padT+46}" font-size="11" fill="#111">Décollage</text>
     <polygon points="${tri(W-padR+24,padT+62,6)}" fill="#0d3a5c"/>
@@ -816,7 +830,12 @@ function liveMassBalanceData(){
   const validBase = !!AC && total>0 && Number.isFinite(moment) && !missing.length;
   let mb = null;
   if(validBase){
-    const burn = Math.max(0, Math.min(fuelL, num('flightTime')>0 ? (num('flightTime')/60)*(num('consoTrip')||0) : 0));
+    // Même carburant consommé que le calcul du dossier (computeMB) : temps de
+    // vol + 10 min d'approche. Le diagramme en direct ne comptait pas
+    // l'approche et plaçait l'atterrissage ~4 kg plus lourd que le dossier.
+    let trip = 0;
+    try{ trip = computeFuel().tripFuelL || 0; }catch(e){ trip = 0; }
+    const burn = Math.max(0, Math.min(fuelL, trip));
     const landingFuelKg=Math.max(fuelL-burn,0)*density;
     const massLD=ew+pilot+cop+rear+bag+landingFuelKg;
     const momentLD=ew*ea + (pilot+cop)*af + rear*ar + bag*ab + landingFuelKg*afuel;
@@ -1130,7 +1149,7 @@ function resolveWindComponent(raw, qfu){
 
   return {
     dir:w.dir, speed:w.speed, gust:w.gust, qfu,
-    head: ceilKt(head), headRaw: base.head,
+    head: headKt(head), headRaw: base.head,
     cross: Math.ceil(crossRaw - 1e-9), crossRaw,
     from: base.cross >= 0 ? 'droite' : 'gauche'
   };
@@ -1529,7 +1548,7 @@ on('apDownloadBtn', 'click', ()=>{
     document.body.removeChild(a);
     setTimeout(()=>URL.revokeObjectURL(url), 2000);
     msg.className = 'rwyMsg ok';
-    msg.textContent = "airports.json généré — dépose-le sur Netlify à côté du fichier HTML.";
+    msg.textContent = "airports.json généré — dépose-le dans le dépôt GitHub (erwancel/prevol), à la place du fichier existant.";
   }catch(e){
     msg.className = 'rwyMsg bad';
     msg.textContent = "Téléchargement impossible : copie le texte ci-dessus à la place.";
