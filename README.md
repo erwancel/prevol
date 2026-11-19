@@ -1,7 +1,20 @@
-# PréVol — v55
+# PréVol — v56
 
 Application de préparation de vol (PWA). Hébergement : Cloudflare Pages
 (prevol.pages.dev), déployé automatiquement depuis ce dépôt GitHub.
+
+## v56 — 19/11/2026
+
+- Bouton « Imprimer / Enregistrer en PDF » : dans l'app installée (iPhone,
+  iPad), iOS ignore window.print(). Le dossier est désormais converti en vrai
+  fichier PDF sur l'appareil (vendor-html2canvas.min.js + vendor-jspdf.min.js,
+  hébergés ici, utilisables hors ligne), puis la feuille de partage s'ouvre.
+  Dans un navigateur classique, l'impression habituelle reste en place.
+- Aperçu A4 sur téléphone : il élargissait la page à ~800 px (on n'en voyait
+  qu'un morceau, surtout avec des PDF joints). Conteneurs figés à la largeur
+  de l'écran.
+- Schéma de piste : « avec facteurs » n'est plus écrit dans la barre bleue,
+  mais entre la barre grise et la barre bleue.
 
 ## v55 — 19/11/2026
 

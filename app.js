@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v55 · 2026.11.19';
+const APP_VERSION = 'v56 · 2026.11.19';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -3564,7 +3564,7 @@ on('pdfBtn', 'click', ()=>{
   const isStandalone = window.navigator.standalone === true;
   const hint = document.getElementById('printHint');
   if(isStandalone){
-    hint.innerHTML = "📄 Le document est prêt. Touche <b>🖨️ Imprimer / Enregistrer en PDF</b> ci-dessous : un aperçu s'ouvre — pince pour zoomer dessus, puis touche <b>Partager</b> en haut à gauche de l'aperçu et choisis <b>Enregistrer dans Fichiers</b> ou envoie-le par Mail/Messages.";
+    hint.innerHTML = "📄 Le document est prêt. Touche <b>📄 Créer le PDF du dossier</b> ci-dessous : le fichier est fabriqué sur l'appareil, puis la feuille de partage s'ouvre — choisis <b>Enregistrer dans Fichiers</b>, <b>Imprimer</b>, ou envoie-le par Mail/Messages. Si elle ne s'ouvre pas d'elle-même, touche à nouveau le bouton.";
   } else if(isiOS){
     hint.innerHTML = "📄 Le document est prêt ci-dessous (fais défiler pour voir toutes les pages).<br>Pour l'enregistrer en PDF sur iPhone : touche <b>🖨️ Imprimer / Enregistrer en PDF</b> ci-dessous (ou le bouton <b>Partager</b> de Safari puis <b>Imprimer</b>), puis pince pour zoomer sur l'aperçu, puis appuie de nouveau sur <b>Partager</b> en haut à gauche de l'aperçu et choisis <b>Enregistrer dans Fichiers</b> ou envoie-le directement par Mail/Messages.";
   } else {
@@ -3576,8 +3576,121 @@ on('pdfBtn', 'click', ()=>{
   document.getElementById('printReportWrap').scrollIntoView({behavior:'smooth', block:'start'});
 });
 
-on('reportPrintBtn', 'click', ()=>{
-  window.print();
+// ---- Impression / PDF (v56) ----
+// Dans l'app installée sur l'écran d'accueil (iPhone, iPad), iOS ignore
+// window.print() : le bouton ne faisait rien. On y fabrique donc un vrai
+// fichier PDF (html2canvas + jsPDF, hébergés avec l'app, donc disponibles
+// hors ligne), puis on ouvre la feuille de partage iOS : « Enregistrer dans
+// Fichiers », Mail, AirDrop, Imprimer… Dans un navigateur classique,
+// l'impression habituelle est conservée.
+function isStandaloneApp(){
+  return window.navigator.standalone === true ||
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+}
+
+function loadScriptOnce(src, test){
+  if(test()) return Promise.resolve();
+  return new Promise((resolve, reject)=>{
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = ()=> test() ? resolve() : reject(new Error('module PDF incomplet'));
+    s.onerror = ()=>reject(new Error('module PDF introuvable (' + src + ')'));
+    document.head.appendChild(s);
+  });
+}
+
+let PDF_READY = null;   // {file, url} du dernier PDF fabriqué
+
+async function buildDossierPdf(onProgress){
+  await loadScriptOnce('vendor-html2canvas.min.js', ()=>!!window.html2canvas);
+  await loadScriptOnce('vendor-jspdf.min.js', ()=>!!(window.jspdf && window.jspdf.jsPDF));
+  const src = document.getElementById('printReport');
+  if(!src || !src.innerHTML.trim()) throw new Error('génère d\'abord le dossier');
+
+  // Copie hors transformation : l'aperçu à l'écran est réduit par un
+  // scale(), que html2canvas reproduirait. La copie est posée sous le
+  // contenu (z-index négatif), à sa taille réelle de 210 mm.
+  const host = document.createElement('div');
+  host.setAttribute('aria-hidden', 'true');
+  host.style.cssText = 'position:absolute;left:0;top:0;width:210mm;z-index:-9999;pointer-events:none;';
+  host.innerHTML = '<div id="printReport" style="transform:none;width:210mm;">' + src.innerHTML + '</div>';
+  document.body.appendChild(host);
+  try{
+    const imgs = [...host.querySelectorAll('img')];
+    await Promise.all(imgs.map(i => i.complete ? null : new Promise(r=>{ i.onload = i.onerror = r; })));
+    const pages = [...host.querySelectorAll('.page')];
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({unit:'mm', format:'a4', orientation:'portrait', compress:true});
+    for(let i = 0; i < pages.length; i++){
+      if(onProgress) onProgress(i + 1, pages.length);
+      const canvas = await window.html2canvas(pages[i], {
+        scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false
+      });
+      const data = canvas.toDataURL('image/jpeg', 0.85);
+      // Largeur A4 ; si la page est plus haute que la feuille, on la réduit
+      // pour qu'elle tienne entière (centrée horizontalement).
+      let w = 210, h = canvas.height * 210 / canvas.width;
+      if(h > 297){ w = w * 297 / h; h = 297; }
+      if(i > 0) pdf.addPage('a4', 'portrait');
+      pdf.addImage(data, 'JPEG', (210 - w) / 2, 0, w, h, undefined, 'FAST');
+      canvas.width = canvas.height = 0;   // libère la mémoire (iPhone)
+    }
+    const name = (document.title || 'PreVol').replace(/[^\w\-.]+/g, '_') + '.pdf';
+    const blob = pdf.output('blob');
+    const file = new File([blob], name, {type:'application/pdf'});
+    if(PDF_READY && PDF_READY.url) URL.revokeObjectURL(PDF_READY.url);
+    PDF_READY = {file, url: URL.createObjectURL(blob)};
+    return PDF_READY;
+  } finally {
+    host.remove();
+  }
+}
+
+async function sharePdf(ready){
+  const f = ready.file;
+  if(navigator.canShare && navigator.canShare({files:[f]})){
+    await navigator.share({files:[f], title: f.name});
+    return;
+  }
+  // Pas de feuille de partage : téléchargement classique.
+  const a = document.createElement('a');
+  a.href = ready.url; a.download = f.name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+on('reportPrintBtn', 'click', async ()=>{
+  const btn = document.getElementById('reportPrintBtn');
+  if(!isStandaloneApp()){ window.print(); return; }
+
+  // Second appui après fabrication : partage immédiat (iOS n'ouvre la
+  // feuille de partage que pendant un appui de l'utilisateur).
+  if(btn.dataset.pdfReady === '1' && PDF_READY){
+    try{ await sharePdf(PDF_READY); }catch(e){ if(e && e.name !== 'AbortError') alert('Partage impossible : ' + (e.message||e)); }
+    return;
+  }
+  if(btn.dataset.busy === '1') return;
+  btn.dataset.busy = '1';
+  const label = btn.textContent;
+  try{
+    const ready = await buildDossierPdf((i, n)=>{ btn.textContent = '⏳ Création du PDF… page ' + i + ' / ' + n; });
+    btn.dataset.pdfReady = '1';
+    btn.textContent = '📤 Partager / Enregistrer le PDF';
+    try{ await sharePdf(ready); }
+    catch(e){ /* appui expiré pendant la fabrication : le bouton attend un nouvel appui */ }
+  }catch(e){
+    btn.textContent = label;
+    alert('Création du PDF impossible : ' + (e.message || e));
+  }finally{
+    btn.dataset.busy = '';
+  }
+});
+
+// Un nouveau dossier généré rend le PDF précédent périmé.
+on('pdfBtn', 'click', ()=>{
+  const btn = document.getElementById('reportPrintBtn');
+  if(!btn) return;
+  btn.dataset.pdfReady = '';
+  btn.textContent = isStandaloneApp() ? '📄 Créer le PDF du dossier' : '🖨️ Imprimer / Enregistrer en PDF';
 });
 
 on('reportNewFlightBtn', 'click', ()=>{
@@ -5479,12 +5592,15 @@ function svgRunwayDiagram(o){
     ${vent}
 
     <!-- Barres de distance, au-dessus de la piste -->
-    ${barre(o.brute,    y-46, 14, 'var(--muted)', '0.45')}
-    ${barre(o.corrigee, y-28, 14, depasse ? 'var(--red)' : 'var(--accent)', '0.9')}
-    ${repere(o.brute,    y-46, 32, 'var(--muted)')}
-    ${repere(o.corrigee, y-46, 46, depasse ? 'var(--red)' : 'var(--accent)')}
-    <text x="${x0+4}" y="${y-49}" font-size="11" fill="var(--muted)">sans facteurs ${o.brute} m</text>
-    <text x="${x0+4}" y="${y-16}" font-size="11.5" font-weight="700"
+    <!-- v56 : « avec facteurs » était écrit DANS la barre bleue (bleu sur
+         bleu, illisible). Les barres sont écartées et le libellé passe
+         entre la barre grise et la barre bleue. -->
+    ${barre(o.brute,    y-60, 12, 'var(--muted)', '0.45')}
+    ${barre(o.corrigee, y-26, 12, depasse ? 'var(--red)' : 'var(--accent)', '0.9')}
+    ${repere(o.brute,    y-60, 46, 'var(--muted)')}
+    ${repere(o.corrigee, y-60, 60, depasse ? 'var(--red)' : 'var(--accent)')}
+    <text x="${x0+4}" y="${y-64}" font-size="11" fill="var(--muted)">sans facteurs ${o.brute} m</text>
+    <text x="${x0+4}" y="${y-32}" font-size="11.5" font-weight="700"
           fill="${depasse?'var(--red)':'var(--accent)'}">avec facteurs ${o.corrigee} m</text>
 
     <!-- La piste -->

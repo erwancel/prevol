@@ -1597,3 +1597,16 @@ body[data-view="fuel"] #dossierFuelResult{display:none;}
   html, body{max-width:100%;overflow-x:hidden;}
   .wrap, .app-shell{max-width:100%;overflow-x:clip;}
 }
+
+/* v56 — Aperçu A4 sur téléphone.
+   Le rapport fait 210 mm (≈ 794 px). Dans .main-content (flex en colonne),
+   il élargissait #pageFlight et #printScaler jusqu'à ~800 px : fitPreview()
+   mesurait alors cette largeur gonflée au lieu de celle de l'écran, ne
+   réduisait presque pas l'aperçu, et on n'en voyait qu'un morceau en mode
+   portrait (surtout visible avec des PDF joints, qui ajoutent des pages).
+   On fige la largeur de ces conteneurs sur celle de l'écran. */
+@media screen{
+  .main-content > #pageFlight{width:100%;max-width:100%;min-width:0;box-sizing:border-box;}
+  #printReportWrap{width:100%;min-width:0;max-width:100%;box-sizing:border-box;}
+  #printScaler{width:100%;min-width:0;max-width:100%;contain:inline-size;}
+}

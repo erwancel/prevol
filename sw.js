@@ -10,7 +10,7 @@
 // Les chemins sont relatifs à l'emplacement du service worker, pour rester
 // valables aussi bien à la racine d'un domaine que sous /nom-du-depot/ comme
 // le fait GitHub Pages.
-const CACHE_VERSION = 'prevol-v55';
+const CACHE_VERSION = 'prevol-v56';
 
 const PAGES = [
   './',
@@ -48,7 +48,9 @@ const ASSETS = [
   './font-bsc-400.woff2',
   './font-bsc-500.woff2',
   './font-bsc-600.woff2',
-  './font-bsc-700.woff2'
+  './font-bsc-700.woff2',
+  './vendor-html2canvas.min.js',
+  './vendor-jspdf.min.js'
 ];
 
 self.addEventListener('install', (event) => {
