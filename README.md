@@ -1,7 +1,15 @@
-# PréVol — v57
+# PréVol — v58
 
 Application de préparation de vol (PWA). Hébergement : Cloudflare Pages
 (prevol.pages.dev), déployé automatiquement depuis ce dépôt GitHub.
+
+## v58 — 19/11/2026
+
+- Pages longues (bulletins METAR/TAF de la page Météo) : elles étaient
+  coupées net à la hauteur A4 sur téléphone, la fin disparaissait. La limite
+  ne vise plus que les pages de pièces jointes (classe .attach), et le PDF
+  généré sur iPhone découpe une page trop longue en plusieurs feuilles, entre
+  deux lignes de tableau.
 
 ## v57 — 19/11/2026
 

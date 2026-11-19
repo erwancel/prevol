@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v57 · 2026.11.19';
+const APP_VERSION = 'v58 · 2026.11.19';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -3612,8 +3612,10 @@ async function buildDossierPdf(onProgress){
   // contenu (z-index négatif), à sa taille réelle de 210 mm.
   const host = document.createElement('div');
   host.setAttribute('aria-hidden', 'true');
+  host.id = 'pdfRenderHost';
   host.style.cssText = 'position:absolute;left:0;top:0;width:210mm;z-index:-9999;pointer-events:none;-webkit-text-size-adjust:100%;text-size-adjust:100%;';
-  host.innerHTML = '<div id="printReport" style="transform:none;width:210mm;">' + src.innerHTML + '</div>';
+  host.innerHTML = '<style>#pdfRenderHost #printReport .page:not(.attach){max-height:none !important;overflow:visible !important;}</style>'
+    + '<div id="printReport" style="transform:none;width:210mm;">' + src.innerHTML + '</div>';
   document.body.appendChild(host);
   try{
     const imgs = [...host.querySelectorAll('img')];
@@ -3621,18 +3623,57 @@ async function buildDossierPdf(onProgress){
     const pages = [...host.querySelectorAll('.page')];
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({unit:'mm', format:'a4', orientation:'portrait', compress:true});
+    let first = true;
+    const TOP_SUITE = 12;   // mm : marge haute des feuilles de suite
+    const addSheet = (cv, y0)=>{
+      y0 = y0 || 0;
+      const data = cv.toDataURL('image/jpeg', 0.85);
+      let w = 210, h = cv.height * 210 / cv.width;
+      if(h > 297 - y0){ w = w * (297 - y0) / h; h = 297 - y0; }
+      if(!first) pdf.addPage('a4', 'portrait');
+      first = false;
+      pdf.addImage(data, 'JPEG', (210 - w) / 2, y0, w, h, undefined, 'FAST');
+    };
     for(let i = 0; i < pages.length; i++){
       if(onProgress) onProgress(i + 1, pages.length);
-      const canvas = await window.html2canvas(pages[i], {
+      const pg = pages[i];
+      // Points de coupe possibles (bas des lignes de tableau, paragraphes),
+      // relevés AVANT la capture, en px CSS depuis le haut de la page.
+      const top0 = pg.getBoundingClientRect().top;
+      const cuts = [...pg.querySelectorAll('tr, table, p, .smallhint, h1, h2, h3')]
+        .map(e => e.getBoundingClientRect().bottom - top0)
+        .filter(y => y > 0).sort((a,b)=>a-b);
+      const canvas = await window.html2canvas(pg, {
         scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false
       });
-      const data = canvas.toDataURL('image/jpeg', 0.85);
-      // Largeur A4 ; si la page est plus haute que la feuille, on la réduit
-      // pour qu'elle tienne entière (centrée horizontalement).
-      let w = 210, h = canvas.height * 210 / canvas.width;
-      if(h > 297){ w = w * 297 / h; h = 297; }
-      if(i > 0) pdf.addPage('a4', 'portrait');
-      pdf.addImage(data, 'JPEG', (210 - w) / 2, 0, w, h, undefined, 'FAST');
+      const k = canvas.width / pg.offsetWidth;          // px canvas par px CSS
+      const sheetPx = Math.round(canvas.width * 297 / 210);
+      if(canvas.height <= sheetPx * 1.03){
+        addSheet(canvas);                                // tient sur une feuille
+      } else {
+        // v58 : page plus longue qu'une feuille A4 (bulletins METAR/TAF…).
+        // On la découpe en plusieurs feuilles, de préférence entre deux
+        // lignes de tableau, au lieu de la réduire ou de la tronquer.
+        let start = 0;
+        while(start < canvas.height - 4){
+          // Feuilles de suite : un peu moins de hauteur utile, pour la marge.
+          const room = start === 0 ? sheetPx : Math.round(canvas.width * (297 - TOP_SUITE - 6) / 210);
+          let end = Math.min(start + room, canvas.height);
+          if(end < canvas.height){
+            const best = cuts.map(y => Math.round(y * k))
+              .filter(y => y > start + room * 0.5 && y <= start + room).pop();
+            if(best) end = best;
+          }
+          const part = document.createElement('canvas');
+          part.width = canvas.width; part.height = end - start;
+          const ctx = part.getContext('2d');
+          ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, part.width, part.height);
+          ctx.drawImage(canvas, 0, start, canvas.width, end - start, 0, 0, canvas.width, end - start);
+          addSheet(part, start === 0 ? 0 : TOP_SUITE);
+          part.width = part.height = 0;
+          start = end;
+        }
+      }
       canvas.width = canvas.height = 0;   // libère la mémoire (iPhone)
     }
     const name = (document.title || 'PreVol').replace(/[^\w\-.]+/g, '_') + '.pdf';
@@ -4366,7 +4407,7 @@ function renderWxDoc(){
 function wxDocPages(){
   if(!WXDOC || !WXDOC.images || !WXDOC.images.length) return '';
   return WXDOC.images.map((src,i)=>`
-    <div class="page" style="padding:8mm;">
+    <div class="page attach" style="padding:8mm;">
       <div style="font-size:8pt;margin-bottom:4mm;">DOSSIER MÉTÉO JOINT — page ${i+1} / ${WXDOC.images.length}${WXDOC.name?' — '+WXDOC.name.replace(/[<>&]/g,''):''}</div>
       <img src="${src}" style="width:100%;height:auto;display:block;">
     </div>`).join('');
@@ -4447,7 +4488,7 @@ function renderNtmDoc(){
 function ntmDocPages(){
   if(!NTMDOC || !NTMDOC.images || !NTMDOC.images.length) return '';
   return NTMDOC.images.map((src,i)=>`
-    <div class="page" style="padding:8mm;">
+    <div class="page attach" style="padding:8mm;">
       <div style="font-size:8pt;margin-bottom:4mm;">PIB NOTAM JOINT — page ${i+1} / ${NTMDOC.images.length}${NTMDOC.name?' — '+NTMDOC.name.replace(/[<>&]/g,''):''}</div>
       <img src="${src}" style="width:100%;height:auto;display:block;">
     </div>`).join('');
@@ -4525,7 +4566,7 @@ function renderFreeDoc(){
 function freeDocPages(){
   if(!FREEDOC || !FREEDOC.images || !FREEDOC.images.length) return '';
   return FREEDOC.images.map((src,i)=>`
-    <div class="page" style="padding:8mm;">
+    <div class="page attach" style="padding:8mm;">
       <div style="font-size:8pt;margin-bottom:4mm;">ANNEXE JOINTE — page ${i+1} / ${FREEDOC.images.length}${FREEDOC.name?' — '+FREEDOC.name.replace(/[<>&]/g,''):''}</div>
       <img src="${src}" style="width:100%;height:auto;display:block;">
     </div>`).join('');
@@ -4705,7 +4746,7 @@ function renderPilotDoc(){
 function pilotDocPages(){
   if(!PILOTDOC || !PILOTDOC.images || !PILOTDOC.images.length) return '';
   return PILOTDOC.images.map((src,i)=>`
-    <div class="page" style="padding:8mm;">
+    <div class="page attach" style="padding:8mm;">
       <div style="font-size:8pt;margin-bottom:4mm;">DOCUMENTS PILOTE — page ${i+1} / ${PILOTDOC.images.length}${PILOTDOC.name?' — '+PILOTDOC.name.replace(/[<>&]/g,''):''}</div>
       <img src="${src}" style="width:100%;height:auto;display:block;">
     </div>`).join('');

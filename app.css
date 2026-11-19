@@ -1502,8 +1502,10 @@ body[data-view="fuel"] #dossierFuelResult{display:none;}
       max-height:265mm !important; width:auto !important; max-width:100% !important;
       height:auto !important; margin:0 auto !important; display:block !important;
     }
-    /* Une page de dossier ne doit jamais générer de feuille de débordement */
-    #printReport .page{max-height:297mm !important;}
+    /* Une page de PIÈCE JOINTE ne doit jamais générer de feuille de
+       débordement. v58 : la règle visait toutes les pages (via :has(> img), le logo comptait aussi), ce qui coupait
+       net le contenu long (bulletins METAR/TAF de la page Météo). */
+    #printReport .page.attach{max-height:297mm !important;}
   }
 
 /* ============================================================
