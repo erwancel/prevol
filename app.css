@@ -1,3 +1,9 @@
+/* v57 — iOS agrandit d'office le texte des blocs larges (« text autosizing »).
+   La page A4 du dossier (794 px) en faisait les frais : dans le PDF, une
+   partie des libellés sortait plus gros que le reste et décalait les
+   valeurs dans leurs cases. Taille de texte figée : 100 %, partout. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+
 /* Polices auto-hébergées (v55) : disponibles hors ligne, plus d'appel à Google Fonts. */
 @font-face{font-family:'Barlow';font-style:normal;font-weight:400;font-display:swap;src:url(font-barlow-400.woff2) format('woff2');}
 @font-face{font-family:'Barlow';font-style:normal;font-weight:500;font-display:swap;src:url(font-barlow-500.woff2) format('woff2');}

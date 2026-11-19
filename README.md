@@ -1,7 +1,13 @@
-# PréVol — v56
+# PréVol — v57
 
 Application de préparation de vol (PWA). Hébergement : Cloudflare Pages
 (prevol.pages.dev), déployé automatiquement depuis ce dépôt GitHub.
+
+## v57 — 19/11/2026
+
+- PDF généré sur iPhone : une partie du texte sortait agrandie (« text
+  autosizing » d'iOS sur la page A4 de 794 px), ce qui décalait les valeurs.
+  Taille de texte figée à 100 % (text-size-adjust).
 
 ## v56 — 19/11/2026
 

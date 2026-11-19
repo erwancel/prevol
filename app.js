@@ -52,7 +52,7 @@
 // nouvelle version : le service worker sert index.html en réseau-d'abord,
 // mais une app laissée en pause peut continuer d'afficher l'ancienne page.
 // À INCRÉMENTER À CHAQUE MODIFICATION DE CE FICHIER.
-const APP_VERSION = 'v56 · 2026.11.19';
+const APP_VERSION = 'v57 · 2026.11.19';
 
 // ===================== ÉTAT GLOBAL MÉTÉO =====================
 // Déclaré en tête de fichier : des fonctions d'initialisation qui tournent
@@ -3612,7 +3612,7 @@ async function buildDossierPdf(onProgress){
   // contenu (z-index négatif), à sa taille réelle de 210 mm.
   const host = document.createElement('div');
   host.setAttribute('aria-hidden', 'true');
-  host.style.cssText = 'position:absolute;left:0;top:0;width:210mm;z-index:-9999;pointer-events:none;';
+  host.style.cssText = 'position:absolute;left:0;top:0;width:210mm;z-index:-9999;pointer-events:none;-webkit-text-size-adjust:100%;text-size-adjust:100%;';
   host.innerHTML = '<div id="printReport" style="transform:none;width:210mm;">' + src.innerHTML + '</div>';
   document.body.appendChild(host);
   try{
